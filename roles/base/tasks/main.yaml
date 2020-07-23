@@ -37,21 +37,9 @@
       - gnutls-bin
       - libgnutls28-dev
       - pkg-config
-  become: yes
-  when: ansible_os_family == "Debian"
-- name: Check if g++ is installed
-  command: g++ --version
-  register: check_reg_gpp
-  ignore_errors: true
-  changed_when: check_reg_gpp.rc == 1
-  failed_when: false
-
-- name: Install g++
-  when: check_reg_gpp.rc != 0
-  package:
-    name:
       - g++
   become: yes
+  when: ansible_os_family == "Debian"
 
 - name: Create directory for GIT based repos
   file:
