@@ -1,0 +1,4 @@
+emacs_src_dir: "{{ git_repos_dir }}/emacs"
+chemacs_src_dir: "{{ git_repos_dir }}/chemacs"
+emacs_config_dir: "{{ config_dir }}/emacs"
+lazymacs_dir: "{{ emacs_config_dir }}/lazymacs"

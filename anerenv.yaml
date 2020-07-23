@@ -1,0 +1,9 @@
+- name: Set up machine
+  hosts: localhost
+  roles:
+    - role: base
+      tags:
+        - base
+    - role: editor
+      tags:
+        - editor

@@ -1,0 +1,109 @@
+- name: Update cache
+  package:
+    update_cache: yes
+  become: yes
+      
+- name: Install editor packages
+  package:
+    name:
+      - pandoc
+      
+  become: yes
+
+- name: Install texlive-full for debian
+  package:
+    name:
+      - texlive-full
+  become: yes
+  when: ansible_os_family == "Debian"
+
+- name: Try to install texlive as other packages
+  package:
+    name:
+      - texlive-most
+      - texlive-lang
+  become: yes
+  when: ansible_os_family == "Archlinux"
+
+- name: Check if emacs is installed
+  command: emacs --version
+  register: check_reg_emacs
+  ignore_errors: true
+  changed_when: check_reg_emacs.rc == 1
+  failed_when: false
+
+- name: Install emacs
+  when: check_reg_emacs.rc != 0
+  block:
+    - name: Clone emacs
+      git:
+        repo: git://git.sv.gnu.org/emacs.git 
+        dest: "{{ emacs_src_dir }}"
+        version: master
+
+    - name: Autogen emacs
+      command: ./autogen.sh
+      args:
+        chdir: "{{ emacs_src_dir }}/"
+
+    - name: Configure emacs
+      command: ./configure --with-modules
+      args:
+        chdir: "{{ emacs_src_dir }}/"
+
+    - name: Make emacs
+      make: 
+        chdir: "{{ emacs_src_dir }}/"
+      
+    - name: Install emacs
+      make: 
+        chdir: "{{ emacs_src_dir }}/"
+        target: install
+      become: yes
+
+- name: Clone chemacs
+  git:
+    repo: https://github.com/plexus/chemacs.git 
+    dest: "{{ chemacs_src_dir }}"
+    version: master
+
+- name: Install chemacs
+  command: bash install.sh
+  args:
+    chdir: "{{ chemacs_src_dir }}/"
+
+- name: Create directory for emacs configurations
+  file:
+    path: "{{ emacs_config_dir }}"
+    state: directory
+
+- name: Create directory for lazymacs
+  file:
+    path: "{{ lazymacs_dir }}"
+    state: directory
+
+- name: Check if lazymacs init.el file exists
+  stat: path="{{ lazymacs_dir }}/init.el"
+  register: lazymacs_initel_stat
+
+- name: copy init.el file
+  copy:
+    src: "{{ anerenv_home }}/roles/editor/files/init.el"
+    dest: "{{ lazymacs_dir }}/init.el"
+  when: lazymacs_initel_stat.stat.exists == False
+
+- name: Link config.org file
+  file:
+    src: "{{ anerenv_home }}/roles/editor/files/config.org"
+    dest: "{{ lazymacs_dir }}/config.org"
+    state: link
+
+- name: Check if emacs-profiles.el file exists
+  stat: path="{{ ansible_env.HOME }}/.emacs-profiles.el"
+  register: lazymacs_initel_stat
+
+- name: Create emacs-profiles.el if doesn't exist
+  template:
+    src: "{{ anerenv_home }}/roles/editor/templates/emacs-profiles.el.j2"
+    dest: "{{ ansible_env.HOME }}/.emacs-profiles.el"
+  

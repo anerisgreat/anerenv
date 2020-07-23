@@ -1,0 +1,4 @@
+anerenv_user_home: "{{ '~' | expanduser }}"
+anerenv_home: "{{ anerenv_user_home }}/anerenv"
+git_repos_dir: "{{ ansible_env.HOME }}/.git-repos"
+config_dir: "{{ ansible_env.HOME }}/.config"

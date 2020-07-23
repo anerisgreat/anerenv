@@ -1,0 +1,6 @@
+\#*
+.\#*
+*.log
+*.retry
+rebase.sh
+test.sh

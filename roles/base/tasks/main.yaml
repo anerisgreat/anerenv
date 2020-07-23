@@ -1,0 +1,94 @@
+- name: Update cache
+  package:
+    update_cache: yes
+  become: yes
+      
+- name: Install base packages
+  package:
+    name:
+      - git
+      - gcc
+      - make
+      - python3
+      - zsh
+      - curl
+      - wget
+      - m4
+      - autoconf
+      - automake
+      - curl
+      - tmux
+      - xclip
+      - inotify-tools
+      - openssl
+  become: yes
+
+- name: Essential packages for Arch
+  package:
+    name: 
+      - gnutls
+      - pkgconf
+  become: yes
+  when: ansible_os_family == "Archlinux"
+      
+- name: Essential packages for debian
+  package:
+    name:
+      - gnutls-bin
+      - libgnutls28-dev
+      - pkg-config
+  become: yes
+  when: ansible_os_family == "Debian"
+- name: Check if g++ is installed
+  command: g++ --version
+  register: check_reg_gpp
+  ignore_errors: true
+  changed_when: check_reg_gpp.rc == 1
+  failed_when: false
+
+- name: Install g++
+  when: check_reg_gpp.rc != 0
+  package:
+    name:
+      - g++
+  become: yes
+
+- name: Create directory for GIT based repos
+  file:
+    path: "{{ git_repos_dir }}"
+    state: directory
+
+- name: Check if CMake is installed
+  command: cmake --version
+  register: check_reg_cmake
+  ignore_errors: true
+  changed_when: check_reg_cmake.rc == 1
+  failed_when: false
+
+# If there is a way to check version of CMake then we use it here
+
+- name: Install CMake
+  when: check_reg_cmake.rc != 0
+  block:
+    - name: Clone CMake
+      git:
+        repo: https://gitlab.kitware.com/cmake/cmake 
+        dest: "{{ git_repos_dir }}/cmake"
+        version: master
+
+    - name: Bootstrap CMake
+      command: bash bootstrap
+      args:
+        chdir: "{{ git_repos_dir }}/cmake/"
+
+    - name: Make CMake
+      make: 
+        chdir: "{{ git_repos_dir }}/cmake/"
+      
+    - name: Install CMake
+      make: 
+        chdir: "{{ git_repos_dir }}/cmake/"
+        target: install
+      become: yes
+      
+

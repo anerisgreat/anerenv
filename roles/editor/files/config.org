@@ -1,0 +1,701 @@
+#+Title: Aner's Emacs Configuration
+#+property: header-args :results silent
+#+LATEX_HEADER: \usepackage{xcolor}
+#+LATEX_HEADER: \usepackage{minted}
+#+LATEX_HEADER: \usepackage{polyglossia}
+#+LATEX_HEADER: \setotherlanguage{hebrew}
+#+LATEX_HEADER: \newfontfamily\hebrewfont{Noto Sans Hebrew}[Script=Hebrew]
+#+options: toc:nil
+#+begin_export latex
+\definecolor{codebg}{rgb}{0.95,0.95,0.95}
+\setminted{
+  bgcolor=codebg,
+  breaklines=true,
+  mathescape,
+  linenos=false,
+  fontsize=\scriptsize
+}
+#+end_export
+
+* Base Configuration
+  
+** Package installation
+
+Installation of all required packages.
+
+Taken from [[https://stackoverflow.com/questions/55038594/setting-up-emacs-on-new-machine-with-init-el-and-package-installation ][this post on StackOverflow]].
+
+Declare repositories:
+
+#+begin_src emacs-lisp :latex_attr optoins bgcolor=dark
+(setq package-archives
+      '(("gnu" . "http://elpa.gnu.org/packages/")
+        ("melpa" . "http://melpa.org/packages/")))
+#+end_src
+
+Initialize package management and refresh repositories unless archived.
+If repositories need to be refreshed, this command should be called.
+
+#+begin_src emacs-lisp
+(require 'package)
+(package-initialize)
+
+(unless package-archive-contents
+  (package-refresh-contents))
+#+end_src
+
+Defining a function to install a package unless already installed
+#+begin_src emacs-lisp
+(defun package-unless-install(pkg)
+  (unless (package-installed-p pkg)
+    (package-install pkg)))
+#+end_src
+
+** Backup files
+
+Taken from [[https://stackoverflow.com/questions/151945/how-do-i-control-how-emacs-makes-backup-files][this post on StackOverflow]]
+
+#+begin_src emacs-lisp
+(setq backup-directory-alist `(("." . "~/.cache/emacs-backups/")))
+(setq backup-by-copying t)
+(setq delete-old-versions t
+  kept-new-versions 6
+  kept-old-versions 2
+   version-control t)
+#+end_src
+
+* UI
+
+** Clean UI
+Disabling the toolbar, the splash-screen, the menu-bar and the scroll-bar
+#+begin_src emacs-lisp
+
+(customize-set-variable 'inhibit-startup-screen t) ; no splash screen on start
+(when (display-graphic-p)
+    (tool-bar-mode -1)   ; no tool bar with icons
+    (scroll-bar-mode -1) ; no scroll bars
+    (menu-bar-mode -1)   ; no menu bar
+)
+#+end_src
+
+** Window dividers
+Customizing space between windows
+#+begin_src emacs-lisp
+(window-divider-mode 0)
+;(set-face-foreground 'vertical-border "LightGray")
+;(set-face-background 'fringe "WhiteSmoke")
+(set-fringe-mode 0)
+;For theme-independent configuration
+;(set-face-foreground 'vertical-border (face-attribute 'mode-line :background))
+;(set-face-background 'fringe (face-attribute 'mode-line-inactive :background))
+#+end_src
+
+** Theme
+
+#+begin_src emacs-lisp
+(package-unless-install 'solarized-theme)
+(load-theme 'solarized-light t)
+
+(setq solarized-use-variable-pitch nil)
+(setq solarized-scale-org-headlines nil)
+
+(setq solarized-height-minus-1 1.0)
+(setq solarized-height-plus-1 1.0)
+(setq solarized-height-plus-2 1.0)
+(setq solarized-height-plus-3 1.0)
+(setq solarized-height-plus-4 1.0)
+#+end_src
+
+** Text
+
+*** Text format
+Setting font size to 10. The value to place is font-size * 10
+
+#+begin_src emacs-lisp
+(set-face-attribute 'default nil :height 100)
+#+end_src
+
+*** Line numbering
+#+begin_src emacs-lisp
+(setq display-line-numbers-type 'visual)
+(setq display-line-numbers-grow-only 1)
+(setq display-line-numbers-width-start 1)
+
+;Getting rid of linum on terminal type buffers
+(require 'display-line-numbers)
+(defcustom display-line-numbers-exempt-modes '(vterm-mode eshell-mode shell-mode term-mode ansi-term-mode)
+  "Major modes on which to disable the linum mode, exempts them from global requirement"
+  :group 'display-line-numbers
+  :type 'list
+  :version "green")
+
+(defun display-line-numbers--turn-on ()
+  "turn on line numbers but excempting certain majore modes defined in `display-line-numbers-exempt-modes'"
+  (if (and
+       (not (member major-mode display-line-numbers-exempt-modes))
+       (not (minibufferp)))
+      (display-line-numbers-mode)))
+
+(global-display-line-numbers-mode)
+#+end_src
+
+*** Line highlight
+#+begin_src emacs-lisp
+(global-hl-line-mode)
+#+end_src
+
+*** Line wrap
+ #+begin_src emacs-lisp
+(global-visual-line-mode t)
+ #+end_src
+
+*** Parenthesis
+Highlight matching parenthesis
+ #+begin_src emacs-lisp
+(show-paren-mode 1)
+ #+end_src
+
+*** Tabs
+#+begin_src emacs-lisp
+(setq-default indent-tabs-mode nil)
+(setq-default tab-width 4)
+(setq c-basic-offset 4)
+#+end_src
+
+** Modeline
+
+#+begin_src emacs-lisp
+(package-unless-install 'mini-modeline)
+(mini-modeline-mode t)
+(package-unless-install 'smart-mode-line)
+(sml/setup)
+#+end_src
+
+** Which-Key
+
+#+begin_src emacs-lisp
+(package-unless-install 'which-key)
+(require 'which-key)
+(which-key-mode)
+#+end_src
+
+** Perspective
+   
+#+begin_src emacs-lisp
+(package-unless-install 'perspective)
+(require 'perspective)
+(persp-mode 1)
+(setq persp-show-modestring 'nil)
+#+end_src
+
+*** Keymaps
+
+#+begin_src emacs-lisp
+(eval-after-load "org"
+    '(define-key org-mode-map (kbd "M-<tab>") nil))
+;Unset org-mode map "org-force-cycle-archived"
+(global-set-key (kbd "M-<tab>") 'persp-next)
+(global-set-key (kbd "s-<tab>") 'persp-next)
+(global-set-key (kbd "M-`") 'persp-prev)
+(global-set-key (kbd "M-n") 'persp-switch)
+
+#+end_src
+
+** Active Window Background
+
+#+begin_src emacs-lisp
+(defun highlight-selected-window ()
+    ;Walk through all buffers, set all other buffers to
+    ;default background
+    (walk-windows (lambda (w)
+    (with-current-buffer (window-buffer w)
+        (unless (eq w (selected-window))
+        (progn
+            (buffer-face-set 'default)
+            ;(face-remap-remove-relative fringeface)
+                )
+        )
+    )
+    ))
+    ;Finally, set current buffer background
+    (buffer-face-set '(:background "PaleTurquoise1"))
+    (if (minibuffer-window-active-p (selected-window))
+        (buffer-face-set '(:background "PaleTurquoise1"))
+        (buffer-face-set '(:background "LightYellow"))
+    )
+)
+;(add-hook 'buffer-list-update-hook 'highlight-selected-window)
+;(add-hook 'post-command-hook 'highlight-selected-window)
+#+end_src
+
+** Easy Prompt
+
+#+begin_src emacs-lisp
+(defalias 'yes-or-no-p 'y-or-n-p)
+#+end_src
+
+** General Keymaps
+
+ Window splitting:
+ #+begin_src emacs-lisp
+;;Instead of delete-horizontal-space
+(global-set-key (kbd "M-\\") 'split-window-horizontally)
+;;Instead of negative-argument
+(global-set-key (kbd "M-\-") 'split-window-vertically)
+ #+end_src
+
+ Window movement:
+#+begin_src emacs-lisp
+;;Unset the org-mode map of "org-mark-element"
+(eval-after-load "org"
+    '(define-key org-mode-map (kbd "M-h") nil)) 
+
+;;Instead of mark-paragraph (and org mark element)
+(global-set-key (kbd "M-h") 'windmove-left)
+;;Instead of downcase-word
+(global-set-key (kbd "M-l") 'windmove-right) 
+;;Instead of kill-sentence
+(global-set-key (kbd "M-k") 'windmove-up) 
+;;Instead of indent-new-comment-line
+(global-set-key (kbd "M-j") 'windmove-down)
+;;Instead of mark-paragraph
+(global-set-key (kbd "M-<left>") 'windmove-left)
+;;Instead of downcase-word
+(global-set-key (kbd "M-<right>") 'windmove-right)
+;;Instead of kill-sentence
+(global-set-key (kbd "M-<up>") 'windmove-up)
+;;Instead of indent-new-comment-line
+(global-set-key (kbd "M-<down>") 'windmove-down)
+(global-unset-key (kbd "M-d")) ;;Instead of kill-word
+;;Instead of indent-new-comment-line
+(global-set-key (kbd "M-d M-d") 'delete-window)
+(global-set-key (kbd "s-d s-d") 'delete-window)
+;;Instead of indent-new-comment-line
+(global-set-key (kbd "M-d D") 'kill-buffer-and-window)
+(defun set-window-width (n)
+    (adjust-window-trailing-edge (selected-window) ( - n (window-width)) t))
+(defun set-85-columns()
+    (interactive)
+    (set-window-width 85))
+;;Instead of indent-new-comment-line
+(global-set-key (kbd "M-d R") 'set-85-columns)
+;;Instead of tab-to-tab-stop
+(global-set-key (kbd "M-i") 'counsel-imenu)
+(global-set-key (kbd "M-b") 'counsel-switch-buffer)
+#+end_src
+
+Buffers:
+#+begin_src emacs-lisp
+;(eval-after-load "evil-autoloads"
+;    '(define-key evil-normal-state-map (kbd "C-b") nil))
+;(eval-after-load "evil-autoloads"
+;    '(global-set-key (kbd "C-b C-b") 'buffer-menu))
+;(eval-after-load "evil-autoloads"
+;    '(global-set-key (kbd "C-b C-d") 'kill-buffer))
+#+end_src
+
+* EXWM
+
+#+begin_src emacs-lisp
+(package-unless-install 'exwm)
+#+end_src
+
+Turn on `display-time-mode' if you don't use an external bar.
+#+begin_src emacs-lisp
+(setq display-time-default-load-average nil)
+(display-time-mode t)
+#+end_src
+
+You are strongly encouraged to enable something like `ido-mode' to alter
+the default behavior of 'C-x b', or you will take great pains to switch
+to or back from a floating frame (remember 'C-x 5 o' if you refuse this
+proposal however).
+You may also want to call `exwm-config-ido' later (see below).
+#+begin_src emacs-lisp
+(ido-mode 1)
+#+end_src
+
+Emacs server is not required to run EXWM but it has some interesting uses
+(see next section).
+#+begin_src emacs-lisp
+(server-start)
+#+end_src
+
+Load EXWM.
+#+begin_src emacs-lisp
+(require 'exwm)
+#+end_src
+
+Fix problems with Ido (if you use it).
+#+begin_src emacs-lisp
+(require 'exwm-config)
+(exwm-config-ido)
+#+end_src
+
+;; Set the initial number of workspaces (they can also be created later).
+#+begin_src emacs-lisp
+(setq exwm-workspace-number 4)
+#+end_src
+
+All buffers created in EXWM mode are named "*EXWM*". You may want to
+change it in `exwm-update-class-hook' and `exwm-update-title-hook', which
+are run when a new X window class name or title is available.  Here's
+some advice on this topic:
++ Always use `exwm-workspace-rename-buffer` to avoid naming conflict.
++ For applications with multiple windows (e.g. GIMP), the class names of
+  all windows are probably the same.  Using window titles for them makes
+  more sense.
+In the following example, we use class names for all windows except for
+Java applications and GIMP.
+#+begin_src emacs-lisp
+(add-hook 'exwm-update-class-hook
+          (lambda ()
+            (unless (or (string-prefix-p "sun-awt-X11-" exwm-instance-name)
+                        (string= "gimp" exwm-instance-name))
+              (exwm-workspace-rename-buffer exwm-class-name))))
+(add-hook 'exwm-update-title-hook
+          (lambda ()
+            (when (or (not exwm-instance-name)
+                      (string-prefix-p "sun-awt-X11-" exwm-instance-name)
+                      (string= "gimp" exwm-instance-name))
+              (exwm-workspace-rename-buffer exwm-title))))
+#+end_src
+
+Global keybindings can be defined with `exwm-input-global-keys'.
+Here are a few examples:
+#+begin_src emacs-lisp
+(setq exwm-input-global-keys
+      `(
+        ;; Bind "s-r" to exit char-mode and fullscreen mode.
+        ([?\s-r] . exwm-reset)
+        ;; Bind "s-w" to switch workspace interactively.
+        ([?\s-w] . exwm-workspace-switch)
+        ;; Bind "s-0" to "s-9" to switch to a workspace by its index.
+        ,@(mapcar (lambda (i)
+                    `(,(kbd (format "s-%d" i)) .
+                      (lambda ()
+                        (interactive)
+                        (exwm-workspace-switch-create ,i))))
+                  (number-sequence 0 9))
+        ;; Bind "s-&" to launch applications ('M-&' also works if the output
+        ;; buffer does not bother you).
+        ([?\s-&] . (lambda (command)
+		     (interactive (list (read-shell-command "$ ")))
+		     (start-process-shell-command command nil command)))
+        ;; Bind "s-<f2>" to "slock", a simple X display locker.
+        ([s-f2] . (lambda ()
+		    (interactive)
+		    (start-process "" nil "/usr/bin/slock")))
+        ([\s-<tab>] . persp-next)
+        ))
+#+end_src
+
+To add a key binding only available in line-mode, simply define it in
+`exwm-mode-map'.  The following example shortens 'C-c q' to 'C-q'.
+#+begin_src emacs-lisp
+(define-key exwm-mode-map [?\C-q] #'exwm-input-send-next-key)
+#+end_src
+
+;; The following example demonstrates how to use simulation keys to mimic
+;; the behavior of Emacs.  The value of `exwm-input-simulation-keys` is a
+;; list of cons cells (SRC . DEST), where SRC is the key sequence you press
+;; and DEST is what EXWM actually sends to application.  Note that both SRC
+;; and DEST should be key sequences (vector or string).
+#+begin_src emacs-lisp
+(setq exwm-input-simulation-keys
+      '(
+        ;; movement
+        ([?\C-b] . [left])
+        ([?\M-b] . [C-left])
+        ([?\C-f] . [right])
+        ([?\M-f] . [C-right])
+        ([?\C-p] . [up])
+        ([?\C-n] . [down])
+        ([?\C-a] . [home])
+        ([?\C-e] . [end])
+        ([?\M-v] . [prior])
+        ([?\C-v] . [next])
+        ([?\C-d] . [delete])
+        ([?\C-k] . [S-end delete])
+        ;; cut/paste.
+        ([?\C-w] . [?\C-x])
+        ([?\M-w] . [?\C-c])
+        ([?\C-y] . [?\C-v])
+        ;; search
+        ([?\C-s] . [?\C-f])))
+#+end_src
+
+Do not forget to enable EXWM. It will start by itself when things are
+ready.  You can put it _anywhere_ in your configuration.
+#+begin_src emacs-lisp
+(exwm-enable)
+
+(require 'exwm-systemtray)
+(exwm-systemtray-enable)
+#+end_src
+* Global modes
+  
+** EVIL mode
+
+#+begin_src emacs-lisp
+(package-unless-install 'evil)
+(require 'evil )
+(evil-mode 1)
+#+end_src
+
+** IVY
+
+Enabling IVY. Taken from [[https://github.com/abo-abo/swiper][their website]].
+
+#+begin_src emacs-lisp
+(package-unless-install 'ivy)
+(require 'ivy)
+(package-unless-install 'ivy-hydra)
+(require 'ivy-hydra)
+(ivy-mode 1)
+(setq ivy-use-virtual-buffers t)
+(setq enable-recursive-minibuffers t)
+(setq ivy-count-format "(%d/%d) ")
+#+end_src
+
+*** Keymaps
+
+#+begin_src emacs-lisp
+;Rebinding for switching buffer C-d to kill instead of C-k because of conflict
+(define-key visual-line-mode-map (kbd "C-k") nil)
+(define-key ivy-switch-buffer-map (kbd "C-k") nil)
+
+(define-key ivy-switch-buffer-map (kbd "C-d") 'ivy-switch-buffer-kill)
+
+(define-key ivy-minibuffer-map (kbd "C-j") 'ivy-next-line)
+(define-key ivy-minibuffer-map (kbd "C-k") 'ivy-previous-line)
+#+end_src
+
+** Projectile
+
+Package installation
+#+begin_src emacs-lisp
+(package-unless-install 'projectile)
+(projectile-mode +1)
+(define-key projectile-mode-map (kbd "M-p") 'projectile-command-map)
+(define-key projectile-mode-map (kbd "M-p a") 'projectile-add-known-project)
+#+end_src
+
+Ivy for projectile:
+#+begin_src emacs-lisp
+(package-unless-install 'counsel-projectile)
+(require 'counsel-projectile)
+(counsel-projectile-mode +1)
+(setq projectile-completion-system 'ivy)
+#+end_src
+
+Fixing counsel to display keymaps during M-x
+Taken from [[https://emacs.stackexchange.com/questions/40787/display-corresponding-key-binding-of-command-during-m-x-completion][this post]] and [[https://emacs.stackexchange.com/questions/38841/counsel-m-x-always-shows][this post]] from StackOverflow.
+
+#+begin_src emacs-lisp
+(when (commandp 'counsel-M-x)
+    (global-set-key [remap execute-extended-command] 'counsel-M-x))
+(setcdr (assoc 'counsel-M-x ivy-initial-inputs-alist) "")
+#+end_src
+
+Persp projectile
+
+#+begin_src emacs-lisp
+(package-unless-install 'persp-projectile)
+(define-key projectile-mode-map (kbd "M-p p") 'projectile-persp-switch-project)
+#+end_src
+
+*** Keymaps
+
+#+begin_src emacs-lisp
+(global-set-key (kbd "C-b") 'projectile-display-buffer)
+#+end_src
+
+** Magit
+
+#+begin_src emacs-lisp
+(package-unless-install 'magit)
+#+end_src
+
+** Tramp
+
+#+begin_src emacs-lisp
+(setq tramp-verbose 6)
+#+end_src
+
+* Major modes
+
+** Multi-Term
+
+#+begin_src emacs-lisp
+(package-unless-install 'vterm)
+
+(eval-after-load "vterm"
+    '(progn (define-key vterm-mode-map (kbd "M-h") nil)
+        (define-key vterm-mode-map (kbd "M-j") nil)
+        (define-key vterm-mode-map (kbd "M-k") nil)
+        (define-key vterm-mode-map (kbd "M-l") nil)
+        (define-key vterm-mode-map (kbd "M-d") nil)
+    )
+)
+#+end_src
+
+** PDF-Tools
+
+For viewing PDF files and such! YAY
+#+begin_src emacs-lisp
+;(package-unless-install 'pdf-tools)
+;(require 'pdf-tools)
+;(pdf-tools-install)
+#+end_src
+
+*** Stop the blinking
+
+Taken from [[https://github.com/munen/emacs.d/blob/master/configuration.org][Munen's configuration on GitHub]].
+When using evil-mode and pdf-tools and looking at a zoomed PDF, it will blink, because the cursor blinks.
+This configuration disables this whilst retaining the blinking cursor in other modes.
+#+begin_src emacs-lisp
+(evil-set-initial-state 'pdf-view-mode 'emacs)
+(add-hook 'pdf-view-mode-hook
+  (lambda ()
+    (set (make-local-variable 'evil-emacs-state-cursor) (list nil))))
+#+end_src
+
+** ORG
+   
+*** General
+*** Babel
+
+Define languages to use 
+
+#+begin_src emacs-lisp
+(require 'ob)
+(require 'ob-tangle)
+
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((shell . t)
+   (emacs-lisp . t)
+   (python . t)
+   (org . t)
+   (lilypond . t)
+   (latex . t)
+   (js . t)
+   (java . t)
+   (C . t)))
+
+(add-to-list 'org-src-lang-modes (quote ("dot". graphviz-dot)))
+(add-to-list 'org-src-lang-modes (quote ("plantuml" . fundamental)))
+(add-to-list 'org-babel-tangle-lang-exts '("clojure" . "clj"))
+#+end_src
+
+*** Code blocks
+
+The following displays the contents of code blocks in Org-mode files using
+the major-mode of the code. It also changes the behavior of TAB to as if it
+were used in the appropriate major mode.
+
+#+begin_src emacs-lisp
+(setq org-src-fontify-natively t)
+(setq org-src-tab-acts-natively t)
+(setq org-src-preserve-indentation 1)
+#+end_src
+
+*** HTML Preview
+
+#+begin_src emacs-lisp
+(package-unless-install 'org-preview-html)
+(package-unless-install 'htmlize)
+(require 'org-preview-html)
+(require 'htmlize)
+#+end_src
+
+*** PDF Preview
+
+#+begin_src emacs-lisp
+(package-unless-install 'latex-preview-pane)
+#+end_src
+
+*** Minted
+    
+#+begin_src emacs-lisp
+(setq org-latex-listings 'minted)
+(setq org-latex-packages-alist '(("" "polyglossia" "minted" "xcolor")))
+(setq org-latex-pdf-process
+      '("xelatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
+#+end_src
+
+*** Fixing previews for things with polygloss
+#+begin_src emacs-lisp
+;(setq org-preview-latex-process-alist '(())
+#+end_src
+
+This should render Hebrew text.
+
+#+begin_export latex
+\begin{hebrew}
+#+end_export
+
+זה אמור לעבוד
+
+#+begin_export latex
+\end{hebrew}
+#+end_export
+
+*** Org block highlighting
+
+#+begin_src emacs-lisp
+;Set for solarized theme
+(set-face-background 'org-block-begin-line "#FFF3D6")
+(set-face-background 'org-block-end-line "#FFF3D6")
+(set-face-background 'org-block (face-attribute 'default :background))
+(package-unless-install 'color)
+(print (color-srgb-to-xyz (face-attribute 'default :background)))
+#+end_src
+
+*** Python version
+
+#+begin_src emacs-lisp
+(setq org-babel-python-command "python3")
+#+end_src
+
+*** Async blocks
+
+#+begin_src emacs-lisp
+(package-unless-install 'ob-async)
+(require 'ob-async)
+#+end_src
+
+*** Inline images
+
+#+begin_src emacs-lisp
+(setq org-startup-with-inline-images t)
+
+(defun shk-fix-inline-images ()
+  (when org-inline-image-overlays
+    (org-redisplay-inline-images)))
+
+(with-eval-after-load 'org
+  (add-hook 'org-babel-after-execute-hook 'shk-fix-inline-images))
+#+end_src
+
+*** Useful to remember
+
+To preview latex fragment as image embedded in text
+#+begin_example
+org-toggle-latex-fragment
+#+end_example
+
+** Markdown
+
+#+begin_src emacs-lisp
+(package-unless-install 'markdown-mode)
+(require 'markdown-mode)
+#+end_src
+
+** CMake
+
+#+begin_src emacs-lisp
+(package-unless-install 'cmake-mode)
+#+end_src
+
