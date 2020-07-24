@@ -75,19 +75,11 @@ Disabling the toolbar, the splash-screen, the menu-bar and the scroll-bar
     (tool-bar-mode -1)   ; no tool bar with icons
     (scroll-bar-mode -1) ; no scroll bars
     (menu-bar-mode -1)   ; no menu bar
+    (set-fringe-mode 0)
 )
 #+end_src
 
 ** Window dividers
-Customizing space between windows
-#+begin_src emacs-lisp
-(window-divider-mode 0)
-;(set-face-foreground 'vertical-border "LightGray")
-;(set-face-background 'fringe "WhiteSmoke")
-(set-fringe-mode 0)
-;For theme-independent configuration
-;(set-face-foreground 'vertical-border (face-attribute 'mode-line :background))
-;(set-face-background 'fringe (face-attribute 'mode-line-inactive :background))
 #+end_src
 
 ** Theme
@@ -165,8 +157,10 @@ Highlight matching parenthesis
 ** Modeline
 
 #+begin_src emacs-lisp
-(package-unless-install 'mini-modeline)
-(mini-modeline-mode t)
+(when (display-graphic-p)
+    (package-unless-install 'mini-modeline)
+    (mini-modeline-mode t)
+)
 (package-unless-install 'smart-mode-line)
 (sml/setup)
 #+end_src
@@ -650,7 +644,6 @@ This should render Hebrew text.
 (set-face-background 'org-block-end-line "#FFF3D6")
 (set-face-background 'org-block (face-attribute 'default :background))
 (package-unless-install 'color)
-(print (color-srgb-to-xyz (face-attribute 'default :background)))
 #+end_src
 
 *** Python version

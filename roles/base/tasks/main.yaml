@@ -3,6 +3,11 @@
     update_cache: yes
   become: yes
       
+- name: Create directory for GIT based repos
+  file:
+    path: "{{ git_repos_dir }}"
+    state: directory
+
 - name: Install base packages
   package:
     name:
@@ -21,6 +26,9 @@
       - xclip
       - inotify-tools
       - openssl
+      - libtool
+      - fakeroot
+      
   become: yes
 
 - name: Essential packages for Arch
@@ -28,23 +36,47 @@
     name: 
       - gnutls
       - pkgconf
+      - python-pip
+      - which
   become: yes
   when: ansible_os_family == "Archlinux"
+
+- name: Install YAY for arch
+  when: ansible_os_family == "Archlinux"
+  block: 
+    - name: Check if YAY is installed
+      command: yay --version
+      register: check_reg_yay
+      ignore_errors: true
+      changed_when: check_reg_yay.rc == 1
+      failed_when: false
+
+    - name: Clone and mkpkg yay
+      when: check_reg_yay.rc != 0
+      block:
+        - name: Clone YAY
+          git:
+            repo: https://aur.archlinux.org/yay.git
+            dest: "{{ git_repos_dir }}/yay"
+            version: master
+            update: no
+
+        - name: Install YAY
+          command: makepkg -si --noconfirm --noprogressbar
+          args:
+            chdir: "{{ git_repos_dir }}/yay"
       
-- name: Essential packages for debian
+- name: Essential packages for Debian
   package:
     name:
       - gnutls-bin
       - libgnutls28-dev
       - pkg-config
       - g++
+      - libtool-bin
+      - python3-pip
   become: yes
   when: ansible_os_family == "Debian"
-
-- name: Create directory for GIT based repos
-  file:
-    path: "{{ git_repos_dir }}"
-    state: directory
 
 - name: Check if CMake is installed
   command: cmake --version
@@ -63,6 +95,7 @@
         repo: https://gitlab.kitware.com/cmake/cmake 
         dest: "{{ git_repos_dir }}/cmake"
         version: master
+        update: no
 
     - name: Bootstrap CMake
       command: bash bootstrap
