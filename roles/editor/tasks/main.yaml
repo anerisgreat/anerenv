@@ -82,15 +82,11 @@
     path: "{{ lazymacs_dir }}"
     state: directory
 
-- name: Check if lazymacs init.el file exists
-  stat: path="{{ lazymacs_dir }}/init.el"
-  register: lazymacs_initel_stat
-
-- name: copy init.el file
-  copy:
+- name: link init.el file
+  file:
     src: "{{ anerenv_home }}/roles/editor/files/init.el"
     dest: "{{ lazymacs_dir }}/init.el"
-  when: lazymacs_initel_stat.stat.exists == False
+    state: link
 
 - name: Link config.org file
   file:
