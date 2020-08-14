@@ -10,20 +10,48 @@
       
   become: yes
 
-- name: Install texlive-full for debian
-  package:
-    name:
-      - texlive-full
-  become: yes
+- name: Install tex environment for Debian
   when: ansible_os_family == "Debian"
+  block:
+    - name: Install texlive-full for debian
+      package:
+        name:
+        - texlive-full
+        - fonts-liberation2
+      become: yes
 
-- name: Try to install texlive as other packages
-  package:
-    name:
-      - texlive-most
-      - texlive-lang
-  become: yes
+    - name: Install Pygments
+      pip:
+        name: Pygments
+
+
+- name: Install tex environment for Arch
   when: ansible_os_family == "Archlinux"
+  block:
+    - name: Install texlive-full for arch
+      package:
+        name:
+        - texlive-most
+        - texlive-lang
+        - ttf-liberation
+        - python-pygments
+      become: yes               # 
+
+    - name: Check if tllocalmgr is installed
+      command: tllocalmgr --version
+      register: check_tllocalmgr_reg
+      ignore_errors: true
+      changed_when: check_tllocalmgr_reg.rc == 1
+      failed_when: false
+
+    - name: Install tllocalmgr-installer from YAY
+      when: check_tllocalmgr_reg.rc != 0
+      command: yay -S tllocalmgr-git --nocleanmenu --nodiffmenu --noeditmenu --noupgrademenu --noconfirm
+
+- name: Install Reveal.js
+  git:
+    repo: https://github.com/hakimel/reveal.js.git 
+    dest: "{{ revealjs_dir }}"
 
 - name: Check if emacs is installed
   command: emacs --version

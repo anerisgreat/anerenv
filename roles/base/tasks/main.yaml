@@ -28,7 +28,8 @@
       - openssl
       - libtool
       - fakeroot
-      
+      - expect
+      - patch
   become: yes
 
 - name: Essential packages for Arch
@@ -38,6 +39,7 @@
       - pkgconf
       - python-pip
       - which
+      - base-devel
   become: yes
   when: ansible_os_family == "Archlinux"
 
@@ -75,6 +77,7 @@
       - g++
       - libtool-bin
       - python3-pip
+      - python-pip
   become: yes
   when: ansible_os_family == "Debian"
 
