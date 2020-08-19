@@ -697,21 +697,6 @@ Disabling the toolbar, the splash-screen, the menu-bar and the scroll-bar
 )
 #+end_src
 
-** Theme
-
-#+begin_src emacs-lisp
-(straight-use-package 'solarized-theme)
-(load-theme 'solarized-light t)
-
-(setq solarized-use-variable-pitch nil
-      solarized-scale-org-headlines nil
-      solarized-height-minus-1 1.0
-      solarized-height-plus-1 1.0
-      solarized-height-plus-2 1.0
-      solarized-height-plus-3 1.0
-      solarized-height-plus-4 1.0)
-#+end_src
-
 ** Text
 
 *** Text font
@@ -792,6 +777,21 @@ Highlight matching parenthesis
 #+begin_src emacs-lisp
 (add-hook 'org-mode-hook 'set-bidi-env) ;Because org-mode thinks its special
 (add-hook 'minibuffer-inactive-mode-hook 'set-left-justify-env) ;So the mini-mode-line doesn't change sides
+#+end_src
+
+** Theme
+
+#+begin_src emacs-lisp
+(straight-use-package 'solarized-theme)
+(load-theme 'solarized-light t)
+
+(setq solarized-use-variable-pitch nil
+      solarized-scale-org-headlines nil
+      solarized-height-minus-1 1.0
+      solarized-height-plus-1 1.0
+      solarized-height-plus-2 1.0
+      solarized-height-plus-3 1.0
+      solarized-height-plus-4 1.0)
 #+end_src
 
 ** Modeline
