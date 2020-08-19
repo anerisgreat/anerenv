@@ -7,8 +7,13 @@
   package:
     name:
       - pandoc
+      - graphviz
       
   become: yes
+
+- name: Install graphviz
+  pip:
+    name: graphviz
 
 - name: Install tex environment for Debian
   when: ansible_os_family == "Debian"

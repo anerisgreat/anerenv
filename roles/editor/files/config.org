@@ -226,6 +226,7 @@ Define languages to use
    (latex . t)
    (js . t)
    (java . t)
+   (dot . t)
    (C . t)))
 
 (add-to-list 'org-src-lang-modes (quote ("dot". graphviz-dot)))

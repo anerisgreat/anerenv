@@ -1,0 +1,24 @@
+- name: Update cache
+  package:
+    update_cache: yes
+  become: yes
+      
+- name: Install station packages.
+  package:
+    name:
+      - firefox
+      - flameshot
+      - xfce4-terminal
+      - vlc
+  become: yes
+
+- name: Create directory for xfce4 terminal configuration.
+  file:
+    path: "{{ config_dir }}/xfce4/terminal"
+    state: directory
+
+- name: Link xfce4 terminal configuration file.
+  file:
+    src: "{{ anerenv_home }}/roles/station/files/terminalrc"
+    dest: "{{ config_dir }}/xfce4/terminal/terminalrc"
+    state: link
