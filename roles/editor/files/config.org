@@ -179,10 +179,10 @@ Must set up
 For viewing PDF files and such!
 Broken for the time being
 #+begin_src emacs-lisp
-;(use-package pdf-tools
-;  :config
-;    (pdf-tools-install)
-;)
+(use-package pdf-tools
+  :config
+    (pdf-tools-install)
+)
 #+end_src
 
 *** Stop the blinking on PDF-View-Mode
@@ -244,6 +244,7 @@ were used in the appropriate major mode.
 (setq org-src-fontify-natively t
       org-src-tab-acts-natively t
       org-src-preserve-indentation 1)
+
 #+end_src
 
 *** HTML Preview
@@ -269,9 +270,14 @@ were used in the appropriate major mode.
 (require 'ox-latex)
 (unless (boundp 'org-latex-classes)
   (setq org-latex-classes nil))
+#+end_src
 
+Creating classes
+
+#+begin_src emacs-lisp
 (setq org-latex-classes
-             '(("article"
+     '(
+        ("article"
 "\\documentclass{article}
 [DEFAULT-PACKAGES]
 \\usepackage{polyglossia}
@@ -294,11 +300,14 @@ were used in the appropriate major mode.
 \\newfontfamily\\hebrewfont{LiberationSans}[Script=Hebrew]
 \\setotherlanguage{hebrew}
 "
-        ("\\section{%s}" . "\\section*{%s}")
-        ("\\subsection{%s}" . "\\subsection*{%s}")
-        ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-        ("\\paragraph{%s}" . "\\paragraph*{%s}")
-        ("\\subparagraph{%s}" . "\\subparagraph*{%s}"))))
+            ("\\section{%s}" . "\\section*{%s}")
+            ("\\subsection{%s}" . "\\subsection*{%s}")
+            ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+            ("\\paragraph{%s}" . "\\paragraph*{%s}")
+            ("\\subparagraph{%s}" . "\\subparagraph*{%s}")
+        )
+      )
+    )
 
 (setq org-export-with-toc nil)
 (setq org-export-with-section-numbers nil)
@@ -698,20 +707,51 @@ Disabling the toolbar, the splash-screen, the menu-bar and the scroll-bar
 )
 #+end_src
 
+** Theme
+   
+#+begin_src emacs-lisp
+(straight-use-package 'solarized-theme)
+(load-theme 'solarized-light t)
+
+(setq solarized-use-variable-pitch nil
+       solarized-height-minus-1 1.0
+       solarized-height-plus-1 1.0
+       solarized-height-plus-2 1.0
+       solarized-height-plus-3 1.0
+       solarized-height-plus-4 1.0)
+#+end_src
+
 ** Text
 
 *** Text font
+
 Setting font size to 10. The value to place is font-size * 10
 
 #+begin_src emacs-lisp
-(set-face-attribute 'default nil
-                    :font "LiberationMono"
-                    :height 100
-                    :weight 'normal
-                    :width 'normal)
+(set-face-attribute 'default nil :font "LiberationMono" :height 100)
 
-;Setting for Hebrew
-;(set-fontset-font "fontset-default" 'hebrew (font-spec :family "LiberationMono"))
+;; (set-face-attribute 'variable-pitch nil
+;;     :font "Cantarell"
+;;     :height 120
+;;     :weight 'normal
+;;     :width 'normal)
+
+;; (set-face-attribute 'fixed-pitch nil
+;;     :font "LiberationMono"
+;;     :height 100
+;;     :weight 'normal
+;;     :width 'normal)
+
+
+;; (use-package mixed-pitch
+;;   :config
+;;     (add-hook 'text-mode-hook #'mixed-pitch-mode)
+;; )
+#+end_src
+
+#+begin_src emacs-lisp
+;;(set-face-attribute 'org-table nil :inherit 'fixed-pitch)
+;;(set-face-attribute 'line-number nil :inherit 'fixed-pitch)
 #+end_src
 
 *** Line numbering
@@ -778,21 +818,6 @@ Highlight matching parenthesis
 #+begin_src emacs-lisp
 (add-hook 'org-mode-hook 'set-bidi-env) ;Because org-mode thinks its special
 (add-hook 'minibuffer-inactive-mode-hook 'set-left-justify-env) ;So the mini-mode-line doesn't change sides
-#+end_src
-
-** Theme
-
-#+begin_src emacs-lisp
-(straight-use-package 'solarized-theme)
-(load-theme 'solarized-light t)
-
-(setq solarized-use-variable-pitch nil
-      solarized-scale-org-headlines nil
-      solarized-height-minus-1 1.0
-      solarized-height-plus-1 1.0
-      solarized-height-plus-2 1.0
-      solarized-height-plus-3 1.0
-      solarized-height-plus-4 1.0)
 #+end_src
 
 ** Modeline

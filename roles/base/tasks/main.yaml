@@ -30,6 +30,7 @@
       - fakeroot
       - expect
       - patch
+      - openssh
   become: yes
 
 - name: Essential packages for Arch
