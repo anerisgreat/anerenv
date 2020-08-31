@@ -31,6 +31,9 @@
       - expect
       - patch
       - openssh
+      - clang
+      - llvm
+      - llvm-libs
   become: yes
 
 - name: Essential packages for Arch

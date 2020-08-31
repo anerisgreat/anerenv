@@ -58,6 +58,10 @@
     repo: https://github.com/hakimel/reveal.js.git 
     dest: "{{ revealjs_dir }}"
 
+- name: Install pylint
+  pip:
+    name: pylint
+
 - name: Check if emacs is installed
   command: emacs --version
   register: check_reg_emacs

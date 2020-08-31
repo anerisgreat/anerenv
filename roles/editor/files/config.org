@@ -2,6 +2,7 @@
 #+property: header-args :results silent
 #+options: toc:2
 #+latex_class: article
+
 * Base Configuration
  
 ** Package installation with straight and use-package
@@ -49,7 +50,6 @@ Taken from [[https://stackoverflow.com/questions/151945/how-do-i-control-how-ema
       version-control t)
 #+end_src
 
-* Environment packages
   
 Load all the packages that define the work environment.
   
@@ -87,8 +87,10 @@ Enabling IVY. Taken from [[https://github.com/abo-abo/swiper][their website]].
 
 *** Keymaps
 
+Binding C-j C-k to movement inside counsel menus.
+Rebinding for switching buffer C-d to kill instead of C-k because of conflict
+
 #+begin_src emacs-lisp
-;Rebinding for switching buffer C-d to kill instead of C-k because of conflict
 (define-key visual-line-mode-map (kbd "C-k") nil)
 (define-key ivy-switch-buffer-map (kbd "C-k") nil)
 
@@ -100,13 +102,10 @@ Enabling IVY. Taken from [[https://github.com/abo-abo/swiper][their website]].
 
 ** Projectile
 
-Package installation
 #+begin_src emacs-lisp
 (use-package projectile
   :config
     (projectile-mode +1)
-  :bind-keymap
-    ("M-p" . projectile-command-map)
   :bind
     (:map projectile-command-map
           ("a" . projectile-add-known-project)
@@ -116,6 +115,7 @@ Package installation
 
 Ivy for projectile:
 Parts taken from [[https://emacs.stackexchange.com/questions/40787/display-corresponding-key-binding-of-command-during-m-x-completion][this post]] and [[https://emacs.stackexchange.com/questions/38841/counsel-m-x-always-shows][this post]] from StackOverflow.
+
 #+begin_src emacs-lisp
 (use-package counsel-projectile
   :config
@@ -163,7 +163,97 @@ Persp projectile
 Must set up
 
 #+begin_src emacs-lisp
-(use-package flycheck)
+(use-package flycheck
+  :config
+    (global-flycheck-mode 1)
+)
+#+end_src
+
+* Text
+** Text font
+
+Setting font size to 10. The value to place is font-size * 10
+
+#+begin_src emacs-lisp
+(set-face-attribute 'default nil :font "LiberationMono" :height 100)
+(set-face-attribute 'variable-pitch nil
+     :font "Cantarell"
+     :height 120
+     :weight 'normal
+     :width 'normal)
+
+(set-face-attribute 'fixed-pitch nil
+     :font "LiberationMono"
+     :height 100
+     :weight 'normal
+     :width 'normal)
+#+end_src
+
+** Line numbering
+#+begin_src emacs-lisp
+(setq display-line-numbers-type 'visual
+      display-line-numbers-grow-only 1
+      display-line-numbers-width-start 1)
+
+;Getting rid of linum on terminal type buffers
+(require 'display-line-numbers)
+(defcustom display-line-numbers-exempt-modes '(vterm-mode eshell-mode shell-mode term-mode ansi-term-mode)
+  "Major modes on which to disable the linum mode, exempts them from global requirement"
+  :group 'display-line-numbers
+  :type 'list
+  :version "green")
+
+(defun display-line-numbers--turn-on ()
+  "turn on line numbers but excempting certain majore modes defined in `display-line-numbers-exempt-modes'"
+  (if (and
+       (not (member major-mode display-line-numbers-exempt-modes))
+       (not (minibufferp)))
+      (display-line-numbers-mode)))
+
+(global-display-line-numbers-mode)
+#+end_src
+
+** Line highlight
+#+begin_src emacs-lisp
+(global-hl-line-mode)
+#+end_src
+
+** Line wrap
+ #+begin_src emacs-lisp
+(global-visual-line-mode t)
+ #+end_src
+ 
+** Parenthesis
+Highlight matching parenthesis
+ #+begin_src emacs-lisp
+(show-paren-mode 1)
+ #+end_src
+
+** Tabs
+#+begin_src emacs-lisp
+(setq-default indent-tabs-mode nil)
+(setq-default tab-width 4)
+(setq c-basic-offset 4)
+(setq tab-always-indent 'complete)
+#+end_src
+
+** BIDI and lang
+
+#+begin_src emacs-lisp
+(setq-default default-input-method "hebrew"
+              bidi-display-reordering t
+              bidi-paragraph-direction 'nil)
+
+(defun set-bidi-env ()
+  (setq bidi-paragraph-direction 'nil))
+
+(defun set-left-justify-env ()
+  (setq-local bidi-paragraph-direction 'left-to-right))
+#+end_src
+
+#+begin_src emacs-lisp
+(add-hook 'org-mode-hook 'set-bidi-env) ;Because org-mode thinks its special
+(add-hook 'minibuffer-inactive-mode-hook 'set-left-justify-env) ;So the mini-mode-line doesn't change sides
 #+end_src
 
 * Major modes
@@ -203,11 +293,41 @@ Disabled for now
 All things org!
 
 #+begin_src emacs-lisp
+(defun set-org-mode-fixed-pitch-faces ()
+  (mapc (lambda (face) (set-face-attribute face nil 
+                            :font (face-attribute 'fixed-pitch :font)
+                            :height (face-attribute 'fixed-pitch :height)
+                       )
+        )
+        `(line-number
+          org-block
+          org-special-keyword
+          org-drawer
+          org-todo
+          org-done
+          org-priority
+          org-checkbox
+          org-block-end-line
+          org-block-begin-line
+          org-table org-verbatim)))
 
-(use-package org :straight (:type built-in))
+(use-package org
+  :straight
+  (:type built-in)
+  :hook
+  (org-mode . variable-pitch-mode)
+  :config
+  (set-org-mode-fixed-pitch-faces)
+)
 
 #+end_src
-   
+
+#+begin_src emacs-lisp
+
+(setq org-format-latex-options (plist-put org-format-latex-options :scale 1.5))
+
+#+end_src
+
 *** Babel
 
 Define languages to use 
@@ -345,7 +465,7 @@ This should render Hebrew text.
 ;(set-face-background 'org-block-begin-line "#FFF3D6")
 ;(set-face-background 'org-block-end-line "#FFF3D6")
 ;(set-face-background 'org-block (face-attribute 'default :background))
-(straight-use-package 'color)
+(use-package color)
 #+end_src
 
 *** Python version
@@ -494,8 +614,56 @@ org-toggle-latex-fragment
 
 #+end_src
   
-* UI
+** Irony-mode
 
+#+begin_src emacs-lisp
+;; == irony-mode ==
+(use-package irony
+  :ensure t
+  :defer t
+  :init
+  (add-hook 'c++-mode-hook 'irony-mode)
+  (add-hook 'c-mode-hook 'irony-mode)
+  (add-hook 'objc-mode-hook 'irony-mode)
+  :config
+  ;; replace the `completion-at-point' and `complete-symbol' bindings in
+  ;; irony-mode's buffers by irony-mode's function
+  (defun my-irony-mode-hook ()
+    (define-key irony-mode-map [remap completion-at-point]
+      'irony-completion-at-point-async)
+    (define-key irony-mode-map [remap complete-symbol]
+      'irony-completion-at-point-async))
+  (add-hook 'irony-mode-hook 'my-irony-mode-hook)
+  (add-hook 'irony-mode-hook 'irony-cdb-autosetup-compile-options)
+  )
+
+;; == company-mode ==
+(use-package company
+  :ensure t
+  :defer t
+  :init (add-hook 'after-init-hook 'global-company-mode)
+  :config
+  (use-package company-irony :ensure t :defer t)
+  (setq company-idle-delay              nil
+	company-minimum-prefix-length   2
+	company-show-numbers            t
+	company-tooltip-limit           20
+	company-dabbrev-downcase        nil
+	company-backends                '((company-irony company-gtags))
+	)
+  :bind ("C-;" . company-complete-common)
+  :hook (irony-mode . company-mode)
+  )
+
+(use-package flycheck-irony
+  :after flycheck
+  :config
+    (add-hook 'flycheck-mode-hook #'flycheck-irony-setup)
+    (add-hook 'c++-mode-hook (lambda () (setq flycheck-checker 'irony)))
+)
+#+end_src
+
+* UI
 ** EXWM
 
 We execute the following code only if started with EXWM argument
@@ -505,7 +673,7 @@ We execute the following code only if started with EXWM argument
 #+end_src
 
 #+begin_src emacs-lisp
-(straight-use-package 'exwm)
+(use-package exwm)
 #+end_src
 
 Turn on `display-time-mode' if you don't use an external bar.
@@ -686,6 +854,10 @@ Sending simulated keys to X windows
 (push ?\C-w exwm-input-prefix-keys) 
 #+end_src
 
+#+begin_src emacs-lisp
+(use-package desktop-environment)
+#+end_src
+
 End the execute only if EXWM block.
 Close parens, then add to command switch.
 #+begin_src emacs-lisp
@@ -710,130 +882,30 @@ Disabling the toolbar, the splash-screen, the menu-bar and the scroll-bar
 ** Theme
    
 #+begin_src emacs-lisp
-(straight-use-package 'solarized-theme)
-(load-theme 'solarized-light t)
+;(use-package solarized-theme)
+;(load-theme 'solarized-light t)
 
-(setq solarized-use-variable-pitch nil
-       solarized-height-minus-1 1.0
-       solarized-height-plus-1 1.0
-       solarized-height-plus-2 1.0
-       solarized-height-plus-3 1.0
-       solarized-height-plus-4 1.0)
-#+end_src
-
-** Text
-
-*** Text font
-
-Setting font size to 10. The value to place is font-size * 10
-
-#+begin_src emacs-lisp
-(set-face-attribute 'default nil :font "LiberationMono" :height 100)
-
-;; (set-face-attribute 'variable-pitch nil
-;;     :font "Cantarell"
-;;     :height 120
-;;     :weight 'normal
-;;     :width 'normal)
-
-;; (set-face-attribute 'fixed-pitch nil
-;;     :font "LiberationMono"
-;;     :height 100
-;;     :weight 'normal
-;;     :width 'normal)
-
-
-;; (use-package mixed-pitch
-;;   :config
-;;     (add-hook 'text-mode-hook #'mixed-pitch-mode)
-;; )
-#+end_src
-
-#+begin_src emacs-lisp
-;;(set-face-attribute 'org-table nil :inherit 'fixed-pitch)
-;;(set-face-attribute 'line-number nil :inherit 'fixed-pitch)
-#+end_src
-
-*** Line numbering
-#+begin_src emacs-lisp
-(setq display-line-numbers-type 'visual
-      display-line-numbers-grow-only 1
-      display-line-numbers-width-start 1)
-
-;Getting rid of linum on terminal type buffers
-(require 'display-line-numbers)
-(defcustom display-line-numbers-exempt-modes '(vterm-mode eshell-mode shell-mode term-mode ansi-term-mode)
-  "Major modes on which to disable the linum mode, exempts them from global requirement"
-  :group 'display-line-numbers
-  :type 'list
-  :version "green")
-
-(defun display-line-numbers--turn-on ()
-  "turn on line numbers but excempting certain majore modes defined in `display-line-numbers-exempt-modes'"
-  (if (and
-       (not (member major-mode display-line-numbers-exempt-modes))
-       (not (minibufferp)))
-      (display-line-numbers-mode)))
-
-(global-display-line-numbers-mode)
-#+end_src
-
-*** Line highlight
-#+begin_src emacs-lisp
-(global-hl-line-mode)
-#+end_src
-
-*** Line wrap
- #+begin_src emacs-lisp
-(global-visual-line-mode t)
- #+end_src
- 
-*** Parenthesis
-Highlight matching parenthesis
- #+begin_src emacs-lisp
-(show-paren-mode 1)
- #+end_src
-
-*** Tabs
-#+begin_src emacs-lisp
-(setq-default indent-tabs-mode nil)
-(setq-default tab-width 4)
-(setq c-basic-offset 4)
-#+end_src
-
-*** BIDI and lang
-
-#+begin_src emacs-lisp
-(setq-default default-input-method "hebrew"
-              bidi-display-reordering t
-              bidi-paragraph-direction 'nil)
-
-(defun set-bidi-env ()
-  (setq bidi-paragraph-direction 'nil))
-
-(defun set-left-justify-env ()
-  (setq-local bidi-paragraph-direction 'left-to-right))
-#+end_src
-
-#+begin_src emacs-lisp
-(add-hook 'org-mode-hook 'set-bidi-env) ;Because org-mode thinks its special
-(add-hook 'minibuffer-inactive-mode-hook 'set-left-justify-env) ;So the mini-mode-line doesn't change sides
+;(setq solarized-use-variable-pitch nil
+;       solarized-height-minus-1 1.0
+;       solarized-height-plus-1 1.0
+;       solarized-height-plus-2 1.0
+;       solarized-height-plus-3 1.0
+;       solarized-height-plus-4 1.0)
 #+end_src
 
 ** Modeline
    
 #+begin_src emacs-lisp
-(when (display-graphic-p)
-    (use-package smart-mode-line
-      :config
-        (sml/setup)
-    )
+;; (when (display-graphic-p)
+;;     (use-package smart-mode-line
+;;       :config
+;;         (sml/setup)
+;;     )
 
-    (use-package mini-modeline
-      :config
-        (mini-modeline-mode t)
-      :after smart-mode-line
-    )
+
+(use-package mini-modeline
+    :config
+    (mini-modeline-mode t)
 )
 #+end_src
 
@@ -875,7 +947,22 @@ Taken from [[https://github.com/Malabarba/smart-mode-line/issues/195][Here]]
 )
 #+end_src
 
+** Tabs
+   
+#+begin_src emacs-lisp
+
+;(setq-default tab-bar-button-margin 0)
+;(setq tab-bar-mode 1)
+
+#+end_src
+
 ** Active Window Background
+   
+#+begin_src emacs-lisp
+
+(add-to-list 'default-frame-alist '(background-color . "LightYellow"))
+
+#+end_src
 
 #+begin_src emacs-lisp
 (defun highlight-selected-window ()
@@ -946,6 +1033,7 @@ Setting of keybindings based on [[https://stackoverflow.com/questions/49853494/t
     (define-key map (kbd "M-`") 'persp-prev)
     (define-key map (kbd "M-n") 'persp-switch)
     (define-key map (kbd "C-SPC") 'toggle-input-method)
+    (define-key map (kbd "M-p") 'projectile-command-map)
     map)
   "anerenv-global-minor-mode keymap.")
 
@@ -970,6 +1058,9 @@ Setting of keybindings based on [[https://stackoverflow.com/questions/49853494/t
     (diminish 'eldoc-mode)
     (diminish 'yas-minor-mode)
     (diminish 'auto-revert-mode)
+    (diminish 'buffer-face-mode)
+    (diminish 'company-mode)
+    (diminish 'flycheck-mode)
     (diminish 'anerenv-global-minor-mode)
 )
 
