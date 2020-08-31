@@ -1,5 +1,6 @@
 (setq vc-follow-symlinks t)
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+(load custom-file)
 (require 'org)
 ; Taken out of definition for org-babel-load-file, want to force.
 (setq conf-file (expand-file-name "config.org" user-emacs-directory))
