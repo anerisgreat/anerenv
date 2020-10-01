@@ -53,6 +53,16 @@ Taken from [[https://stackoverflow.com/questions/151945/how-do-i-control-how-ema
   
 Load all the packages that define the work environment.
   
+** Garbage collection
+   
+Setting garbage collection to 100M to make it stop freaking out every time I scroll through text.
+
+#+begin_src emacs-lisp
+
+(setq gc-cons-threshold 100000000)
+
+#+end_src
+
 ** EVIL mode
 
 #+begin_src emacs-lisp
@@ -133,12 +143,6 @@ Persp projectile
 #+begin_src emacs-lisp
 #+end_src
 
-** Magit
-
-#+begin_src emacs-lisp
-(use-package magit)
-#+end_src
-
 ** Tramp
 
 #+begin_src emacs-lisp
@@ -190,12 +194,15 @@ Setting font size to 10. The value to place is font-size * 10
 #+end_src
 
 ** Line numbering
+   
+Taken from [[https://www.emacswiki.org/emacs/LineNumbers][this wiki entry]].
+
 #+begin_src emacs-lisp
 (setq display-line-numbers-type 'visual
       display-line-numbers-grow-only 1
       display-line-numbers-width-start 1)
 
-;Getting rid of linum on terminal type buffers
+;; Getting rid of linum on terminal type buffers
 (require 'display-line-numbers)
 (defcustom display-line-numbers-exempt-modes '(vterm-mode eshell-mode shell-mode term-mode ansi-term-mode)
   "Major modes on which to disable the linum mode, exempts them from global requirement"
@@ -204,18 +211,23 @@ Setting font size to 10. The value to place is font-size * 10
   :version "green")
 
 (defun display-line-numbers--turn-on ()
-  "turn on line numbers but excempting certain majore modes defined in `display-line-numbers-exempt-modes'"
-  (if (and
-       (not (member major-mode display-line-numbers-exempt-modes))
-       (not (minibufferp)))
-      (display-line-numbers-mode)))
+   "turn on line numbers but excempting certain majore modes defined in `display-line-numbers-exempt-modes'"
+   (if (and
+        (not (member major-mode display-line-numbers-exempt-modes))
+        (not (minibufferp)))
+       (display-line-numbers-mode)))
 
 (global-display-line-numbers-mode)
+
 #+end_src
 
 ** Line highlight
 #+begin_src emacs-lisp
 (global-hl-line-mode)
+#+end_src
+
+#+begin_src emacs-lisp
+(add-hook 'vterm-mode-hook (lambda () (setq-local global-hl-line-mode nil)))
 #+end_src
 
 ** Line wrap
@@ -257,6 +269,12 @@ Highlight matching parenthesis
 #+end_src
 
 * Major modes
+  
+** Magit
+
+#+begin_src emacs-lisp
+(use-package magit)
+#+end_src
 
 ** VTerm
 
@@ -569,6 +587,24 @@ function toggle-input-method.
 )))
 #+end_src
 
+Snippet for src blocks
+
+#+begin_src emacs-lisp
+(yas-define-snippets 'org-mode (list (list 
+                                      nil
+                                      "#+begin_src $1\n$0\n\n#+end_src"
+                                      "ORG_SRC_BLOCK"
+                                      nil
+                                      nil
+                                      nil
+                                      nil
+                                      "C-b"
+                                      nil
+                                      nil
+)))
+
+#+end_src
+
 *** REVAL
 
 #+begin_src emacs-lisp
@@ -661,6 +697,65 @@ org-toggle-latex-fragment
     (add-hook 'flycheck-mode-hook #'flycheck-irony-setup)
     (add-hook 'c++-mode-hook (lambda () (setq flycheck-checker 'irony)))
 )
+#+end_src
+
+** Mail
+
+#+begin_src emacs-lisp
+(require 'notmuch)
+#+end_src
+
+** LEETCODE
+
+#+begin_src emacs-lisp
+(require 'subr-x)
+(use-package leetcode)
+#+end_src
+
+** Slack
+
+#+begin_src emacs-lisp
+(use-package slack
+  :commands (slack-start)
+  :init
+  (setq slack-buffer-emojify t) ;; if you want to enable emoji, default nil
+  (setq slack-prefer-current-team t)
+  :config
+  (slack-register-team
+   :name "emacs-slack"
+   :default t
+   :token "xoxs-sssssssssss-88888888888-hhhhhhhhhhh-jjjjjjjjjj"
+   :subscribed-channels '(test-rename rrrrr)
+   :full-and-display-names t)
+
+    (evil-define-key 'normal slack-info-mode-map
+    ",u" 'slack-room-update-messages)
+  (evil-define-key 'normal slack-mode-map
+    ",c" 'slack-buffer-kill
+    ",ra" 'slack-message-add-reaction
+    ",rr" 'slack-message-remove-reaction
+    ",rs" 'slack-message-show-reaction-users
+    ",pl" 'slack-room-pins-list
+    ",pa" 'slack-message-pins-add
+    ",pr" 'slack-message-pins-remove
+    ",mm" 'slack-message-write-another-buffer
+    ",me" 'slack-message-edit
+    ",md" 'slack-message-delete
+    ",u" 'slack-room-update-messages
+    ",2" 'slack-message-embed-mention
+    ",3" 'slack-message-embed-channel
+    "\C-n" 'slack-buffer-goto-next-message
+    "\C-p" 'slack-buffer-goto-prev-message)
+   (evil-define-key 'normal slack-edit-message-mode-map
+    ",k" 'slack-message-cancel-edit
+    ",s" 'slack-message-send-from-buffer
+    ",2" 'slack-message-embed-mention
+    ",3" 'slack-message-embed-channel))
+
+(use-package alert
+  :commands (alert)
+  :init
+  (setq alert-default-style 'notifier))
 #+end_src
 
 * UI
@@ -896,30 +991,26 @@ Disabling the toolbar, the splash-screen, the menu-bar and the scroll-bar
 ** Modeline
    
 #+begin_src emacs-lisp
-;; (when (display-graphic-p)
-;;     (use-package smart-mode-line
-;;       :config
-;;         (sml/setup)
-;;     )
 
-
-(use-package mini-modeline
-    :config
-    (mini-modeline-mode t)
+(when (display-graphic-p)
+    (use-package feebleline
+      :config
+        (feebleline-mode)
+    )
 )
+;; 
 #+end_src
 
 Coloring the indicator based on evil state
 Taken from [[https://github.com/Malabarba/smart-mode-line/issues/195][Here]]
 #+begin_src emacs-lisp
-;; Color the evil tag - colors taken from spaceline
-(setq evil-normal-state-tag   (propertize " <N> " 'face '((:background "DarkGoldenrod2")))
-        evil-emacs-state-tag    (propertize " <E> " 'face '((:background "SkyBlue2")))
-        evil-insert-state-tag   (propertize " <I> " 'face '((:background "chartreuse3")))
-        evil-replace-state-tag  (propertize " <R> " 'face '((:background "chocolate")))
-        evil-motion-state-tag   (propertize " <M> " 'face '((:background "plum3")))
-        evil-visual-state-tag   (propertize " <V> " 'face '((:background "gray")))
-        evil-operator-state-tag (propertize " <O> " 'face '((:background "sandy brown"))))
+;; (setq evil-normal-state-tag   (propertize " <N> " 'face '((:background "DarkGoldenrod2")))
+;;         evil-emacs-state-tag    (propertize " <E> " 'face '((:background "SkyBlue2")))
+;;         evil-insert-state-tag   (propertize " <I> " 'face '((:background "chartreuse3")))
+;;         evil-replace-state-tag  (propertize " <R> " 'face '((:background "chocolate")))
+;;         evil-motion-state-tag   (propertize " <M> " 'face '((:background "plum3")))
+;;         evil-visual-state-tag   (propertize " <V> " 'face '((:background "gray")))
+;;        evil-operator-state-tag (propertize " <O> " 'face '((:background "sandy brown"))))
 #+end_src
 
 ** Which-Key
@@ -1063,6 +1154,6 @@ Setting of keybindings based on [[https://stackoverflow.com/questions/49853494/t
     (diminish 'flycheck-mode)
     (diminish 'anerenv-global-minor-mode)
 )
-
 #+end_src
 
+ 

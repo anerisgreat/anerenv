@@ -8,12 +8,20 @@
     name:
       - pandoc
       - graphviz
+      - offlineimap
+      - gmime3
+      - xapian-core
+      - talloc
       
   become: yes
 
 - name: Install graphviz
   pip:
     name: graphviz
+
+- name: Install Pygments
+  pip:
+    name: Pygments
 
 - name: Install tex environment for Debian
   when: ansible_os_family == "Debian"
@@ -24,11 +32,6 @@
         - texlive-full
         - fonts-liberation2
       become: yes
-
-    - name: Install Pygments
-      pip:
-        name: Pygments
-
 
 - name: Install tex environment for Arch
   when: ansible_os_family == "Archlinux"
@@ -139,4 +142,39 @@
   template:
     src: "{{ anerenv_home }}/roles/editor/templates/emacs-profiles.el.j2"
     dest: "{{ ansible_env.HOME }}/.emacs-profiles.el"
-  
+
+- name: Clone notmuch-mail
+  git:
+    repo: https://git.notmuchmail.org/git/notmuch
+    dest: "{{ notmuch_dir }}"
+
+- name: Check if notmuch is installed
+  command: notmuch --version
+  register: check_notmuch_reg
+  ignore_errors: true
+  changed_when: check_notmuch_reg.rc == 1
+  failed_when: false
+
+- name: Install notmuch
+  when: check_notmuch_reg.rc != 0
+  block:
+    - name: Clone notmuch-mail
+      git:
+        repo: https://git.notmuchmail.org/git/notmuch
+        dest: "{{ notmuch_dir }}"
+
+    - name: Configure notmuch
+      command: ./configure
+      args:
+        chdir: "{{ notmuch_dir }}/"
+
+    - name: Make notmuch
+      make: 
+        chdir: "{{ notmuch_dir }}/"
+      
+    - name: Install notmuch
+      make: 
+        chdir: "{{ notmuch_dir }}/"
+        target: install
+      become: yes
+
