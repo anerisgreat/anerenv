@@ -268,6 +268,18 @@ Highlight matching parenthesis
 (add-hook 'minibuffer-inactive-mode-hook 'set-left-justify-env) ;So the mini-mode-line doesn't change sides
 #+end_src
 
+** Whitespace mode
+
+#+begin_src emacs-lisp
+
+(setq whitespace-style
+      '(face tabs spaces trailing tab-mark
+             lines-tail indentation space-after-tab
+             space-before-tab))
+(global-whitespace-mode 0) ;Set this way because line spacing is messed up when using this
+
+#+end_src
+
 * Major modes
   
 ** Magit
@@ -650,6 +662,12 @@ org-toggle-latex-fragment
 
 #+end_src
   
+#+begin_src emacs-lisp
+
+(use-package typescript-mode)
+
+#+end_src
+
 ** Irony-mode
 
 #+begin_src emacs-lisp
@@ -710,52 +728,6 @@ org-toggle-latex-fragment
 #+begin_src emacs-lisp
 (require 'subr-x)
 (use-package leetcode)
-#+end_src
-
-** Slack
-
-#+begin_src emacs-lisp
-(use-package slack
-  :commands (slack-start)
-  :init
-  (setq slack-buffer-emojify t) ;; if you want to enable emoji, default nil
-  (setq slack-prefer-current-team t)
-  :config
-  (slack-register-team
-   :name "emacs-slack"
-   :default t
-   :token "xoxs-sssssssssss-88888888888-hhhhhhhhhhh-jjjjjjjjjj"
-   :subscribed-channels '(test-rename rrrrr)
-   :full-and-display-names t)
-
-    (evil-define-key 'normal slack-info-mode-map
-    ",u" 'slack-room-update-messages)
-  (evil-define-key 'normal slack-mode-map
-    ",c" 'slack-buffer-kill
-    ",ra" 'slack-message-add-reaction
-    ",rr" 'slack-message-remove-reaction
-    ",rs" 'slack-message-show-reaction-users
-    ",pl" 'slack-room-pins-list
-    ",pa" 'slack-message-pins-add
-    ",pr" 'slack-message-pins-remove
-    ",mm" 'slack-message-write-another-buffer
-    ",me" 'slack-message-edit
-    ",md" 'slack-message-delete
-    ",u" 'slack-room-update-messages
-    ",2" 'slack-message-embed-mention
-    ",3" 'slack-message-embed-channel
-    "\C-n" 'slack-buffer-goto-next-message
-    "\C-p" 'slack-buffer-goto-prev-message)
-   (evil-define-key 'normal slack-edit-message-mode-map
-    ",k" 'slack-message-cancel-edit
-    ",s" 'slack-message-send-from-buffer
-    ",2" 'slack-message-embed-mention
-    ",3" 'slack-message-embed-channel))
-
-(use-package alert
-  :commands (alert)
-  :init
-  (setq alert-default-style 'notifier))
 #+end_src
 
 * UI
@@ -1155,5 +1127,3 @@ Setting of keybindings based on [[https://stackoverflow.com/questions/49853494/t
     (diminish 'anerenv-global-minor-mode)
 )
 #+end_src
-
- 
