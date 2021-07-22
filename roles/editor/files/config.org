@@ -70,6 +70,7 @@ Setting garbage collection to 100M to make it stop freaking out every time I scr
   :config
       (require 'evil )
       (evil-mode 1)
+
   )
 #+end_src
 
@@ -321,6 +322,8 @@ Disabled for now
 ** ORG
    
 All things org!
+
+Setting fixed fonts in org-mode so that mixed type works as intended.
 
 #+begin_src emacs-lisp
 (defun set-org-mode-fixed-pitch-faces ()
@@ -654,6 +657,12 @@ org-toggle-latex-fragment
 (use-package cmake-mode)
 #+end_src
 
+** Racket
+
+#+begin_src emacs-lisp
+(use-package racket-mode)
+#+end_src
+
 ** YAML
 
 #+begin_src emacs-lisp
@@ -661,6 +670,8 @@ org-toggle-latex-fragment
 (use-package yaml-mode)
 
 #+end_src
+
+** Typescript
   
 #+begin_src emacs-lisp
 
@@ -669,6 +680,8 @@ org-toggle-latex-fragment
 #+end_src
 
 ** Irony-mode
+   
+Must work on this. While it does work, can get slow and for weird projects can show errors.
 
 #+begin_src emacs-lisp
 ;; == irony-mode ==
@@ -960,7 +973,7 @@ Disabling the toolbar, the splash-screen, the menu-bar and the scroll-bar
 ;       solarized-height-plus-4 1.0)
 #+end_src
 
-** Modeline
+** Feebleline
    
 #+begin_src emacs-lisp
 
@@ -1019,13 +1032,17 @@ Taken from [[https://github.com/Malabarba/smart-mode-line/issues/195][Here]]
 
 #+end_src
 
-** Active Window Background
+** Background color
    
 #+begin_src emacs-lisp
 
 (add-to-list 'default-frame-alist '(background-color . "LightYellow"))
 
 #+end_src
+
+** Active background switch
+   
+This is not enabled.
 
 #+begin_src emacs-lisp
 (defun highlight-selected-window ()
@@ -1097,6 +1114,7 @@ Setting of keybindings based on [[https://stackoverflow.com/questions/49853494/t
     (define-key map (kbd "M-n") 'persp-switch)
     (define-key map (kbd "C-SPC") 'toggle-input-method)
     (define-key map (kbd "M-p") 'projectile-command-map)
+    (define-key map (kbd "<print>") (lambda () (shell-command "flameshot gui")))
     map)
   "anerenv-global-minor-mode keymap.")
 

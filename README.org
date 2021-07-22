@@ -1,0 +1,7 @@
+* Aner's development environment!
+
+To run, simply type:
+
+#+begin_src bash
+ansible-playbook -K -i hosts anerenv.yaml
+#+end_src
