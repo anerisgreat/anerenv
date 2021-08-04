@@ -1,10 +1,11 @@
 #+Title: Aner's Emacs Configuration
+#
 #+property: header-args :results silent
 #+options: toc:2
 #+latex_class: article
 
 * Base Configuration
- 
+
 ** Package installation with straight and use-package
 
 Installation of all required packages.
@@ -50,11 +51,11 @@ Taken from [[https://stackoverflow.com/questions/151945/how-do-i-control-how-ema
       version-control t)
 #+end_src
 
-  
+
 Load all the packages that define the work environment.
-  
+
 ** Garbage collection
-   
+
 Setting garbage collection to 100M to make it stop freaking out every time I scroll through text.
 
 #+begin_src emacs-lisp
@@ -75,7 +76,7 @@ Setting garbage collection to 100M to make it stop freaking out every time I scr
 #+end_src
 
 ** IVY
-   
+
 Enabling IVY. Taken from [[https://github.com/abo-abo/swiper][their website]].
 
 #+begin_src emacs-lisp
@@ -164,7 +165,7 @@ Persp projectile
 #+end_src
 
 ** Flycheck
-   
+
 Must set up
 
 #+begin_src emacs-lisp
@@ -175,6 +176,7 @@ Must set up
 #+end_src
 
 * Text
+
 ** Text font
 
 Setting font size to 10. The value to place is font-size * 10
@@ -195,7 +197,7 @@ Setting font size to 10. The value to place is font-size * 10
 #+end_src
 
 ** Line numbering
-   
+
 Taken from [[https://www.emacswiki.org/emacs/LineNumbers][this wiki entry]].
 
 #+begin_src emacs-lisp
@@ -223,26 +225,37 @@ Taken from [[https://www.emacswiki.org/emacs/LineNumbers][this wiki entry]].
 #+end_src
 
 ** Line highlight
+
+Highlighting lines.
+
 #+begin_src emacs-lisp
 (global-hl-line-mode)
 #+end_src
+
+Exempting terminal from line highlighting.
 
 #+begin_src emacs-lisp
 (add-hook 'vterm-mode-hook (lambda () (setq-local global-hl-line-mode nil)))
 #+end_src
 
 ** Line wrap
+
  #+begin_src emacs-lisp
 (global-visual-line-mode t)
  #+end_src
- 
+
 ** Parenthesis
+
 Highlight matching parenthesis
+
  #+begin_src emacs-lisp
 (show-paren-mode 1)
  #+end_src
 
 ** Tabs
+
+Using spaces, default offset is 4.
+
 #+begin_src emacs-lisp
 (setq-default indent-tabs-mode nil)
 (setq-default tab-width 4)
@@ -251,6 +264,8 @@ Highlight matching parenthesis
 #+end_src
 
 ** BIDI and lang
+
+Setting up Hebrew as alternative input, using bidi mode so that every line is aligned left\right accordingly.
 
 #+begin_src emacs-lisp
 (setq-default default-input-method "hebrew"
@@ -264,6 +279,8 @@ Highlight matching parenthesis
   (setq-local bidi-paragraph-direction 'left-to-right))
 #+end_src
 
+Org mode needed extra love to work properly.
+
 #+begin_src emacs-lisp
 (add-hook 'org-mode-hook 'set-bidi-env) ;Because org-mode thinks its special
 (add-hook 'minibuffer-inactive-mode-hook 'set-left-justify-env) ;So the mini-mode-line doesn't change sides
@@ -274,15 +291,14 @@ Highlight matching parenthesis
 #+begin_src emacs-lisp
 
 (setq whitespace-style
-      '(face tabs spaces trailing tab-mark
-             lines-tail indentation space-after-tab
-             space-before-tab))
-(global-whitespace-mode 0) ;Set this way because line spacing is messed up when using this
+      '(face tabs trailing tab-mark
+             lines-tail indentation))
 
+(global-whitespace-mode 1)
 #+end_src
 
 * Major modes
-  
+
 ** Magit
 
 #+begin_src emacs-lisp
@@ -320,14 +336,14 @@ Disabled for now
 #+end_src
 
 ** ORG
-   
+
 All things org!
 
 Setting fixed fonts in org-mode so that mixed type works as intended.
 
 #+begin_src emacs-lisp
 (defun set-org-mode-fixed-pitch-faces ()
-  (mapc (lambda (face) (set-face-attribute face nil 
+  (mapc (lambda (face) (set-face-attribute face nil
                             :font (face-attribute 'fixed-pitch :font)
                             :height (face-attribute 'fixed-pitch :height)
                        )
@@ -363,7 +379,7 @@ Setting fixed fonts in org-mode so that mixed type works as intended.
 
 *** Babel
 
-Define languages to use 
+Define languages to use
 
 #+begin_src emacs-lisp
 (require 'ob)
@@ -414,7 +430,7 @@ were used in the appropriate major mode.
 #+end_src
 
 *** PDF exporting
-    
+
 #+begin_src emacs-lisp
 (setq org-latex-listings 'minted)
 (setq org-latex-pdf-process
@@ -534,7 +550,7 @@ This should render Hebrew text.
 #+end_src
 
 *** Snippets
-    
+
 Want to create snippets for latex insertion.
 There is one template for inline and one template for standalone latex snippets.
 Each template is defind by two templates. One for other langauges and one for standard
@@ -543,11 +559,11 @@ function toggle-input-method.
 
 #+begin_src emacs-lisp
 
-(defun dumb-toggle-input-method () 
+(defun dumb-toggle-input-method ()
     (if current-input-method (toggle-input-method))
 )
 ;Inline
-(yas-define-snippets 'org-mode (list (list 
+(yas-define-snippets 'org-mode (list (list
                                       nil
                                       "\$$1\$$0"
                                       "ORG_LATEX_INLINE_SNIPPET_ENG"
@@ -560,7 +576,7 @@ function toggle-input-method.
                                       nil
                                       )))
 
-(yas-define-snippets 'org-mode (list (list 
+(yas-define-snippets 'org-mode (list (list
                                       nil
                                       "\$$1\$$0"
                                       "ORG_LATEX_INLINE_SNIPPET_OTHER_LANG"
@@ -575,7 +591,7 @@ function toggle-input-method.
                                       )))
 
 ;Not inline
-(yas-define-snippets 'org-mode (list (list 
+(yas-define-snippets 'org-mode (list (list
                                       nil
                                       "\n\n\$\$$1\$\$\n\n$0"
                                       "ORG_LATEX_OUTLINE_SNIPPET_ENG"
@@ -587,7 +603,7 @@ function toggle-input-method.
                                       nil
                                       nil
                                       )))
-(yas-define-snippets 'org-mode (list (list 
+(yas-define-snippets 'org-mode (list (list
                                       nil
                                       "\n\n\$\$$1\$\$\n\n$0"
                                       "ORG_LATEX_OUTLINE_SNIPPET_OTHER_LANG"
@@ -605,7 +621,7 @@ function toggle-input-method.
 Snippet for src blocks
 
 #+begin_src emacs-lisp
-(yas-define-snippets 'org-mode (list (list 
+(yas-define-snippets 'org-mode (list (list
                                       nil
                                       "#+begin_src $1\n$0\n\n#+end_src"
                                       "ORG_SRC_BLOCK"
@@ -627,7 +643,7 @@ Snippet for src blocks
 (use-package ox-reveal
   :custom
     (org-reveal-root "https://revealjs.com/")
-) 
+)
 
 #+end_src
 
@@ -672,7 +688,7 @@ org-toggle-latex-fragment
 #+end_src
 
 ** Typescript
-  
+
 #+begin_src emacs-lisp
 
 (use-package typescript-mode)
@@ -680,7 +696,7 @@ org-toggle-latex-fragment
 #+end_src
 
 ** Irony-mode
-   
+
 Must work on this. While it does work, can get slow and for weird projects can show errors.
 
 #+begin_src emacs-lisp
@@ -898,7 +914,7 @@ Partially from [[https://github.com/ch11ng/exwm/issues/202][here]]. (All comment
 ;;     (previous (delete-dups (seq-remove
 ;;                 'integerp
 ;;                 exwm-randr-workspace-output-plist))))
-;;     (progn 
+;;     (progn
 ;;     (cond (other
 ;;     (progn (my-exwm-xrandr-config primary other)
 ;;         (my-exwm-xrandr-two-outputs primary other)))
@@ -931,7 +947,7 @@ Sending simulated keys to X windows
 #+begin_src emacs-lisp
 (setq exwm-input-prefix-keys
   '(?\C-x ?\C-u ?\C-h ?\M-x ?\M-& ?\M-: ?\s-d ?\s-m ?\s-r ?\s-s ?\s-q ?\H-l ?\C-w))
-(push ?\C-w exwm-input-prefix-keys) 
+(push ?\C-w exwm-input-prefix-keys)
 #+end_src
 
 #+begin_src emacs-lisp
@@ -960,7 +976,7 @@ Disabling the toolbar, the splash-screen, the menu-bar and the scroll-bar
 #+end_src
 
 ** Theme
-   
+
 #+begin_src emacs-lisp
 ;(use-package solarized-theme)
 ;(load-theme 'solarized-light t)
@@ -974,16 +990,21 @@ Disabling the toolbar, the splash-screen, the menu-bar and the scroll-bar
 #+end_src
 
 ** Feebleline
-   
-#+begin_src emacs-lisp
 
-(when (display-graphic-p)
-    (use-package feebleline
-      :config
-        (feebleline-mode)
-    )
-)
-;; 
+#+begin_src emacs-lisp
+;; (when (display-graphic-p)
+;;     (use-package powerline
+;;       :config
+;;         (powerline-vim-theme)
+;;         (set-face-attribute 'mode-line-inactive nil
+;;                     :underline t
+;;                     :background (face-background 'default))
+;;     )
+;; )
+#+end_src
+
+#+begin_src emacs-lisp
+(setq-default mode-line-format nil)
 #+end_src
 
 Coloring the indicator based on evil state
@@ -1008,7 +1029,7 @@ Taken from [[https://github.com/Malabarba/smart-mode-line/issues/195][Here]]
 #+end_src
 
 ** Perspective
-   
+
 #+begin_src emacs-lisp
 (use-package perspective
    :config
@@ -1024,7 +1045,7 @@ Taken from [[https://github.com/Malabarba/smart-mode-line/issues/195][Here]]
 #+end_src
 
 ** Tabs
-   
+
 #+begin_src emacs-lisp
 
 ;(setq-default tab-bar-button-margin 0)
@@ -1033,7 +1054,7 @@ Taken from [[https://github.com/Malabarba/smart-mode-line/issues/195][Here]]
 #+end_src
 
 ** Background color
-   
+
 #+begin_src emacs-lisp
 
 (add-to-list 'default-frame-alist '(background-color . "LightYellow"))
@@ -1041,7 +1062,7 @@ Taken from [[https://github.com/Malabarba/smart-mode-line/issues/195][Here]]
 #+end_src
 
 ** Active background switch
-   
+
 This is not enabled.
 
 #+begin_src emacs-lisp
@@ -1076,9 +1097,9 @@ This is not enabled.
 #+end_src
 
 ** General Keymaps
-   
+
 Setting these functions for window resizing so we can bind them
-   
+
 #+begin_src emacs-lisp
 (defun set-window-width (n)
     (adjust-window-trailing-edge (selected-window) ( - n (window-width)) t))
@@ -1086,7 +1107,7 @@ Setting these functions for window resizing so we can bind them
     (interactive)
     (set-window-width 85))
 #+end_src
-   
+
 Setting of keybindings based on [[https://stackoverflow.com/questions/49853494/the-best-way-to-set-a-key-to-do-nothing][this]]
 
 #+begin_src emacs-lisp
