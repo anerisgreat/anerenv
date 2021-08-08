@@ -2,7 +2,7 @@
   package:
     update_cache: yes
   become: yes
-      
+
 - name: Install station packages.
   package:
     name:

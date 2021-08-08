@@ -2,7 +2,7 @@
   package:
     update_cache: yes
   become: yes
-      
+
 - name: Install editor packages
   package:
     name:
@@ -12,7 +12,7 @@
       - gmime3
       - xapian-core
       - talloc
-      
+
   become: yes
 
 - name: Install graphviz
@@ -43,7 +43,7 @@
         - texlive-lang
         - ttf-liberation
         - python-pygments
-      become: yes               # 
+      become: yes
 
     - name: Check if tllocalmgr is installed
       command: tllocalmgr --version
@@ -58,7 +58,7 @@
 
 - name: Install Reveal.js
   git:
-    repo: https://github.com/hakimel/reveal.js.git 
+    repo: https://github.com/hakimel/reveal.js.git
     dest: "{{ revealjs_dir }}"
 
 - name: Install pylint
@@ -77,7 +77,7 @@
   block:
     - name: Clone emacs
       git:
-        repo: git://git.sv.gnu.org/emacs.git 
+        repo: git://git.sv.gnu.org/emacs.git
         dest: "{{ emacs_src_dir }}"
         version: master
 
@@ -92,18 +92,18 @@
         chdir: "{{ emacs_src_dir }}/"
 
     - name: Make emacs
-      make: 
+      make:
         chdir: "{{ emacs_src_dir }}/"
-      
+
     - name: Install emacs
-      make: 
+      make:
         chdir: "{{ emacs_src_dir }}/"
         target: install
       become: yes
 
 - name: Clone chemacs
   git:
-    repo: https://github.com/plexus/chemacs.git 
+    repo: https://github.com/plexus/chemacs.git
     dest: "{{ chemacs_src_dir }}"
     version: master
 
@@ -169,12 +169,11 @@
         chdir: "{{ notmuch_dir }}/"
 
     - name: Make notmuch
-      make: 
+      make:
         chdir: "{{ notmuch_dir }}/"
-      
+
     - name: Install notmuch
-      make: 
+      make:
         chdir: "{{ notmuch_dir }}/"
         target: install
       become: yes
-
