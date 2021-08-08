@@ -23,7 +23,7 @@
   pip:
     name: Pygments
 
-- name: Install tex environment for Debian
+- name: Install editor packages for Debian
   when: ansible_os_family == "Debian"
   block:
     - name: Install texlive-full for debian
@@ -31,9 +31,10 @@
         name:
         - texlive-full
         - fonts-liberation2
+        - polybar
       become: yes
 
-- name: Install tex environment for Arch
+- name: Install editor packages for Arch
   when: ansible_os_family == "Archlinux"
   block:
     - name: Install texlive-full for arch
@@ -55,6 +56,17 @@
     - name: Install tllocalmgr-installer from YAY
       when: check_tllocalmgr_reg.rc != 0
       command: yay -S tllocalmgr-git --nocleanmenu --nodiffmenu --noeditmenu --noupgrademenu --noconfirm
+
+    - name: Check if polybar is installed
+      command: polybar --version
+      register: check_polybar_reg
+      ignore_errors: true
+      changed_when: check_polybar_reg.rc == 1
+      failed_when: false
+
+    - name: Install polybar from YAY
+      when: check_polybar_reg.rc != 0
+      command: yay -S polybar --nocleanmenu --nodiffmenu --noeditmenu --noupgrademenu --noconfirm
 
 - name: Install Reveal.js
   git:
@@ -177,3 +189,9 @@
         chdir: "{{ notmuch_dir }}/"
         target: install
       become: yes
+
+- name: Link polybar-config
+  file:
+    src: "{{ anerenv_home }}/roles/editor/files/polybar-config"
+    dest: "{{ lazymacs_dir }}/polybar-config"
+    state: link
