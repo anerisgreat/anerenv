@@ -311,9 +311,12 @@ Org mode needed extra love to work properly.
 
 #+begin_src emacs-lisp
 
-(setq whitespace-style
+(setq-default whitespace-style
       '(face tabs trailing tab-mark
              lines-tail indentation))
+
+(add-hook 'org-mode-hook (setq whitespace-style '(face tabs trailing tab-mark
+    indentation)))
 
 (global-whitespace-mode 1)
 #+end_src
