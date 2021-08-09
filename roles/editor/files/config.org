@@ -1,5 +1,5 @@
 #+Title: Aner's Emacs Configuration
-#
+
 #+property: header-args :results silent
 #+options: toc:2
 #+latex_class: article
@@ -70,7 +70,10 @@ Using evil mode.
 
 Unbinding C-w taken from https://stackoverflow.com/questions/24988406/unbinding-evils-c-w-mappings
 
+Redo taken from https://github.com/syl20bnr/spacemacs/issues/14036
+
 #+begin_src emacs-lisp
+
 (use-package evil
   :config
       (require 'evil )
@@ -80,7 +83,12 @@ Unbinding C-w taken from https://stackoverflow.com/questions/24988406/unbinding-
                  evil-insert-state-map
                  evil-emacs-state-map))
          (define-key (eval map) "\C-w" nil)))
+)
 
+(use-package undo-tree
+  :config
+    (global-undo-tree-mode 1)
+    (evil-set-undo-system 'undo-tree)
 )
 #+end_src
 
@@ -875,6 +883,8 @@ Fix problems with Ido (if you use it).
 ;; Set the initial number of workspaces (they can also be created later).
 #+begin_src emacs-lisp
 (setq exwm-workspace-number 4)
+(setq exwm-layout-show-all-buffers t)
+(setq exwm-workspace-show-all-buffers t)
 #+end_src
 
 *** Smart buffer naming
@@ -994,8 +1004,52 @@ Making firefox work
 *** Polybar
 
 #+begin_src emacs-lisp
-(start-process "polybar-process" "polybar-log" "polybar" "-c" 
-    (expand-file-name "~/.config/emacs/lazymacs/polybar-config") "exwm-bar")
+(defvar efs/polybar-process nil
+  "Holds the process of the running Polybar instance, if any")
+
+(defun efs/kill-panel ()
+  (interactive)
+  (when efs/polybar-process
+    (ignore-errors
+      (kill-process efs/polybar-process)))
+  (setq efs/polybar-process nil))
+
+(defun efs/start-panel ()
+  (interactive)
+  (efs/kill-panel)
+  (setq efs/polybar-process
+    (start-process-shell-command "polybar" nil
+        (concat "polybar -c "
+          (concat (expand-file-name "~/.config/emacs/lazymacs/polybar-config")
+            " exwm-bar")))))
+
+(defun efs/send-polybar-hook (module-name hook-index)
+  (start-process-shell-command "polybar-msg" nil (format "polybar-msg hook %s %s" module-name hook-index)))
+
+(defun efs/send-polybar-exwm-info ()
+  (interactive)
+  (progn
+    (efs/send-polybar-hook "exwm-buff-name" 1)
+    ;(efs/send-polybar-hook "exwm-file-name" 1)
+  )
+)
+
+(defun efs/get-buff-name-str ()
+  (interactive)
+  (frame-parameter nil 'name)
+)
+
+(defun efs/get-file-name-str ()
+  (interactive)
+  (with-current-buffer (window-buffer (selected-window)) (buffer-file-name))
+)
+
+; (add-hook 'buffer-list-update-hook 'efs/send-polybar-exwm-info)
+(add-hook 'post-command-hook 'efs/send-polybar-exwm-info)
+(add-hook 'window-buffer-change-functions 'efs/send-polybar-exwm-info)
+
+(efs/start-panel)
+
 #+end_src
 
 *** Ending
@@ -1036,7 +1090,7 @@ Disabling the toolbar, the splash-screen, the menu-bar and the scroll-bar
 #+end_src
 
 ** No-modeline
-   
+
 https://www.reddit.com/r/emacs/comments/86jzk9/how_to_get_something_like_writeroommodes_modeline/
 
 #+begin_src emacs-lisp
@@ -1150,7 +1204,7 @@ This is not enabled.
 (defalias 'yes-or-no-p 'y-or-n-p)
 #+end_src
 
-** General Keymaps
+** Window width
 
 Setting these functions for window resizing so we can bind them
 
@@ -1161,6 +1215,8 @@ Setting these functions for window resizing so we can bind them
     (interactive)
     (set-window-width 85))
 #+end_src
+
+** General Keymaps
 
 Setting of keybindings based on [[https://stackoverflow.com/questions/49853494/the-best-way-to-set-a-key-to-do-nothing][this]]
 
