@@ -10,23 +10,15 @@ margin-bottom = 0
 
 [colors]
 background = #444
-background-alt = #333
+background-alt = #555
 foreground = #DDD
-foreground-alt = #CCC
+foreground-alt = #AAA
 primary = #ffb52a
 secondary = #e60053
 alert = #bd2c40
 underline-1 = #00F
-
-; background = #EEE
-; background-alt = #CCC
-; foreground = #555
-; foreground-alt = #777
-; primary = #ffb52a
-; secondary = #e60053
-; alert = #bd2c40
-; underline-1 = #00F
-
+good = #5A5
+bad = #A55
 
 [bar/exwm-bar]
 width = 100%
@@ -43,7 +35,7 @@ line-color = #000
 border-size = 0
 border-color = #000
 
-padding-top = 20
+padding-top = 0
 padding-left = 1
 padding-right = 1
 
@@ -55,11 +47,9 @@ font-1 = "LiberationMono:size=10:weight=bold;3"
 
 modules-center = exwm-buff-name exwm-persp-name
 ; modules-center = exwm-buff-name exwm-file-name
-modules-left = cpu temperature battery
-modules-right = date
+modules-left = cpu memory battery
+modules-right = volume date
 
-module-spacing = 1
-module-padding = 1
 module-margin = 1
 
 tray-position = right
@@ -72,26 +62,33 @@ cursor-scroll = ns-resize
 [module/exwm-buff-name]
 type = custom/ipc
 hook-0 = emacsclient -e "(efs/get-buff-name-str)" | sed -e 's/^"//' -e 's/"$//'
-initial = "NO"
+initial =
 format-underline = ${colors.underline-1}
 
 [module/exwm-file-name]
 type = custom/ipc
 hook-0 = emacsclient -e "(efs/get-file-name-str)" | sed -e 's/^"//' -e 's/"$//'
-initial = "FUCK"
+initial =
 
 [module/exwm-persp-name]
 type = custom/ipc
 hook-0 = emacsclient -e "(efs/get-persp-name-str)" | sed -e 's/^"//' -e 's/"$//'
-initial = "CRACKERS"
+initial =
 
 [module/cpu]
 type = internal/cpu
 interval = 2
 format = <label>
-format-underline = ${colors.underline-1}
-label = %percentage:2%%
-format-prefix = CPU:
+label = %percentage:3%%
+format-prefix = "CPU:"
+format-prefix-foreground = ${colors.foreground-alt}
+
+[module/memory]
+type = internal/memory
+interval = 3
+format = <label>
+label = %percentage_used:3%%
+format-prefix = "MEM:"
 format-prefix-foreground = ${colors.foreground-alt}
 
 [module/date]
@@ -105,14 +102,27 @@ time = %H:%M
 time-alt = %H:%M:%S
 
 format-prefix-foreground = ${colors.foreground-alt}
-format-underline = ${colors.underline-1}
 
 label = %date% %time%
 
 [module/battery]
 type = internal/battery
 
-format = <label>
+format-charging = <label-charging>
+format-discharging = <label-discharging>
+format-full = <label-full>
+
+label-charging = %percentage:3%%
+format-charging-prefix = "BAT:"
+format-charging-prefix-foreground = ${colors.good}
+
+label-discharging = %percentage:3%%
+format-discharging-prefix = "BAT:"
+format-discharging-prefix-foreground = ${colors.bad}
+
+label-full = %percentage:3%%
+format-full-prefix = "BAT:"
+format-full-prefix-foreground = ${colors.foreground-alt}
 
 full-at = 97
 
@@ -121,18 +131,15 @@ adapter = ADP1
 
 poll-interval = 5
 
-format-prefix = BAT:
+[module/volume]
+type = internal/pulseaudio
+format-volume = <label-volume>
+label-volume = %percentage:3%%
+format-volume-prefix = "VOL:"
+format-volume-prefix-foreground = ${colors.foreground-alt}
 
-[module/temperature]
-type = internal/temperature
-thermal-zone = 0
-warn-temperature = 60
+format-muted = <label-muted>
+label-muted = %percentage:3%%
+format-muted-prefix = "MUT:"
+format-muted-prefix-foreground = ${colors.bad}
 
-format = <label>
-format-underline = ${colors.underline-1}
-format-warn = <label-warn>
-format-warn-underline = ${self.format-underline}
-
-label = %temperature-c%
-label-warn = %temperature-c%!
-label-warn-foreground = ${colors.secondary}

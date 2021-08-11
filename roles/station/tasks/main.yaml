@@ -10,6 +10,7 @@
       - flameshot
       - xfce4-terminal
       - vlc
+      - qutebrowser
   become: yes
 
 - name: Create directory for xfce4 terminal configuration.
@@ -21,4 +22,15 @@
   file:
     src: "{{ anerenv_home }}/roles/station/files/terminalrc"
     dest: "{{ config_dir }}/xfce4/terminal/terminalrc"
+    state: link
+
+- name: Create directory for qutebrowser
+  file:
+    path: "{{ qutebrowser_dir }}"
+    state: directory
+
+- name: Link qutebrowser config
+  file:
+    src: "{{ anerenv_home }}/roles/editor/files/qutebrowser-config.py"
+    dest: "{{ qutebrowser_dir }}/config.py"
     state: link
