@@ -1010,6 +1010,9 @@ Making firefox work
 (defvar efs/polybar-process nil
   "Holds the process of the running Polybar instance, if any")
 
+(defvar efs/last-persp-name nil
+  "Name of last active persp")
+
 (defun efs/kill-panel ()
   (interactive)
   (when efs/polybar-process
@@ -1033,26 +1036,50 @@ Making firefox work
   (interactive)
   (progn
     (efs/send-polybar-hook "exwm-buff-name" 1)
-    ;(efs/send-polybar-hook "exwm-file-name" 1)
+    ; (efs/send-polybar-hook "exwm-file-name" 2)
+  )
+)
+
+(defun efs/send-polybar-exwm-persp-hook ()
+  (interactive)
+  (progn
+    ; (echo "HI")
+    (setq efs/last-persp-name (persp-name (persp-curr)))
+    (efs/send-polybar-hook "exwm-persp-name" 1)
   )
 )
 
 (defun efs/get-buff-name-str ()
-  (interactive)
   (frame-parameter nil 'name)
 )
 
 (defun efs/get-file-name-str ()
-  (interactive)
   (with-current-buffer (window-buffer (selected-window)) (buffer-file-name))
 )
 
+(defun efs/get-persp-name-str ()
+  efs/last-persp-name
+)
+
+(defun efs/send-polybar-exwm-info-if-not-minibuff ()
+  (if (not (minibuffer-window-active-p (window-buffer (selected-window))))
+    (efs/send-polybar-exwm-info)
+  )
+)
+
 ; (add-hook 'buffer-list-update-hook 'efs/send-polybar-exwm-info)
-(add-hook 'post-command-hook 'efs/send-polybar-exwm-info)
-(add-hook 'window-buffer-change-functions 'efs/send-polybar-exwm-info)
+(add-hook 'post-command-hook 'efs/send-polybar-exwm-info-if-not-minibuff)
+(add-hook 'window-buffer-change-functions 'efs/send-polybar-exwm-info-if-not-minibuff)
+(add-hook 'persp-switch-hook 'efs/send-polybar-exwm-persp-hook)
 
 (efs/start-panel)
 
+#+end_src
+
+*** Flameshot
+
+#+begin_src emacs-lisp
+(start-process-shell-command "polybar" nil "flameshot")
 #+end_src
 
 *** Ending
