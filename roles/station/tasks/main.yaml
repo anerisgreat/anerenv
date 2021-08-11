@@ -11,6 +11,8 @@
       - xfce4-terminal
       - vlc
       - qutebrowser
+      - mpv
+      - youtube-dl
   become: yes
 
 - name: Create directory for xfce4 terminal configuration.

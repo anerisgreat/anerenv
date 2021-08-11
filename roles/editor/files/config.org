@@ -334,8 +334,7 @@ Org mode needed extra love to work properly.
 #+begin_src emacs-lisp
 (use-package vterm
   :config
-    (add-hook 'vterm-mode-hook (lambda () (whitespace-mode 0)))
-
+    (add-hook 'vterm-mode-hook (lambda () (whitespace-mode nil)))
 )
 
 #+end_src
@@ -897,13 +896,29 @@ Fix problems with Ido (if you use it).
           (lambda ()
             (unless (or (string-prefix-p "sun-awt-X11-" exwm-instance-name)
                         (string= "gimp" exwm-instance-name))
+                        (string-prefix-p "qute" exwm-instance-name)
               (exwm-workspace-rename-buffer exwm-class-name))))
+
 (add-hook 'exwm-update-title-hook
           (lambda ()
             (when (or (not exwm-instance-name)
                       (string-prefix-p "sun-awt-X11-" exwm-instance-name)
+                      (string-prefix-p "qute" exwm-instance-name)
                       (string= "gimp" exwm-instance-name))
               (exwm-workspace-rename-buffer exwm-title))))
+
+(add-hook 'exwm-update-title-hook
+        (lambda ()
+            (when (or (not exwm-instance-name)
+                    (string-prefix-p "mpv" exwm-class-name))
+            (exwm-workspace-rename-buffer (concat "mpv | " exwm-title)))))
+
+(add-hook 'exwm-update-class-hook
+        (lambda ()
+            (when (or (not exwm-instance-name)
+                    (string-prefix-p "mpv" exwm-class-name))
+            (exwm-workspace-rename-buffer (concat "mpv | " exwm-title)))))
+
 #+end_src
 
 *** Basic keybindings
@@ -1080,6 +1095,37 @@ Making firefox work
 
 #+begin_src emacs-lisp
 (start-process-shell-command "polybar" nil "flameshot")
+#+end_src
+
+*** Media keys
+
+https://gist.github.com/ajyoon/5323b999a01dce8db2d4456da1740fe3
+
+#+begin_src emacs-lisp
+(dolist (k '(XF86AudioLowerVolume
+             XF86AudioRaiseVolume
+             XF86AudioPlay
+             XF86AudioStop
+             XF86AudioPrev
+             XF86AudioNext))
+  (push k exwm-input-prefix-keys))
+
+(exwm-input-set-key
+    (kbd "<XF86AudioRaiseVolume>")
+    (lambda ()
+        (interactive) (start-process-shell-command
+        "pactl" nil "pactl set-sink-volume 0 +5% && pactl set-sink-volume 0 +5%")))
+(exwm-input-set-key
+    (kbd "<XF86AudioLowerVolume>")
+    (lambda ()
+        (interactive) (start-process-shell-command
+        "pactl" nil "pactl set-sink-volume 0 -5% && pactl set-sink-volume 0 -5%")))
+
+(exwm-input-set-key
+    (kbd "<XF86AudioMute>")
+        (lambda ()
+            (interactive) (start-process-shell-command
+            "pactl" nil "pactl set-sink-mute 0 toggle && pactl set-sink-mute 0 toggle")))
 #+end_src
 
 *** Ending
