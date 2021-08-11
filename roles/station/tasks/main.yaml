@@ -15,6 +15,10 @@
       - youtube-dl
   become: yes
 
+
+- name: Install chromium-widevine from YAY
+  command: yay -S chromium-widevine --nocleanmenu --nodiffmenu --noeditmenu --noupgrademenu --noconfirm
+
 - name: Create directory for xfce4 terminal configuration.
   file:
     path: "{{ config_dir }}/xfce4/terminal"
