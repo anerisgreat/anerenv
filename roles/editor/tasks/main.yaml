@@ -190,8 +190,3 @@
         target: install
       become: yes
 
-- name: Link polybar-config
-  file:
-    src: "{{ anerenv_home }}/roles/editor/files/polybar-config"
-    dest: "{{ lazymacs_dir }}/polybar-config"
-    state: link

@@ -21,6 +21,17 @@
     - name: Install chromium-widevine from YAY
       command: yay -S chromium-widevine --nocleanmenu --nodiffmenu --noeditmenu --noupgrademenu --noconfirm
 
+    - name: Check if polybar is installed
+      command: polybar --version
+      register: check_polybar_reg
+      ignore_errors: true
+      changed_when: check_polybar_reg.rc == 1
+      failed_when: false
+
+    - name: Install polybar from YAY
+      when: check_polybar_reg.rc != 0
+      command: yay -S polybar --nocleanmenu --nodiffmenu --noeditmenu --noupgrademenu --noconfirm
+
 - name: Create directory for xfce4 terminal configuration.
   file:
     path: "{{ config_dir }}/xfce4/terminal"
@@ -39,6 +50,12 @@
 
 - name: Link qutebrowser config
   file:
-    src: "{{ anerenv_home }}/roles/editor/files/qutebrowser-config.py"
+    src: "{{ anerenv_home }}/roles/station/files/qutebrowser-config.py"
     dest: "{{ qutebrowser_dir }}/config.py"
+    state: link
+
+- name: Link polybar-config
+  file:
+    src: "{{ anerenv_home }}/roles/station/files/polybar-config"
+    dest: "{{ lazymacs_dir }}/polybar-config"
     state: link
