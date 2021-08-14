@@ -134,6 +134,11 @@
     path: "{{ lazymacs_dir }}"
     state: directory
 
+- name: Create directory for lazymacs extras
+  file:
+    path: "{{ lazymacs_dir }}/extra"
+    state: directory
+
 - name: link init.el file
   file:
     src: "{{ anerenv_home }}/roles/editor/files/init.el"

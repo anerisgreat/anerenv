@@ -6,13 +6,12 @@
 - name: Install station packages.
   package:
     name:
-      - firefox
       - flameshot
-      - xfce4-terminal
-      - vlc
       - qutebrowser
       - mpv
       - youtube-dl
+      - isync
+      - pass
   become: yes
 
 - name: Install editor packages for Arch
@@ -59,3 +58,9 @@
     src: "{{ anerenv_home }}/roles/station/files/polybar-config"
     dest: "{{ lazymacs_dir }}/polybar-config"
     state: link
+
+- name: Create directory for mail
+  file:
+    path: "{{ anerenv_user_home }}/.mail"
+    state: directory
+

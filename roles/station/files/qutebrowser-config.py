@@ -18,7 +18,8 @@ c.url.searchengines = {
     're': 'https://www.reddit.com/r/{}', 'wi': #Reddit
     'https://en.wikipedia.org/wiki/{}', #Wikipedia
     'yt': 'https://www.youtube.com/results?search_query={}', #Youtube
-    'gh': 'https://github.com/search?q={}' #Qutebrowser
+    'gh': 'https://github.com/search?q={}', #Qutebrowser
+    'wa' : 'https://www.wolframalpha.com/input/?i={}' #Wolfram alpha
 }
 
 #Youtube stuff from DT. Added media-title to MPV and youtube-dl with exwm process so can track progress.

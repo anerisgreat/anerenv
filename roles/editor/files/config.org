@@ -73,6 +73,7 @@ Unbinding C-w taken from https://stackoverflow.com/questions/24988406/unbinding-
 Redo taken from https://github.com/syl20bnr/spacemacs/issues/14036
 
 #+begin_src emacs-lisp
+(setq evil-want-keybinding nil)
 
 (use-package evil
   :config
@@ -90,6 +91,8 @@ Redo taken from https://github.com/syl20bnr/spacemacs/issues/14036
     (global-undo-tree-mode 1)
     (evil-set-undo-system 'undo-tree)
 )
+
+(use-package evil-collection)
 #+end_src
 
 ** IVY
@@ -326,7 +329,10 @@ Org mode needed extra love to work properly.
 ** Magit
 
 #+begin_src emacs-lisp
-(use-package magit)
+(use-package magit
+  :config
+    (evil-collection-magit-setup)
+)
 #+end_src
 
 ** VTerm
@@ -815,7 +821,7 @@ Must work on this. While it does work, can get slow and for weird projects can s
         company-minimum-prefix-length   2
         company-show-numbers            t
         company-tooltip-limit           20
-        company-idle-delay              0.5
+        company-idle-delay              0.2
   )
   :bind ("C-;" . company-complete-common)
   :hook (irony-mode . company-mode)
@@ -837,9 +843,51 @@ Must work on this. While it does work, can get slow and for weird projects can s
 
 ** Mail
 
-#+begin_src emacs-lisp
-(require 'notmuch)
+Due to the fact that setting up email in general is complicated, I'll recap the process here.
+
+Before ANYTHING, setup pass.
+
+https://wiki.archlinux.org/title/Pass
+
+Initialize password
+
+Then for gmail, used
+
+#+begin_src bash :results none :exports code
+pass init <ID>
+pass insert gmail.com/<username>
 #+end_src
+
+It prompted for password, I put it in.
+
+Then setup mbsync properly. The ansible files already take care of that.
+
+Then we setup ~/.mbsyncrc. This file is important and is not linked to repository for security reasons.
+
+https://wiki.archlinux.org/title/isync
+
+Wrote mbsync
+
+Created all directories
+
+Went into gmail settings to allow less secure things.
+
+https://notmuchmail.org/getting-started/
+
+We then RUN notmuch, and notmuch setup for prompt.
+
+Adding emails can be done with notmuch new
+
+#+begin_src emacs-lisp
+(require 'notmuch
+  :config
+    (evil-collection-notmuch-setup)
+)
+
+(setq-default notmuch-search-oldest-first nil)
+#+end_src
+
+That may be it?
 
 ** LEETCODE
 
@@ -1362,4 +1410,10 @@ Setting of keybindings based on [[https://stackoverflow.com/questions/49853494/t
     (diminish 'flycheck-mode)
     (diminish 'anerenv-global-minor-mode)
 )
+#+end_src
+* Extras
+
+#+begin_src emacs-lisp
+(use-package load-dir
+  :config (setq load-dirs (concat user-emacs-directory "extra/")))
 #+end_src
