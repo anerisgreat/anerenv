@@ -12,6 +12,7 @@
       - youtube-dl
       - isync
       - pass
+      - msmtp
   become: yes
 
 - name: Install editor packages for Arch

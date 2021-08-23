@@ -1,5 +1,6 @@
 #+Title: Aner's Emacs Configuration
 
+
 #+property: header-args :results silent
 #+options: toc:2
 #+latex_class: article
@@ -255,7 +256,6 @@ Highlighting lines.
 Exempting terminal from line highlighting.
 
 #+begin_src emacs-lisp
-(add-hook 'vterm-mode-hook (lambda () (setq-local global-hl-line-mode nil)))
 #+end_src
 
 ** Line wrap
@@ -340,7 +340,9 @@ Org mode needed extra love to work properly.
 #+begin_src emacs-lisp
 (use-package vterm
   :config
-    (add-hook 'vterm-mode-hook (lambda () (whitespace-mode nil)))
+    (add-hook 'vterm-mode-hook (lambda () (setq-local whitespace-mode nil)))
+    (add-hook 'vterm-mode-hook (lambda () (setq-local global-whitespace-mode nil)))
+    (add-hook 'vterm-mode-hook (lambda () (setq-local global-hl-line-mode nil)))
 )
 
 #+end_src
@@ -403,6 +405,8 @@ Broken for the time being
 (use-package pdf-tools
   :config
     (pdf-tools-install)
+    (add-hook 'pdf-view-mode-hook
+        (lambda () (blink-cursor-mode 0)))
 )
 #+end_src
 
@@ -633,6 +637,17 @@ This should render Hebrew text.
   (add-hook 'org-babel-after-execute-hook 'shk-fix-inline-images))
 #+end_src
 
+*** Sticky headers
+
+#+begin_src emacs-lisp
+
+;; (use-package org-sticky-header
+;;   :config
+;;         (add-hook 'org-mode-hook (lambda () (org-sticky-header-mode)))
+;;    )
+
+#+end_src
+
 *** Snippets
 
 Want to create snippets for latex insertion.
@@ -839,6 +854,8 @@ Must work on this. While it does work, can get slow and for weird projects can s
     (add-hook 'flycheck-mode-hook #'flycheck-irony-setup)
     (add-hook 'c++-mode-hook (lambda () (setq flycheck-checker 'irony)))
 )
+
+; (use-package flycheck-grammarly)
 #+end_src
 
 ** Mail
@@ -866,7 +883,7 @@ Then we setup ~/.mbsyncrc. This file is important and is not linked to repositor
 
 https://wiki.archlinux.org/title/isync
 
-Wrote mbsync
+Wrote mbsyncrc
 
 Created all directories
 
@@ -889,6 +906,18 @@ Adding emails can be done with notmuch new
 
 That may be it?
 
+#+begin_src bash
+sudo ln -s /usr/bin/msmtp /usr/sbin/sendmail
+#+end_src
+
+Then we go to
+
+https://wiki.archlinux.org/title/isync
+
+We will do this manually.
+
+Need to set up mbsync.serivce and mbsync.timer
+
 ** LEETCODE
 
 #+begin_src emacs-lisp
@@ -897,6 +926,11 @@ That may be it?
 (use-package leetcode)
 #+end_src
 
+** Proced
+
+#+begin_src emacs-lisp
+(evil-collection-proced-setup)
+#+end_src
 * UI
 ** EXWM
 We execute the following code only if started with EXWM argument
@@ -1214,7 +1248,6 @@ Disabling the toolbar, the splash-screen, the menu-bar and the scroll-bar
 ** Theme
 
 #+begin_src emacs-lisp
-;(use-package solarized-theme)
 ;(load-theme 'solarized-light t)
 
 ;(setq solarized-use-variable-pitch nil
@@ -1418,3 +1451,9 @@ Setting of keybindings based on [[https://stackoverflow.com/questions/49853494/t
 (use-package load-dir
   :config (setq load-dirs (concat user-emacs-directory "extra/")))
 #+end_src
+
+I really think this could be OK.
+
+Is it though?
+
+
