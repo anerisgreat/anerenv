@@ -60,10 +60,22 @@
     path: "{{ qutebrowser_dir }}"
     state: directory
 
+- name: Create directory for qutebrowser userscripts
+  file:
+    path: "{{ qutebrowser_dir }}/userscripts"
+    state: directory
+
 - name: Link qutebrowser config
   file:
     src: "{{ anerenv_home }}/roles/station/files/qutebrowser-config.py"
     dest: "{{ qutebrowser_dir }}/config.py"
+    state: link
+
+- name: Link qutebrowser youtube subscriptions userscript
+  file:
+    src: "{{ anerenv_home }}/roles/station/files/yt-subs.sh"
+    dest: "{{ qutebrowser_dir }}/userscripts/yt-subs.sh"
+    mode: a+x
     state: link
 
 - name: Link polybar-config

@@ -93,7 +93,10 @@ Redo taken from https://github.com/syl20bnr/spacemacs/issues/14036
     (evil-set-undo-system 'undo-tree)
 )
 
-(use-package evil-collection)
+(use-package evil-collection
+  :config
+  (setq evil-collection-setup-minibuffer t)
+)
 #+end_src
 
 ** IVY
@@ -120,17 +123,8 @@ Enabling IVY. Taken from [[https://github.com/abo-abo/swiper][their website]].
 
 *** Keymaps
 
-Binding C-j C-k to movement inside counsel menus.
-Rebinding for switching buffer C-d to kill instead of C-k because of conflict
-
 #+begin_src emacs-lisp
-(define-key visual-line-mode-map (kbd "C-k") nil)
-(define-key ivy-switch-buffer-map (kbd "C-k") nil)
-
-(define-key ivy-switch-buffer-map (kbd "C-d") 'ivy-switch-buffer-kill)
-
-(define-key ivy-minibuffer-map (kbd "C-j") 'ivy-next-line)
-(define-key ivy-minibuffer-map (kbd "C-k") 'ivy-previous-line)
+(evil-collection-ivy-setup)
 #+end_src
 
 ** Projectile
@@ -947,16 +941,59 @@ We will make a sync mail function
 
 ** Elfeed
 
+MPV from https://www.reddit.com/r/emacs/comments/7usz5q/youtube_subscriptions_using_elfeed_mpv_no_browser/
+
+https://medium.com/emacs/using-elfeed-to-view-videos-6dfc798e51e6
+
 #+begin_src emacs-lisp
 
-(use-package elfeed
-  :config
-    (setq elfeed-feeds
-       '("https://reddit.com/r/emacs/.rss")
-     )
-)
+(use-package elfeed)
 
 (evil-collection-elfeed-setup)
+
+(defun elfeed-v-mpv (url)
+    "Watch a video from URL in MPV"
+    (start-process-shell-command "mpv" nil (concat "mpv " url)))
+
+(defun elfeed-view-mpv (&optional use-generic-p)
+  "Youtube-feed link"
+  (interactive "P")
+  (let ((entries (elfeed-search-selected)))
+    (cl-loop for entry in entries
+     do (elfeed-untag entry 'unread)
+     when (elfeed-entry-link entry)
+     do (elfeed-v-mpv it))
+   (mapc #'elfeed-search-update-entry entries)
+   (unless (use-region-p) (forward-line))))
+
+(define-key elfeed-search-mode-map (kbd "C-c v") 'elfeed-view-mpv)
+
+(defun slurp (f)
+  (with-temp-buffer
+    (insert-file-contents f)
+    (buffer-substring-no-properties
+       (point-min)
+       (point-max))))
+
+(defun load-ytsublist-channels ()
+    "Loads into elfeed-feeds all channels from ~/.config/ytsubs-channels"
+    (if (file-exists-p "~/.config/ytsubs-channels")
+        (dolist (yt-id (split-string
+                (slurp "~/.config/ytsubs-channels") "\n" t))
+                (add-to-list 'elfeed-feeds (concat "https://www.youtube.com/feeds/videos.xml?channel_id=" yt-id)))))
+
+(defun load-ytsublist-users ()
+    "Loads into elfeed-feeds all users from ~/.config/ytsubs-users"
+    (if (file-exists-p "~/.config/ytsubs-users")
+        (dolist (yt-id (split-string
+                (slurp "~/.config/ytsubs-users") "\n" t))
+                (add-to-list 'elfeed-feeds (concat "https://www.youtube.com/feeds/videos.xml?user=" yt-id)))))
+
+
+(load-ytsublist-channels)
+(load-ytsublist-users)
+
+(setq-default elfeed-search-filter "@6-months-ago")
 
 #+end_src
 
@@ -1271,6 +1308,16 @@ https://gist.github.com/ajyoon/5323b999a01dce8db2d4456da1740fe3
         (lambda ()
             (interactive) (start-process-shell-command
             "pactl" nil "pactl set-sink-mute 0 toggle && pactl set-sink-mute 0 toggle")))
+#+end_src
+
+*** Input languages
+
+#+begin_src emacs-lisp
+(defun anerenv/enable-heb ()
+  (interactive)
+    (start-process-shell-command "heb" nil
+        "setxkbmap -layout us,il && setxkbmap -option 'grp:alt_shift_toggle'"))
+(anerenv/enable-heb)
 #+end_src
 
 *** Ending
