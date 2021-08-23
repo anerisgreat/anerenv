@@ -13,7 +13,19 @@
       - isync
       - pass
       - msmtp
+      - dunst
   become: yes
+
+- name: Create directory for dunstrc
+  file:
+    path: "{{ config_dir }}/dunst"
+    state: directory
+
+- name: Link dunst terminal configuration file.
+  file:
+    src: "{{ anerenv_home }}/roles/station/files/dunstrc"
+    dest: "{{ config_dir }}/dunst/dunstrc"
+    state: link
 
 - name: Install editor packages for Arch
   when: ansible_os_family == "Archlinux"

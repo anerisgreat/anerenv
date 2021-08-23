@@ -1,6 +1,6 @@
 # Basing this heavily on ii.com qutebrowser template
 
-config.load_autoconfig(False)
+config.load_autoconfig(True)
 
 #Using a lot from DTs config https://gitlab.com/dwt1/dotfiles/-/blob/master/.config/qutebrowser/config.py
 #Also using this https://github.com/miseran/tabs_are_windows/blob/main/config.py

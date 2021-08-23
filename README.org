@@ -1,6 +1,4 @@
-* Aner's development environment!
-
-To run, simply type:
+#+title: Aner's development environment
 
 #+begin_src bash
 ansible-playbook -K -i hosts anerenv.yaml

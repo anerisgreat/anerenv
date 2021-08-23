@@ -901,6 +901,10 @@ Adding emails can be done with notmuch new
     (evil-collection-notmuch-setup)
 )
 
+(setq notmuch-hello-sections
+    '(notmuch-hello-insert-saved-searches
+    notmuch-hello-insert-alltags))
+
 (setq-default notmuch-search-oldest-first nil)
 #+end_src
 
@@ -918,6 +922,15 @@ We will do this manually.
 
 Need to set up mbsync.serivce and mbsync.timer
 
+We will make a sync mail function
+
+#+begin_src emacs-lisp
+(defun sync-mail ()
+  (interactive)
+  (setq sync-mail-process
+    (start-process-shell-command "mailsync" "*mailsync*" "mbsync -a && notmuch new && dunstify \"Finished syncing mail\"")))
+#+end_src
+
 ** LEETCODE
 
 #+begin_src emacs-lisp
@@ -931,6 +944,22 @@ Need to set up mbsync.serivce and mbsync.timer
 #+begin_src emacs-lisp
 (evil-collection-proced-setup)
 #+end_src
+
+** Elfeed
+
+#+begin_src emacs-lisp
+
+(use-package elfeed
+  :config
+    (setq elfeed-feeds
+       '("https://reddit.com/r/emacs/.rss")
+     )
+)
+
+(evil-collection-elfeed-setup)
+
+#+end_src
+
 * UI
 ** EXWM
 We execute the following code only if started with EXWM argument
@@ -1183,6 +1212,28 @@ Making firefox work
 
 (efs/start-panel)
 
+#+end_src
+
+*** Dunst
+
+#+begin_src emacs-lisp
+(defvar anerenv/dunst-process nil
+  "Holds the process of the running Dunst instance, if any")
+
+(defun anerenv/kill-dunst ()
+  (interactive)
+  (when anerenv/dunst-process
+    (ignore-errors
+      (kill-process anerenv/dunst-process)))
+  (setq anerenv/dunst-process nil))
+
+(defun anerenv/start-dunst ()
+  (interactive)
+  (anerenv/kill-dunst)
+  (setq anerenv/dunst-process
+    (start-process-shell-command "dunst" "*dunst*" "dunst")))
+
+(anerenv/start-dunst)
 #+end_src
 
 *** Flameshot
@@ -1455,5 +1506,3 @@ Setting of keybindings based on [[https://stackoverflow.com/questions/49853494/t
 I really think this could be OK.
 
 Is it though?
-
-
