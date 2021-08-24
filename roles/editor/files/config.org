@@ -963,8 +963,7 @@ https://medium.com/emacs/using-elfeed-to-view-videos-6dfc798e51e6
      do (elfeed-untag entry 'unread)
      when (elfeed-entry-link entry)
      do (elfeed-v-mpv it))
-   (mapc #'elfeed-search-update-entry entries)
-   (unless (use-region-p) (forward-line))))
+   (mapc #'elfeed-search-update-entry entries)))
 
 (define-key elfeed-search-mode-map (kbd "C-c v") 'elfeed-view-mpv)
 
