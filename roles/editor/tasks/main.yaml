@@ -195,3 +195,8 @@
         target: install
       become: yes
 
+- name: Create directory for tasks
+  file:
+    path: "{{ anerenv_user_home }}/.tasks"
+    state: directory
+

@@ -1,6 +1,5 @@
 #+Title: Aner's Emacs Configuration
 
-
 #+property: header-args :results silent
 #+options: toc:2
 #+latex_class: article
@@ -456,6 +455,22 @@ Setting fixed fonts in org-mode so that mixed type works as intended.
 #+begin_src emacs-lisp
 
 (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.5))
+
+#+end_src
+
+*** Indentation
+
+We don't want auto indentation since org outlines are not indented.
+
+#+begin_src emacs-lisp
+(setq org-adapt-indentation nil)
+#+end_src
+
+*** Agenda
+
+#+begin_src emacs-lisp
+
+(setq org-agenda-files (list "~/.tasks"))
 
 #+end_src
 
@@ -988,11 +1003,10 @@ https://medium.com/emacs/using-elfeed-to-view-videos-6dfc798e51e6
                 (slurp "~/.config/ytsubs-users") "\n" t))
                 (add-to-list 'elfeed-feeds (concat "https://www.youtube.com/feeds/videos.xml?user=" yt-id)))))
 
-
 (load-ytsublist-channels)
 (load-ytsublist-users)
 
-(setq-default elfeed-search-filter "@6-months-ago")
+(setq-default elfeed-search-filter "@3-days-ago")
 
 #+end_src
 
