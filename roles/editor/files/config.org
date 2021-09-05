@@ -937,7 +937,7 @@ We will make a sync mail function
 (defun sync-mail ()
   (interactive)
   (setq sync-mail-process
-    (start-process-shell-command "mailsync" "*mailsync*" "mbsync -a && notmuch new && dunstify \"Finished syncing mail\"")))
+    (start-process-shell-command "mailsync" "*mailsync*" "{ mbsync -a && notmuch new && dunstify -u low \"Finished syncing mail\" ; } || dunstify -u critical \"Error syncing mail\"")))
 #+end_src
 
 ** LEETCODE
