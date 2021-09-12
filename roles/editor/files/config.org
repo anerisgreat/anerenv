@@ -44,6 +44,7 @@ Taken from [[https://stackoverflow.com/questions/151945/how-do-i-control-how-ema
 
 #+begin_src emacs-lisp
 (setq backup-directory-alist `(("." . "~/.cache/emacs-backups/"))
+      auto-save-file-name-transforms '((".*" "/.cache/emacs-backups/" t))
       backup-by-copying t
       delete-old-versions t
       kept-new-versions 6
@@ -1501,6 +1502,11 @@ Setting these functions for window resizing so we can bind them
 Setting of keybindings based on [[https://stackoverflow.com/questions/49853494/the-best-way-to-set-a-key-to-do-nothing][this]]
 
 #+begin_src emacs-lisp
+(defun anerenv/start-flameshot ()
+  (interactive)
+  (shell-command "flameshot gui")
+)
+
 (defvar anerenv-global-minor-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "M-h") 'windmove-left)
@@ -1525,7 +1531,8 @@ Setting of keybindings based on [[https://stackoverflow.com/questions/49853494/t
     (define-key map (kbd "M-n") 'persp-switch)
     (define-key map (kbd "C-SPC") 'toggle-input-method)
     (define-key map (kbd "M-p") 'projectile-command-map)
-    (define-key map (kbd "<print>") (lambda () (shell-command "flameshot gui")))
+    (define-key map (kbd "<print>") 'anerenv/start-flameshot)
+    (define-key map (kbd "C-x C-f") 'counsel-find-file)
     map)
   "anerenv-global-minor-mode keymap.")
 
