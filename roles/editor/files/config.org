@@ -306,6 +306,12 @@ Org mode needed extra love to work properly.
 
 ** Whitespace mode
 
+We define a custom global-whitespace-mode in order to enable it only on relevant modes.
+
+We check if the current mode doesn't derive from a set of blacklisted mode, the main
+culprit being terminal modes where whitespace occur naturally and are a pain to see all
+the time.
+
 #+begin_src emacs-lisp
 
 (setq-default whitespace-style
@@ -315,7 +321,13 @@ Org mode needed extra love to work properly.
 (add-hook 'org-mode-hook (setq whitespace-style '(face tabs trailing tab-mark
     indentation)))
 
-(global-whitespace-mode 1)
+(define-global-minor-mode anerenv/global-whitespace-mode whitespace-mode
+  (lambda ()
+    (unless (derived-mode-p 'rmail-mode 'vterm-mode 'term-mode)
+      (whitespace-mode))))
+
+(anerenv/global-whitespace-mode 1)
+
 #+end_src
 
 * Major modes
@@ -1455,7 +1467,7 @@ Taken from [[https://github.com/Malabarba/smart-mode-line/issues/195][Here]]
 This is not enabled.
 
 #+begin_src emacs-lisp
-(defun highlight-selected-window ()
+(defun anerenv/highlight-selected-window ()
     ;Walk through all buffers, set all other buffers to
     ;default background
     (walk-windows (lambda (w)
@@ -1475,8 +1487,8 @@ This is not enabled.
         (buffer-face-set '(:background "LightYellow"))
     )
 )
-;(add-hook 'buffer-list-update-hook 'highlight-selected-window)
-;(add-hook 'post-command-hook 'highlight-selected-window)
+;(add-hook 'buffer-list-update-hook 'anerenv/highlight-selected-window)
+;(add-hook 'post-command-hook 'anerenv/highlight-selected-window)
 #+end_src
 
 ** Easy Prompt
@@ -1509,10 +1521,18 @@ Setting of keybindings based on [[https://stackoverflow.com/questions/49853494/t
 
 (defvar anerenv-global-minor-mode-map
   (let ((map (make-sparse-keymap)))
+
+    ;Window movement and manipulation
     (define-key map (kbd "M-h") 'windmove-left)
     (define-key map (kbd "M-l") 'windmove-right) ;Instead of downcase-word
     (define-key map (kbd "M-k") 'windmove-up) ;Instead of kill-sentence
     (define-key map (kbd "M-j") 'windmove-down) ;Instead of indent-new-comment-line
+
+    (define-key map (kbd "M-w h") 'evil-window-decrease-width)
+    (define-key map (kbd "M-w l") 'evil-window-increase-width) ;Instead of downcase-word
+    (define-key map (kbd "M-w k") 'evil-window-decrese-height) ;Instead of kill-sentence
+    (define-key map (kbd "M-w j") 'evil-window-increase-height) ;Instead of indent-new-comment-line
+
     (define-key map (kbd "M-<left>") 'windmove-left) ;Instead of mark-paragraph
     (define-key map (kbd "M-<right>") 'windmove-right) ;Instead of downcase-word
     (define-key map (kbd "M-<up>") 'windmove-up) ;Instead of kill-sentence
@@ -1520,24 +1540,33 @@ Setting of keybindings based on [[https://stackoverflow.com/questions/49853494/t
     (define-key map (kbd "M-d M-d") 'delete-window) ;Instead of indent-new-comment-line
     (define-key map (kbd "s-d s-d") 'delete-window)
     (define-key map (kbd "M-d D") 'kill-buffer-and-window) ;Instead of indent-new-comment-line
-    (define-key map (kbd "M-i") 'counsel-imenu) ;Instead of tab-to-tab-stop
     (define-key map (kbd "M-\\") 'split-window-horizontally) ;Instead of delete-horizontal-space
     (define-key map (kbd "M-\-") 'split-window-vertically) ;Instead of negative-argument
     (define-key map (kbd "M-d R") 'set-85-columns) ;Instead of indent-new-comment-line
+
+    ;Buffer operations
+    (define-key map (kbd "M-i") 'counsel-imenu) ;Instead of tab-to-tab-stop
     (define-key map (kbd "M-b") 'counsel-switch-buffer) ;Unset the org-mode map of "org-mark-element"
+
+    ;Persp
     (define-key map (kbd "M-<tab>") 'persp-next)
     (define-key map (kbd "s-<tab>") 'persp-next)
     (define-key map (kbd "M-`") 'persp-prev)
     (define-key map (kbd "M-n") 'persp-switch)
-    (define-key map (kbd "C-SPC") 'toggle-input-method)
+
+    ;Projectile
     (define-key map (kbd "M-p") 'projectile-command-map)
+
+    ;Other
     (define-key map (kbd "<print>") 'anerenv/start-flameshot)
     (define-key map (kbd "C-x C-f") 'counsel-find-file)
+    (define-key map (kbd "C-SPC") 'toggle-input-method)
+
     map)
   "anerenv-global-minor-mode keymap.")
 
 (define-minor-mode anerenv-global-minor-mode
-  "A minor mode for anerenv global keyhmaps."
+  "A minor mode for anerenv global keymaps."
   :init-value t
   :lighter "anerenv")
 
