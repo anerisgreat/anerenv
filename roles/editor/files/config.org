@@ -1523,6 +1523,11 @@ Setting of keybindings based on [[https://stackoverflow.com/questions/49853494/t
   (shell-command "flameshot gui")
 )
 
+(defun anerenv/start-qutebrowser ()
+  (interactive)
+  (start-process-shell-command "qutebrowser" nil "qutebrowser")
+)
+
 (defvar anerenv-global-minor-mode-map
   (let ((map (make-sparse-keymap)))
 
@@ -1563,6 +1568,7 @@ Setting of keybindings based on [[https://stackoverflow.com/questions/49853494/t
 
     ;Favorites
     (define-key map (kbd "s-o c") (lambda() (interactive)(find-file (concat user-emacs-directory "config.org"))))
+    (define-key map (kbd "s-o q") 'anerenv/start-qutebrowser)
 
     ;Other
     (define-key map (kbd "<print>") 'anerenv/start-flameshot)
