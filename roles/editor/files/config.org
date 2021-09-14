@@ -327,7 +327,7 @@ the time.
 
 (define-global-minor-mode anerenv/global-whitespace-mode whitespace-mode
   (lambda ()
-    (unless (derived-mode-p 'rmail-mode 'vterm-mode 'term-mode 'eshell-mode)
+    (unless (derived-mode-p 'rmail-mode 'vterm-mode 'term-mode 'eshell-mode 'notmuch-show-mode)
       (whitespace-mode))))
 
 (anerenv/global-whitespace-mode 1)

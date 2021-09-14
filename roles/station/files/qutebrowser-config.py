@@ -28,3 +28,26 @@ config.bind('Z', 'hint links spawn emacsclient -e "(start-process \\"youtube-dl 
 
 config.bind('xb', 'config-cycle statusbar.show always in-mode')
 c.statusbar.show = 'in-mode'
+
+#Only confirm if downloads
+c.confirm_quit = ['downloads']
+
+c.downloads.location.directory = '~/downloads'
+c.downloads.location.prompt = False
+
+c.editor.command = ['emacsclient', '-e', '(find-file "{}")']
+
+monospace = "10pt 'LiberationMono'"
+c.fonts.completion.category = f"bold{monospace}"
+c.fonts.completion.entry = monospace
+c.fonts.debug_console = monospace
+c.fonts.downloads = monospace
+c.fonts.keyhint = monospace
+c.fonts.messages.error = monospace
+c.fonts.messages.info = monospace
+c.fonts.messages.warning = monospace
+c.fonts.prompts = monospace
+c.fonts.statusbar = monospace
+c.fonts.hints = "bold 13px 'LiberationMono'"
+
+
