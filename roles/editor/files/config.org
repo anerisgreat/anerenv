@@ -294,8 +294,8 @@ aligned left\right accordingly.
 (defun set-bidi-env ()
   (setq bidi-paragraph-direction 'nil))
 
-(defun set-left-justify-env ()
-  (setq-local bidi-paragraph-direction 'left-to-right))
+;(defun set-left-justify-env ()
+;  (setq-local bidi-paragraph-direction 'left-to-right))
 #+end_src
 
 Org mode needed extra love to work properly.
@@ -305,7 +305,7 @@ Org mode needed extra love to work properly.
 (add-hook 'org-mode-hook 'set-bidi-env)
 
 ;So the mini-mode-line doesn't change sides
-(add-hook 'minibuffer-inactive-mode-hook 'set-left-justify-env)
+;(add-hook 'minibuffer-inactive-mode-hook 'set-left-justify-env)
 #+end_src
 
 ** Whitespace mode
