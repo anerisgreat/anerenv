@@ -825,17 +825,13 @@ org-toggle-latex-fragment
 ** YAML
 
 #+begin_src emacs-lisp
-
 (use-package yaml-mode)
-
 #+end_src
 
 ** Typescript
 
 #+begin_src emacs-lisp
-
 (use-package typescript-mode)
-
 #+end_src
 
 ** Irony-mode
@@ -868,8 +864,6 @@ Must work on this. While it does work, can get slow and for weird projects can s
 ** Company mode
 
 #+begin_src emacs-lisp
-
-;; == company-mode ==
 (use-package company
   :ensure t
   :defer t
@@ -885,20 +879,17 @@ Must work on this. While it does work, can get slow and for weird projects can s
   :bind ("C-;" . company-complete-common)
   :hook (irony-mode . company-mode)
   )
-
 #+end_src
 
 ** Flycheck
 
 #+begin_src emacs-lisp
-
 (use-package flycheck-irony
   :after flycheck
   :config
     (add-hook 'flycheck-mode-hook #'flycheck-irony-setup)
     (add-hook 'c++-mode-hook (lambda () (setq flycheck-checker 'irony)))
 )
-
 #+end_src
 
 ** Mail
@@ -981,13 +972,6 @@ https://wiki.archlinux.org/title/isync
 
 We will do this manually.
 
-Need to set up mbsync.serivce and mbsync.timer
-
-We will make a sync mail function
-
-#+begin_src emacs-lisp
-#+end_src
-
 ** LEETCODE
 
 #+begin_src emacs-lisp
@@ -1009,53 +993,59 @@ MPV from https://www.reddit.com/r/emacs/comments/7usz5q/youtube_subscriptions_us
 https://medium.com/emacs/using-elfeed-to-view-videos-6dfc798e51e6
 
 #+begin_src emacs-lisp
-
-(use-package elfeed)
-
-(evil-collection-elfeed-setup)
-
-(defun elfeed-v-mpv (url)
-    "Watch a video from URL in MPV"
-    (start-process-shell-command "mpv" nil (concat "mpv " url)))
-
-(defun elfeed-view-mpv (&optional use-generic-p)
-  "Youtube-feed link"
-  (interactive "P")
-  (let ((entries (elfeed-search-selected)))
-    (cl-loop for entry in entries
-     do (elfeed-untag entry 'unread)
-     when (elfeed-entry-link entry)
-     do (elfeed-v-mpv it))
-   (mapc #'elfeed-search-update-entry entries)))
-
-(define-key elfeed-search-mode-map (kbd "C-c v") 'elfeed-view-mpv)
-
-(defun slurp (f)
-  (with-temp-buffer
-    (insert-file-contents f)
-    (buffer-substring-no-properties
-       (point-min)
-       (point-max))))
-
 (defun load-ytsublist-channels ()
     "Loads into elfeed-feeds all channels from ~/.config/ytsubs-channels"
     (if (file-exists-p "~/.config/ytsubs-channels")
-        (dolist (yt-id (split-string
-                (slurp "~/.config/ytsubs-channels") "\n" t))
-                (add-to-list 'elfeed-feeds (concat "https://www.youtube.com/feeds/videos.xml?channel_id=" yt-id)))))
+        (dolist
+            (yt-id (split-string
+            (slurp "~/.config/ytsubs-channels") "\n" t))
+            (add-to-list 'elfeed-feeds
+                (concat
+                "https://www.youtube.com/feeds/videos.xml?channel_id="
+                    yt-id)))))
 
 (defun load-ytsublist-users ()
     "Loads into elfeed-feeds all users from ~/.config/ytsubs-users"
     (if (file-exists-p "~/.config/ytsubs-users")
-        (dolist (yt-id (split-string
-                (slurp "~/.config/ytsubs-users") "\n" t))
-                (add-to-list 'elfeed-feeds (concat "https://www.youtube.com/feeds/videos.xml?user=" yt-id)))))
+        (dolist
+            (yt-id (split-string
+            (slurp "~/.config/ytsubs-users") "\n" t))
+            (add-to-list 'elfeed-feeds
+                (concat
+                    "https://www.youtube.com/feeds/videos.xml?user="
+                    yt-id)))))
 
-(load-ytsublist-channels)
-(load-ytsublist-users)
+(use-package elfeed
+    :init
+        (defun elfeed-v-mpv (url)
+            "Watch a video from URL in MPV"
+            (start-process-shell-command "mpv" nil (concat "mpv " url)))
 
-(setq-default elfeed-search-filter "@3-days-ago")
+        (defun elfeed-view-mpv (&optional use-generic-p)
+        "Youtube-feed link"
+        (interactive "P")
+        (let ((entries (elfeed-search-selected)))
+            (cl-loop for entry in entries
+            do (elfeed-untag entry 'unread)
+            when (elfeed-entry-link entry)
+            do (elfeed-v-mpv it))
+        (mapc #'elfeed-search-update-entry entries)))
 
+
+        (defun slurp (f)
+        (with-temp-buffer
+            (insert-file-contents f)
+            (buffer-substring-no-properties
+            (point-min)
+            (point-max))))
+
+        (setq-default elfeed-search-filter "@3-days-ago")
+    :config
+        (define-key elfeed-search-mode-map (kbd "C-c v") 'elfeed-view-mpv)
+        (evil-collection-elfeed-setup)
+        (load-ytsublist-channels)
+        (load-ytsublist-users)
+)
 #+end_src
 
 * UI
@@ -1232,14 +1222,6 @@ Sending simulated keys to X windows
 (use-package desktop-environment)
 #+end_src
 
-*** Firefox
-
-Making firefox work
-
-#+begin_src emacs-lisp
-(eval-after-load 'exwm (use-package exwm-firefox-core))
-#+end_src
-
 *** Polybar
 
 #+begin_src emacs-lisp
@@ -1404,55 +1386,17 @@ Disabling the toolbar, the splash-screen, the menu-bar and the scroll-bar
 )
 #+end_src
 
-** Theme
-
-#+begin_src emacs-lisp
-;(load-theme 'solarized-light t)
-
-;(setq solarized-use-variable-pitch nil
-;       solarized-height-minus-1 1.0
-;       solarized-height-plus-1 1.0
-;       solarized-height-plus-2 1.0
-;       solarized-height-plus-3 1.0
-;       solarized-height-plus-4 1.0)
-#+end_src
-
 ** No-modeline
 
 https://www.reddit.com/r/emacs/comments/86jzk9/how_to_get_something_like_writeroommodes_modeline/
 
 #+begin_src emacs-lisp
 (setq-default mode-line-format nil)
-(setq window-divider-default-bottom-width 1)
-(setq window-divider-default-places 'bottom-only)
+
+(setq window-divider-default-bottom-width 1
+      window-divider-default-places 'bottom-only)
+
 (window-divider-mode 1)
-#+end_src
-
-** Feebleline
-
-#+begin_src emacs-lisp
-;; (when (display-graphic-p)
-;;     (use-package powerline
-;;       :config
-;;         (powerline-vim-theme)
-;;         (set-face-attribute 'mode-line-inactive nil
-;;                     :underline t
-;;                     :background (face-background 'default))
-;;     )
-;; )
-#+end_src
-
-
-Coloring the indicator based on evil state
-Taken from [[https://github.com/Malabarba/smart-mode-line/issues/195][Here]]
-#+begin_src emacs-lisp
-;; (setq evil-normal-state-tag   (propertize " <N> " 'face '((:background "DarkGoldenrod2")))
-;;         evil-emacs-state-tag    (propertize " <E> " 'face '((:background "SkyBlue2")))
-;;         evil-insert-state-tag   (propertize " <I> " 'face '((:background "chartreuse3")))
-;;         evil-replace-state-tag  (propertize " <R> " 'face '((:background "chocolate")))
-;;         evil-motion-state-tag   (propertize " <M> " 'face '((:background "plum3")))
-;;         evil-visual-state-tag   (propertize " <V> " 'face '((:background "gray")))
-;;        evil-operator-state-tag (propertize " <O> " 'face '((:background "sandy brown"))))
 #+end_src
 
 ** Which-Key
@@ -1480,21 +1424,10 @@ Taken from [[https://github.com/Malabarba/smart-mode-line/issues/195][Here]]
 )
 #+end_src
 
-** Tabs
-
-#+begin_src emacs-lisp
-
-;(setq-default tab-bar-button-margin 0)
-;(setq tab-bar-mode 1)
-
-#+end_src
-
 ** Background color
 
 #+begin_src emacs-lisp
-
 (add-to-list 'default-frame-alist '(background-color . "LightYellow"))
-
 #+end_src
 
 ** Active background switch
