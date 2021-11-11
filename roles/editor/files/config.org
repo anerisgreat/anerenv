@@ -103,6 +103,30 @@ Redo taken from https://github.com/syl20bnr/spacemacs/issues/14036
 )
 #+end_src
 
+Taken from: https://github.com/emacs-evil/evil/issues/1288
+
+Meant to fix indentation for tabs in source blocks.
+
+#+begin_src emacs-lisp
+
+(defun evil-org-insert-state-in-edit-buffer (fun &rest args)
+  "Bind `evil-default-state' to `insert' before calling FUN with ARGS."
+  (let ((evil-default-state 'insert)
+        ;; Force insert state
+        evil-emacs-state-modes
+        evil-normal-state-modes
+        evil-motion-state-modes
+        evil-visual-state-modes
+        evil-operator-state-modes
+        evil-replace-state-modes)
+    (apply fun args)
+    (evil-refresh-cursor)))
+
+(advice-add 'org-babel-do-key-sequence-in-edit-buffer
+            :around #'evil-org-insert-state-in-edit-buffer)
+
+#+end_src
+
 ** IVY
 
 Enabling IVY. Taken from [[https://github.com/abo-abo/swiper][their website]].
@@ -270,17 +294,17 @@ Exempting terminal from line highlighting.
 
 ** Line wrap
 
- #+begin_src emacs-lisp
+#+begin_src emacs-lisp
 (global-visual-line-mode t)
- #+end_src
+#+end_src
 
 ** Parenthesis
 
 Highlight matching parenthesis
 
- #+begin_src emacs-lisp
+#+begin_src emacs-lisp
 (show-paren-mode 1)
- #+end_src
+#+end_src
 
 ** Tabs
 
@@ -470,8 +494,8 @@ Setting fixed fonts in org-mode so that mixed type works as intended.
             indentation))))
         (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.5))
         (setq org-src-tab-acts-natively t)
+        (setq org-adapt-indentation nil)
 )
-
 #+end_src
 
 *** Indentation
@@ -479,7 +503,6 @@ Setting fixed fonts in org-mode so that mixed type works as intended.
 We don't want auto indentation since org outlines are not indented.
 
 #+begin_src emacs-lisp
-(setq org-adapt-indentation nil)
 #+end_src
 
 *** Agenda
@@ -525,7 +548,7 @@ were used in the appropriate major mode.
 #+begin_src emacs-lisp
 (setq org-src-fontify-natively t
       org-src-tab-acts-natively t
-      org-src-preserve-indentation 1)
+      org-src-preserve-indentation t)
 #+end_src
 
 *** HTML Preview
