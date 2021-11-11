@@ -256,26 +256,32 @@ Setting font size to 10. The value to place is font-size * 10
 Taken from [[https://www.emacswiki.org/emacs/LineNumbers][this wiki entry]].
 
 #+begin_src emacs-lisp
-(setq display-line-numbers-type 'visual
-      display-line-numbers-grow-only 1
-      display-line-numbers-width-start 1)
 
 ;; Getting rid of linum on terminal type buffers
-(require 'display-line-numbers)
-(defcustom display-line-numbers-exempt-modes '(vterm-mode eshell-mode shell-mode term-mode ansi-term-mode)
-  "Major modes on which to disable the linum mode, exempts them from global requirement"
-  :group 'display-line-numbers
-  :type 'list
-  :version "green")
+(use-package display-line-numbers
+  :init
+    (defcustom display-line-numbers-exempt-modes
+        '(vterm-mode eshell-mode shell-mode term-mode ansi-term-mode)
+        "Major modes on which to disable the linum mode, exempts them from global requirement"
+        :group 'display-line-numbers
+        :type 'list
+        :version "green")
 
-(defun display-line-numbers--turn-on ()
-   "turn on line numbers but excempting certain majore modes defined in `display-line-numbers-exempt-modes'"
-   (if (and
-        (not (member major-mode display-line-numbers-exempt-modes))
-        (not (minibufferp)))
-       (display-line-numbers-mode)))
+    (defun display-line-numbers--turn-on ()
+        "turn on line numbers but excempting certain majore modes defined in `display-line-numbers-exempt-modes'"
+        (if (and
+            (not (member major-mode display-line-numbers-exempt-modes))
+            (not (minibufferp)))
+        (display-line-numbers-mode)))
 
-(global-display-line-numbers-mode)
+    (setq display-line-numbers-type 'visual
+        display-line-numbers-grow-only 1
+        display-line-numbers-width-start 1)
+
+  :config
+    (global-display-line-numbers-mode)
+)
+
 
 #+end_src
 
@@ -311,10 +317,10 @@ Highlight matching parenthesis
 Using spaces, default offset is 4.
 
 #+begin_src emacs-lisp
-(setq-default indent-tabs-mode nil)
-(setq-default tab-width 4)
-(setq c-basic-offset 4)
-(setq tab-always-indent 'complete)
+(setq-default indent-tabs-mode nil
+              tab-width 4
+              c-basic-offset 4
+              tab-always-indent 'complete)
 #+end_src
 
 ** BIDI and lang
@@ -328,10 +334,8 @@ aligned left\right accordingly.
               bidi-paragraph-direction 'nil)
 
 (defun anerenv/set-bidi-env ()
-    (interactive)
-    (progn
     (setq bidi-paragraph-direction 'nil)
-    (message "hi")))
+)
 
 #+end_src
 
@@ -496,13 +500,6 @@ Setting fixed fonts in org-mode so that mixed type works as intended.
         (setq org-src-tab-acts-natively t)
         (setq org-adapt-indentation nil)
 )
-#+end_src
-
-*** Indentation
-
-We don't want auto indentation since org outlines are not indented.
-
-#+begin_src emacs-lisp
 #+end_src
 
 *** Agenda
@@ -902,7 +899,6 @@ Must work on this. While it does work, can get slow and for weird projects can s
     (add-hook 'c++-mode-hook (lambda () (setq flycheck-checker 'irony)))
 )
 
-; (use-package flycheck-grammarly)
 #+end_src
 
 ** Mail
@@ -943,21 +939,39 @@ We then RUN notmuch, and notmuch setup for prompt.
 Adding emails can be done with notmuch new
 
 #+begin_src emacs-lisp
-(require 'notmuch
+(use-package notmuch
+  :init
+    (setq-default
+        notmuch-hello-sections
+            '(notmuch-hello-insert-saved-searches
+              notmuch-hello-insert-alltags)
+        notmuch-search-oldest-first nil
+        notmuch-always-prompt-for-sender t
+        message-sendmail-envelope-from 'header)
+    (defun anerenv/sync-mail-notify ()
+        (interactive)
+        (setq sync-mail-process
+            (start-process-shell-command
+             "mailsync"
+             "*mailsync*"
+             "{ mbsync -a && { if [[ $(notmuch new | grep \"No new mail\") ]]; then dunstify -u low \"Synced mail\" ; else dunstify \"New mail!\" ; fi ; } ; } || dunstify -u critical \"Error syncing mail\"")))
+    (defun anerenv/sync-mail-n-notify ()
+        (interactive)
+        (setq sync-mail-process
+            (start-process-shell-command
+             "mailsync"
+             "*mailsync*"
+             "{ mbsync -a && { if [[ $(notmuch new | grep \"No new mail\") ]]; then : ; else dunstify \"New mail!\" ; fi ; } ; }")))
+
   :config
     (evil-collection-notmuch-setup)
+    (run-with-timer 0 (* 60 10) 'anerenv/sync-mail-n-notify)
 )
-
-(setq notmuch-hello-sections
-    '(notmuch-hello-insert-saved-searches
-    notmuch-hello-insert-alltags))
-
-(setq-default notmuch-search-oldest-first nil)
 #+end_src
 
 That may be it?
 
-#+begin_src bash
+#+begin_src bash :results none :exports code
 sudo ln -s /usr/bin/msmtp /usr/sbin/sendmail
 #+end_src
 
@@ -972,10 +986,6 @@ Need to set up mbsync.serivce and mbsync.timer
 We will make a sync mail function
 
 #+begin_src emacs-lisp
-(defun sync-mail ()
-  (interactive)
-  (setq sync-mail-process
-    (start-process-shell-command "mailsync" "*mailsync*" "{ mbsync -a && notmuch new && dunstify -u low \"Finished syncing mail\" ; } || dunstify -u critical \"Error syncing mail\"")))
 #+end_src
 
 ** LEETCODE
