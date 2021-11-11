@@ -259,33 +259,26 @@ Taken from [[https://www.emacswiki.org/emacs/LineNumbers][this wiki entry]].
 
 ;; Getting rid of linum on terminal type buffers
 (use-package display-line-numbers
-  :init
-    (define-global-minor-mode anerenv/global-whitespace-mode whitespace-mode
-        (lambda ()
-            (unless (derived-mode-p 'rmail-mode 'vterm-mode 'term-mode 'eshell-mode 'notmuch-show-mode)
-        (whitespace-mode))))
+    :init
+        (defcustom display-line-numbers-exempt-modes
+            '(vterm-mode eshell-mode shell-mode term-mode ansi-term-mode)
+            "Major modes on which to disable the linum mode, exempts them from global requirement"
+            :group 'display-line-numbers
+            :type 'list
+            :version "green")
 
+        (define-global-minor-mode anerenv/global-linum-mode display-line-numbers-mode
+            (lambda () (if (and
+                (not (member major-mode display-line-numbers-exempt-modes))
+                (not (minibufferp)))
+            (display-line-numbers-mode))))
 
-    (defcustom display-line-numbers-exempt-modes
-        '(vterm-mode eshell-mode shell-mode term-mode ansi-term-mode)
-        "Major modes on which to disable the linum mode, exempts them from global requirement"
-        :group 'display-line-numbers
-        :type 'list
-        :version "green")
+        (setq display-line-numbers-type 'visual
+            display-line-numbers-grow-only 1
+            display-line-numbers-width-start 1)
 
-    (defun display-line-numbers--turn-on ()
-        "turn on line numbers but excempting certain majore modes defined in `display-line-numbers-exempt-modes'"
-        (if (and
-            (not (member major-mode display-line-numbers-exempt-modes))
-            (not (minibufferp)))
-        (display-line-numbers-mode)))
-
-    (setq display-line-numbers-type 'visual
-        display-line-numbers-grow-only 1
-        display-line-numbers-width-start 1)
-
-  :config
-    (global-display-line-numbers-mode)
+    :config
+        (anerenv/global-linum-mode 1)
 )
 
 
