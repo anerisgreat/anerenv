@@ -15,6 +15,7 @@
       - msmtp
       - dunst
       - slock
+      - notmuch
   become: yes
 
 - name: Create directory for dunstrc

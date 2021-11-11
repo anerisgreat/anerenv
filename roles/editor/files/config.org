@@ -236,8 +236,8 @@ Setting font size to 10. The value to place is font-size * 10
       )
   )
 
-  (if (anerenv/check-if-font-exists "Cantarell")
-      (set-face-attribute 'variable-pitch nil :font "Cantarell"))
+  (if (anerenv/check-if-font-exists "Liberation Sans")
+      (set-face-attribute 'variable-pitch nil :font "Liberation Sans"))
 
   (set-face-attribute 'default nil :height 100)
   (set-face-attribute 'variable-pitch nil
@@ -260,6 +260,12 @@ Taken from [[https://www.emacswiki.org/emacs/LineNumbers][this wiki entry]].
 ;; Getting rid of linum on terminal type buffers
 (use-package display-line-numbers
   :init
+    (define-global-minor-mode anerenv/global-whitespace-mode whitespace-mode
+        (lambda ()
+            (unless (derived-mode-p 'rmail-mode 'vterm-mode 'term-mode 'eshell-mode 'notmuch-show-mode)
+        (whitespace-mode))))
+
+
     (defcustom display-line-numbers-exempt-modes
         '(vterm-mode eshell-mode shell-mode term-mode ansi-term-mode)
         "Major modes on which to disable the linum mode, exempts them from global requirement"
@@ -931,6 +937,7 @@ Adding emails can be done with notmuch new
 
 #+begin_src emacs-lisp
 (use-package notmuch
+  :straight (:type built-in)
   :init
     (setq-default
         notmuch-hello-sections
