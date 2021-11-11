@@ -201,18 +201,30 @@ Must set up
 Setting font size to 10. The value to place is font-size * 10
 
 #+begin_src emacs-lisp
-(set-face-attribute 'default nil :font "LiberationMono" :height 100)
-(set-face-attribute 'variable-pitch nil
-     :font "Cantarell"
-     :height 120
-     :weight 'normal
-     :width 'normal)
+  (defun anerenv/check-if-font-exists (font)
+      "Check if font exists"
+      (if (null (x-list-fonts font)) nil t))
 
-(set-face-attribute 'fixed-pitch nil
-     :font "LiberationMono"
-     :height 100
-     :weight 'normal
-     :width 'normal)
+  (if (anerenv/check-if-font-exists "LiberationMono")
+      (progn
+        (set-face-attribute 'default nil :font "LiberationMono")
+        (set-face-attribute 'fixed-pitch nil :font "LiberationMono")
+      )
+  )
+
+  (if (anerenv/check-if-font-exists "Cantarell")
+      (set-face-attribute 'variable-pitch nil :font "Cantarell"))
+
+  (set-face-attribute 'default nil :height 100)
+  (set-face-attribute 'variable-pitch nil
+       :height 120
+       :weight 'normal
+       :width 'normal)
+
+  (set-face-attribute 'fixed-pitch nil
+       :height 100
+       :weight 'normal
+       :width 'normal)
 #+end_src
 
 ** Line numbering
@@ -430,22 +442,20 @@ Setting fixed fonts in org-mode so that mixed type works as intended.
 
 #+begin_src emacs-lisp
 (defun set-org-mode-fixed-pitch-faces ()
-  (mapc (lambda (face) (set-face-attribute face nil
-                            :font (face-attribute 'fixed-pitch :font)
-                            :height (face-attribute 'fixed-pitch :height)
-                       )
-        )
-        `(line-number
-          org-block
-          org-special-keyword
-          org-drawer
-          org-todo
-          org-done
-          org-priority
-          org-checkbox
-          org-block-end-line
-          org-block-begin-line
-          org-table org-verbatim)))
+    (mapc (lambda (face) (set-face-attribute face nil
+                :font (face-attribute 'fixed-pitch :font)
+                :height (face-attribute 'fixed-pitch :height)))
+    `(line-number
+        org-block
+        org-special-keyword
+        org-drawer
+        org-todo
+        org-done
+        org-priority
+        org-checkbox
+        org-block-end-line
+        org-block-begin-line
+        org-table org-verbatim)))
 
 (use-package org
     :straight
@@ -457,9 +467,9 @@ Setting fixed fonts in org-mode so that mixed type works as intended.
         (add-hook 'org-mode-hook 'anerenv/set-bidi-env)
         (add-hook 'org-mode-hook (lambda ()
             (setq whitespace-style '(face tabs trailing tab-mark
-                indentation))))
-        (setq org-format-latex-options
-            (plist-put org-format-latex-options :scale 1.5))
+            indentation))))
+        (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.5))
+        (setq org-src-tab-acts-natively t)
 )
 
 #+end_src
@@ -516,7 +526,6 @@ were used in the appropriate major mode.
 (setq org-src-fontify-natively t
       org-src-tab-acts-natively t
       org-src-preserve-indentation 1)
-
 #+end_src
 
 *** HTML Preview
