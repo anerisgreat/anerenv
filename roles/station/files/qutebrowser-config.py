@@ -24,7 +24,7 @@ c.url.searchengines = {
 
 #Youtube stuff from DT. Added media-title to MPV and youtube-dl with exwm process so can track progress.
 config.bind('M', 'hint links spawn mpv --title=\'${media-title}\' {hint-url}')
-config.bind('Z', 'hint links spawn emacsclient -e "(start-process \\"youtube-dl {hint-url}\\" \\"youtube-dl {hint-url}\\" \\"youtube-dl\\" \\"-o\\" \\"~/Downloads/%(title)s.%(ext)s\\" \\"{hint-url}\\")"')
+config.bind('Z', 'hint links spawn emacsclient -e "(start-process \\"youtube-dl {hint-url}\\" \\"youtube-dl {hint-url}\\" \\"youtube-dl\\" \\"-o\\" \\"~/downloads/%(title)s.%(ext)s\\" \\"{hint-url}\\")"')
 
 config.bind('xb', 'config-cycle statusbar.show always in-mode')
 c.statusbar.show = 'in-mode'

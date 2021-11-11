@@ -291,21 +291,12 @@ aligned left\right accordingly.
               bidi-display-reordering t
               bidi-paragraph-direction 'nil)
 
-(defun set-bidi-env ()
-  (setq bidi-paragraph-direction 'nil))
+(defun anerenv/set-bidi-env ()
+    (interactive)
+    (progn
+    (setq bidi-paragraph-direction 'nil)
+    (message "hi")))
 
-;(defun set-left-justify-env ()
-;  (setq-local bidi-paragraph-direction 'left-to-right))
-#+end_src
-
-Org mode needed extra love to work properly.
-
-#+begin_src emacs-lisp
-;Because org-mode thinks its special
-(add-hook 'org-mode-hook 'set-bidi-env)
-
-;So the mini-mode-line doesn't change sides
-;(add-hook 'minibuffer-inactive-mode-hook 'set-left-justify-env)
 #+end_src
 
 ** Whitespace mode
@@ -322,8 +313,6 @@ the time.
       '(face tabs trailing tab-mark
              lines-tail indentation))
 
-(add-hook 'org-mode-hook (setq whitespace-style '(face tabs trailing tab-mark
-    indentation)))
 
 (define-global-minor-mode anerenv/global-whitespace-mode whitespace-mode
   (lambda ()
@@ -459,19 +448,19 @@ Setting fixed fonts in org-mode so that mixed type works as intended.
           org-table org-verbatim)))
 
 (use-package org
-  :straight
-  (:type built-in)
-  :hook
-  (org-mode . variable-pitch-mode)
-  :config
-  (set-org-mode-fixed-pitch-faces)
+    :straight
+        (:type built-in)
+    :hook
+        (org-mode . variable-pitch-mode)
+    :config
+        (set-org-mode-fixed-pitch-faces)
+        (add-hook 'org-mode-hook 'anerenv/set-bidi-env)
+        (add-hook 'org-mode-hook (lambda ()
+            (setq whitespace-style '(face tabs trailing tab-mark
+                indentation))))
+        (setq org-format-latex-options
+            (plist-put org-format-latex-options :scale 1.5))
 )
-
-#+end_src
-
-#+begin_src emacs-lisp
-
-(setq org-format-latex-options (plist-put org-format-latex-options :scale 1.5))
 
 #+end_src
 
@@ -1274,7 +1263,7 @@ Making firefox work
 
 ; (add-hook 'buffer-list-update-hook 'efs/send-polybar-exwm-info)
 (add-hook 'post-command-hook 'efs/send-polybar-exwm-info-if-not-minibuff)
-(add-hook 'window-buffer-change-functions 'efs/send-polybar-exwm-info-if-not-minibuff)
+;(add-hook 'window-buffer-change-functions 'efs/send-polybar-exwm-info-if-not-minibuff)
 (add-hook 'persp-switch-hook 'efs/send-polybar-exwm-persp-hook)
 
 (efs/start-panel)
