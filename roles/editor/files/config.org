@@ -261,7 +261,14 @@ Taken from [[https://www.emacswiki.org/emacs/LineNumbers][this wiki entry]].
 (use-package display-line-numbers
     :init
         (defcustom display-line-numbers-exempt-modes
-            '(vterm-mode eshell-mode shell-mode term-mode ansi-term-mode)
+            '(vterm-mode
+              eshell-mode
+              shell-mode
+              term-mode
+              ansi-term-mode
+              magit-mode
+              magit-diff-mode
+              notmuch-hello)
             "Major modes on which to disable the linum mode, exempts them from global requirement"
             :group 'display-line-numbers
             :type 'list
@@ -269,7 +276,7 @@ Taken from [[https://www.emacswiki.org/emacs/LineNumbers][this wiki entry]].
 
         (define-global-minor-mode anerenv/global-linum-mode display-line-numbers-mode
             (lambda () (if (and
-                (not (member major-mode display-line-numbers-exempt-modes))
+                (not (apply 'derived-mode-p display-line-numbers-exempt-modes))
                 (not (minibufferp)))
             (display-line-numbers-mode))))
 
