@@ -68,11 +68,6 @@
       when: check_polybar_reg.rc != 0
       command: yay -S polybar --nocleanmenu --nodiffmenu --noeditmenu --noupgrademenu --noconfirm
 
-- name: Install Reveal.js
-  git:
-    repo: https://github.com/hakimel/reveal.js.git
-    dest: "{{ revealjs_dir }}"
-
 - name: Install pylint
   pip:
     name: pylint

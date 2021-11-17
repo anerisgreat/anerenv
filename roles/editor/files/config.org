@@ -785,17 +785,6 @@ Snippet for src blocks
 
 #+end_src
 
-*** REVAL
-
-#+begin_src emacs-lisp
-
-(use-package ox-reveal
-  :custom
-    (org-reveal-root "https://revealjs.com/")
-)
-
-#+end_src
-
 *** Useful to remember
 
 To preview latex fragment as image embedded in text

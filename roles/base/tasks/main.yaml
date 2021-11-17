@@ -2,7 +2,7 @@
   package:
     update_cache: yes
   become: yes
-      
+
 - name: Create directory for GIT based repos
   file:
     path: "{{ git_repos_dir }}"
@@ -38,7 +38,7 @@
 
 - name: Essential packages for Arch
   package:
-    name: 
+    name:
       - gnutls
       - pkgconf
       - python-pip
@@ -49,7 +49,7 @@
 
 - name: Install YAY for arch
   when: ansible_os_family == "Archlinux"
-  block: 
+  block:
     - name: Check if YAY is installed
       command: yay --version
       register: check_reg_yay
@@ -71,7 +71,7 @@
           command: makepkg -si --noconfirm --noprogressbar
           args:
             chdir: "{{ git_repos_dir }}/yay"
-      
+
 - name: Essential packages for Debian
   package:
     name:
@@ -99,7 +99,7 @@
   block:
     - name: Clone CMake
       git:
-        repo: https://gitlab.kitware.com/cmake/cmake 
+        repo: https://gitlab.kitware.com/cmake/cmake
         dest: "{{ git_repos_dir }}/cmake"
         version: master
         update: no
@@ -110,13 +110,13 @@
         chdir: "{{ git_repos_dir }}/cmake/"
 
     - name: Make CMake
-      make: 
+      make:
         chdir: "{{ git_repos_dir }}/cmake/"
-      
+
     - name: Install CMake
-      make: 
+      make:
         chdir: "{{ git_repos_dir }}/cmake/"
         target: install
       become: yes
-      
+
 
