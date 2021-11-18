@@ -183,11 +183,6 @@ Parts taken from [[https://emacs.stackexchange.com/questions/40787/display-corre
 )
 #+end_src
 
-Persp projectile
-
-#+begin_src emacs-lisp
-#+end_src
-
 ** Tramp
 
 #+begin_src emacs-lisp
@@ -505,6 +500,7 @@ Setting fixed fonts in org-mode so that mixed type works as intended.
         (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.5))
         (setq org-src-tab-acts-natively t)
         (setq org-adapt-indentation nil)
+        (setq org-startup-folded 'folded)
 )
 #+end_src
 
