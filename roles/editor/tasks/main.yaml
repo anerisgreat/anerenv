@@ -155,11 +155,6 @@
     src: "{{ anerenv_home }}/roles/editor/templates/emacs-profiles.el.j2"
     dest: "{{ ansible_env.HOME }}/.emacs-profiles.el"
 
-- name: Clone notmuch-mail
-  git:
-    repo: https://git.notmuchmail.org/git/notmuch
-    dest: "{{ notmuch_dir }}"
-
 - name: Check if notmuch is installed
   command: notmuch --version
   register: check_notmuch_reg

@@ -46,17 +46,6 @@
       when: check_polybar_reg.rc != 0
       command: yay -S polybar --nocleanmenu --nodiffmenu --noeditmenu --noupgrademenu --noconfirm
 
-- name: Create directory for xfce4 terminal configuration.
-  file:
-    path: "{{ config_dir }}/xfce4/terminal"
-    state: directory
-
-- name: Link xfce4 terminal configuration file.
-  file:
-    src: "{{ anerenv_home }}/roles/station/files/terminalrc"
-    dest: "{{ config_dir }}/xfce4/terminal/terminalrc"
-    state: link
-
 - name: Create directory for qutebrowser
   file:
     path: "{{ qutebrowser_dir }}"
