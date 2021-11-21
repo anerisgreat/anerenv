@@ -3,6 +3,7 @@
 #+property: header-args :results silent
 #+options: toc:2
 #+latex_class: article
+#+startup: fold
 
 * Base Configuration
 
@@ -354,10 +355,17 @@ the time.
       '(face tabs trailing tab-mark
              lines-tail indentation))
 
-
 (define-global-minor-mode anerenv/global-whitespace-mode whitespace-mode
   (lambda ()
-    (unless (derived-mode-p 'rmail-mode 'vterm-mode 'term-mode 'eshell-mode 'notmuch-show-mode)
+    (unless (derived-mode-p
+             'rmail-mode
+             'vterm-mode
+             'term-mode
+             'eshell-mode
+             'notmuch-show-mode
+             'org-mode
+             'magit-diff-mode
+             'inferior-python-mode)
       (whitespace-mode))))
 
 (anerenv/global-whitespace-mode 1)
@@ -945,10 +953,14 @@ Adding emails can be done with notmuch new
              "mailsync"
              "*mailsync*"
              "{ mbsync -a && { if [[ $(notmuch new | grep \"No new mail\") ]]; then : ; else dunstify \"New mail!\" ; fi ; } ; }")))
+    (defun anerenv/emacs-notmuch-face ()
+        (face-remap-add-relative 'default '(:inherit 'variable-pitch))
+        )
 
   :config
     (evil-collection-notmuch-setup)
     (run-with-timer 0 (* 60 10) 'anerenv/sync-mail-n-notify)
+    (add-hook 'notmuch-show-mode 'anerenv/emacs-notmuch-face)
 )
 #+end_src
 
@@ -1525,6 +1537,7 @@ Setting of keybindings based on [[https://stackoverflow.com/questions/49853494/t
     ;Favorites
     (define-key map (kbd "s-o c") (lambda() (interactive)(find-file (concat user-emacs-directory "config.org"))))
     (define-key map (kbd "s-o q") 'anerenv/start-qutebrowser)
+    (define-key map (kbd "s-o p") 'run-python)
 
     ;Other
     (define-key map (kbd "<print>") 'anerenv/start-flameshot)

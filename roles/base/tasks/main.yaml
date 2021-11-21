@@ -34,6 +34,7 @@
       - clang
       - llvm
       - llvm-libs
+      - cmake
   become: yes
 
 - name: Essential packages for Arch
@@ -84,39 +85,4 @@
       - python-pip
   become: yes
   when: ansible_os_family == "Debian"
-
-- name: Check if CMake is installed
-  command: cmake --version
-  register: check_reg_cmake
-  ignore_errors: true
-  changed_when: check_reg_cmake.rc == 1
-  failed_when: false
-
-# If there is a way to check version of CMake then we use it here
-
-- name: Install CMake
-  when: check_reg_cmake.rc != 0
-  block:
-    - name: Clone CMake
-      git:
-        repo: https://gitlab.kitware.com/cmake/cmake
-        dest: "{{ git_repos_dir }}/cmake"
-        version: master
-        update: no
-
-    - name: Bootstrap CMake
-      command: bash bootstrap
-      args:
-        chdir: "{{ git_repos_dir }}/cmake/"
-
-    - name: Make CMake
-      make:
-        chdir: "{{ git_repos_dir }}/cmake/"
-
-    - name: Install CMake
-      make:
-        chdir: "{{ git_repos_dir }}/cmake/"
-        target: install
-      become: yes
-
 
