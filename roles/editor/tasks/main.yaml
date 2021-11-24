@@ -82,31 +82,42 @@
 - name: Install emacs
   when: check_reg_emacs.rc != 0
   block:
-    - name: Clone emacs
-      git:
-        repo: git://git.sv.gnu.org/emacs.git
-        dest: "{{ emacs_src_dir }}"
-        version: master
+    - name: Install emacs on Arch
+      when: ansible_os_family == "Archlinux"
+      block:
+        - name: Install emacs for arch on YAY
+          command: yay -S emacs-git --nocleanmenu --nodiffmenu --noeditmenu --noupgrademenu --noconfirm
 
-    - name: Autogen emacs
-      command: ./autogen.sh
-      args:
-        chdir: "{{ emacs_src_dir }}/"
+    - name: Install emacs on Arch
+      when: ansible_os_family == "Debian"
+      block:
+        - name: Clone emacs
+          git:
+            repo: git://git.sv.gnu.org/emacs.git
+            dest: "{{ emacs_src_dir }}"
+            version: master
 
-    - name: Configure emacs
-      command: ./configure --with-modules
-      args:
-        chdir: "{{ emacs_src_dir }}/"
+        - name: Autogen emacs
+          command: ./autogen.sh
+          args:
+            chdir: "{{ emacs_src_dir }}/"
 
-    - name: Make emacs
-      make:
-        chdir: "{{ emacs_src_dir }}/"
+        - name: Configure emacs
+          command: ./configure --with-modules
+          args:
+            chdir: "{{ emacs_src_dir }}/"
 
-    - name: Install emacs
-      make:
-        chdir: "{{ emacs_src_dir }}/"
-        target: install
-      become: yes
+        - name: Make emacs
+          make:
+            chdir: "{{ emacs_src_dir }}/"
+
+        - name: Install emacs
+          make:
+            chdir: "{{ emacs_src_dir }}/"
+            target: install
+            params:
+            NUM_THREADS: 4
+          become: yes
 
 - name: Clone chemacs
   git:
@@ -145,6 +156,16 @@
     src: "{{ anerenv_home }}/roles/editor/files/config.org"
     dest: "{{ lazymacs_dir }}/config.org"
     state: link
+
+- name: Check if custom.el file exists
+  stat: path="{{ lazymacs_dir }}/custom.el"
+  register: lazymacs_custom_stat
+
+- name: Create custom.el
+  when: check_custom_stat.rc != 0
+  file:
+    path: "{{ lazymacs_dir }}/custom.el"
+    state: touch
 
 - name: Check if emacs-profiles.el file exists
   stat: path="{{ ansible_env.HOME }}/.emacs-profiles.el"

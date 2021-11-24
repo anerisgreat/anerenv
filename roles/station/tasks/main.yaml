@@ -16,6 +16,8 @@
       - dunst
       - slock
       - notmuch
+      - xorg
+      - xorg-xinit
   become: yes
 
 - name: Create directory for dunstrc
@@ -45,6 +47,11 @@
     - name: Install polybar from YAY
       when: check_polybar_reg.rc != 0
       command: yay -S polybar --nocleanmenu --nodiffmenu --noeditmenu --noupgrademenu --noconfirm
+
+- name: Create downloads directory
+  file:
+    path: "{{ download_dir }}"
+    state: directory
 
 - name: Create directory for qutebrowser
   file:

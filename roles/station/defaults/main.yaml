@@ -1,1 +1,2 @@
 qutebrowser_dir: "{{ config_dir }}/qutebrowser"
+download_dir: "{{ ansible_env.HOME }}/.config"

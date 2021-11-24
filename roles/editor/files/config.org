@@ -363,6 +363,7 @@ the time.
              'term-mode
              'eshell-mode
              'notmuch-show-mode
+             'notmuch-search-mode
              'org-mode
              'magit-diff-mode
              'inferior-python-mode)
@@ -964,7 +965,7 @@ Adding emails can be done with notmuch new
 )
 #+end_src
 
-That may be it?
+Run this command to make sendmail use the right thing
 
 #+begin_src bash :results none :exports code
 sudo ln -s /usr/bin/msmtp /usr/sbin/sendmail
