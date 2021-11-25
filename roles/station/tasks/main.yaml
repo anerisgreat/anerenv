@@ -87,3 +87,14 @@
     path: "{{ anerenv_user_home }}/.mail"
     state: directory
 
+- name: Create directory for gnupg if doesn't exist
+  file:
+    path: "{{ anerenv_user_home }}/.gnupg"
+    state: directory
+
+- name: Link GPG conf
+  file:
+    src: "{{ anerenv_home }}/roles/station/files/gpg-agent.conf"
+    dest: "{{ anerenv_user_home }}/.gnupg/gpg-agent.conf"
+    state: link
+
