@@ -157,29 +157,15 @@
     dest: "{{ lazymacs_dir }}/config.org"
     state: link
 
-- name: Check if custom.el file exists
-  stat: path="{{ lazymacs_dir }}/custom.el"
-  register: lazymacs_custom_stat
-  ignore_errors: true
-  changed_when: lazymacs_custom_stat.rc == 1
-  failed_when: false
-
-- name: Create custom.el
-  when: lazymacs_custom_stat.rc != 0
-  file:
-    path: "{{ lazymacs_dir }}/custom.el"
-    state: touch
-
-- name: Check if emacs-profiles.el file exists
-  stat: path="{{ ansible_env.HOME }}/.emacs-profiles.el"
-  register: lazymacs_initel_stat
-  ignore_errors: true
-  changed_when: lazymacs_initel_stat.rc == 1
-  failed_when: false
+- name: Create custom.el if it doesn't exist
+  copy:
+    content: ""
+    dest: "{{ lazymacs_dir }}/custom.el"
+    force: no
 
 - name: Create emacs-profiles.el if doesn't exist
-  when: lazymacs_initel_stat.rc != 0
   template:
+    force: no
     src: "{{ anerenv_home }}/roles/editor/templates/emacs-profiles.el.j2"
     dest: "{{ ansible_env.HOME }}/.emacs-profiles.el"
 
