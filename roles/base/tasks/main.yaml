@@ -35,6 +35,7 @@
       - llvm
       - llvm-libs
       - cmake
+      - tldr
   become: yes
 
 - name: Essential packages for Arch

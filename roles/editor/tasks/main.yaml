@@ -160,6 +160,9 @@
 - name: Check if custom.el file exists
   stat: path="{{ lazymacs_dir }}/custom.el"
   register: lazymacs_custom_stat
+  ignore_errors: true
+  changed_when: lazymacs_custom_stat.rc == 1
+  failed_when: false
 
 - name: Create custom.el
   when: check_custom_stat.rc != 0
@@ -170,6 +173,9 @@
 - name: Check if emacs-profiles.el file exists
   stat: path="{{ ansible_env.HOME }}/.emacs-profiles.el"
   register: lazymacs_initel_stat
+  ignore_errors: true
+  changed_when: lazymacs_initel_stat.rc == 1
+  failed_when: false
 
 - name: Create emacs-profiles.el if doesn't exist
   template:
