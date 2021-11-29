@@ -12,6 +12,7 @@
       - gmime3
       - xapian-core
       - talloc
+      - notmuch
 
   become: yes
 
@@ -88,7 +89,7 @@
         - name: Install emacs for arch on YAY
           command: yay -S emacs-git --nocleanmenu --nodiffmenu --noeditmenu --noupgrademenu --noconfirm
 
-    - name: Install emacs on Arch
+    - name: Install emacs on Debian
       when: ansible_os_family == "Debian"
       block:
         - name: Clone emacs
@@ -175,29 +176,6 @@
   ignore_errors: true
   changed_when: check_notmuch_reg.rc == 1
   failed_when: false
-
-- name: Install notmuch
-  when: check_notmuch_reg.rc != 0
-  block:
-    - name: Clone notmuch-mail
-      git:
-        repo: https://git.notmuchmail.org/git/notmuch
-        dest: "{{ notmuch_dir }}"
-
-    - name: Configure notmuch
-      command: ./configure
-      args:
-        chdir: "{{ notmuch_dir }}/"
-
-    - name: Make notmuch
-      make:
-        chdir: "{{ notmuch_dir }}/"
-
-    - name: Install notmuch
-      make:
-        chdir: "{{ notmuch_dir }}/"
-        target: install
-      become: yes
 
 - name: Create directory for tasks
   file:
