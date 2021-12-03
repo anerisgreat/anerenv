@@ -70,6 +70,57 @@ Setting garbage collection to 100M to make it stop freaking out every time I scr
 
 #+end_src
 
+** Keymap setup
+
+Setting of keybindings based on [[https://stackoverflow.com/questions/49853494/the-best-way-to-set-a-key-to-do-nothing][this]]
+
+#+begin_src emacs-lisp
+
+(defun set-window-width (n)
+    (adjust-window-trailing-edge (selected-window) ( - n (window-width)) t))
+
+(defun anerenv/open-conf-file ()
+    (interactive)
+    (find-file (concat user-emacs-directory "config.org"))
+    )
+
+;We'll define a basic keymap and already load window-manip funcs
+
+(defvar anerenv-global-minor-mode-map
+  (let ((map (make-sparse-keymap)))
+
+    ;Window movement and manipulation
+    (define-key map (kbd "M-h") 'windmove-left)
+    (define-key map (kbd "M-l") 'windmove-right) ;Instead of downcase-word
+    (define-key map (kbd "M-k") 'windmove-up) ;Instead of kill-sentence
+    (define-key map (kbd "M-j") 'windmove-down) ;Instead of indent-new-comment-line
+
+    (define-key map (kbd "M-<left>") 'windmove-left) ;Instead of mark-paragraph
+    (define-key map (kbd "M-<right>") 'windmove-right) ;Instead of downcase-word
+    (define-key map (kbd "M-<up>") 'windmove-up) ;Instead of kill-sentence
+    (define-key map (kbd "M-<down>") 'windmove-down) ;Instead of indent-new-comment-line
+    (define-key map (kbd "M-d M-d") 'delete-window) ;Instead of indent-new-comment-line
+    (define-key map (kbd "s-d s-d") 'delete-window)
+    (define-key map (kbd "M-d D") 'kill-buffer-and-window) ;Instead of indent-new-comment-line
+    (define-key map (kbd "M-\\") 'split-window-horizontally) ;Instead of delete-horizontal-space
+    (define-key map (kbd "M-\-") 'split-window-vertically) ;Instead of negative-argument
+    (define-key map (kbd "M-d R") (lambda () (set-window-width 85))) ;Instead of indent-new-comment-line
+    map)
+  "anerenv-global-minor-mode keymap.")
+
+(define-minor-mode anerenv-global-minor-mode
+  "A minor mode for anerenv global keymaps."
+  :init-value t
+  :lighter "anerenv")
+
+(anerenv-global-minor-mode 1)
+
+#+end_src
+
+This keymap will be referenced many times during this document at relevant points.
+
+Keymaps are included with relevant sections.
+
 ** EVIL mode
 
 Using evil mode.
@@ -83,24 +134,32 @@ Redo taken from https://github.com/syl20bnr/spacemacs/issues/14036
 
 (use-package evil
   :config
-      (require 'evil )
-      (evil-mode 1)
-      (eval-after-load "evil-maps"
-      (dolist (map '(evil-motion-state-map
+  (require 'evil )
+  (evil-mode 1)
+  (eval-after-load "evil-maps"
+  (dolist (map '(evil-motion-state-map
                  evil-insert-state-map
                  evil-emacs-state-map))
-         (define-key (eval map) "\C-w" nil)))
-)
+    (define-key (eval map) "\C-w" nil)))
 
-(use-package undo-tree
-  :config
-    (global-undo-tree-mode 1)
-    (evil-set-undo-system 'undo-tree)
+  ;Keybindings
+  :bind
+  (:map anerenv-global-minor-mode-map
+        ("M-w h" . evil-window-decreace-width)
+        ("M-w l" . evil-window-increase-width)
+        ("M-w k" . evil-window-decrease-height)
+        ("M-w j" . evil-window-increase-height))
 )
 
 (use-package evil-collection
   :config
   (setq evil-collection-setup-minibuffer t)
+)
+
+(use-package undo-tree
+  :config
+    (evil-set-undo-system 'undo-tree)
+    (global-undo-tree-mode 1)
 )
 #+end_src
 
@@ -147,7 +206,14 @@ Enabling IVY. Taken from [[https://github.com/abo-abo/swiper][their website]].
 (use-package ivy-avy
   :after ivy)
 (use-package counsel
-  :after ivy)
+  :after ivy
+
+  :bind
+  (:map anerenv-global-minor-mode-map
+        ("M-i" . counsel-imenu)
+        ("M-b" . counsel-switch-buffer)
+        ("C-x C-f" . counsel-find-file))
+  )
 #+end_src
 
 *** Keymaps
@@ -166,6 +232,8 @@ Enabling IVY. Taken from [[https://github.com/abo-abo/swiper][their website]].
     (:map projectile-command-map
           ("a" . projectile-add-known-project)
     )
+    (:map anerenv-global-minor-mode-map
+          ("M-p" . projectile-command-map))
 )
 #+end_src
 
@@ -339,6 +407,8 @@ aligned left\right accordingly.
     (setq bidi-paragraph-direction 'nil)
 )
 
+(define-key anerenv-global-minor-mode-map
+    (kbd "C-SPC") 'toggle-input-method)
 #+end_src
 
 ** Whitespace mode
@@ -1060,6 +1130,26 @@ https://medium.com/emacs/using-elfeed-to-view-videos-6dfc798e51e6
 #+end_src
 
 * UI
+** Perspective
+
+#+begin_src emacs-lisp
+(use-package perspective
+   :config
+     (persp-mode 1)
+     (setq persp-show-modestring 'nil)
+   :bind(:map anerenv-global-minor-mode-map
+              ("M-<tab>" . persp-next)
+              ("M-n" . persp-switch)
+              ("M-`" . persp-prev)
+              ))
+
+(use-package persp-projectile
+  :bind(:map projectile-command-map
+    ("p" . projectile-persp-switch-project)
+  )
+)
+#+end_src
+
 ** EXWM
 We execute the following code only if started with EXWM argument
 
@@ -1150,6 +1240,11 @@ Here are a few examples:
 #+begin_src emacs-lisp
 (setq exwm-input-global-keys
       `(
+        ;; Bind "s-<f2>" to "slock", a simple X display locker.
+        ([s-f2] . (lambda ()
+            (interactive)
+            (start-process "" nil "/usr/bin/slock")))
+        ([s-<tab>] . persp-switch)
         ;; Bind "s-r" to exit char-mode and fullscreen mode.
         ([?\s-r] . exwm-reset)
         ;; Bind "s-w" to switch workspace interactively.
@@ -1166,12 +1261,26 @@ Here are a few examples:
         ([?\s-&] . (lambda (command)
              (interactive (list (read-shell-command "$ ")))
              (start-process-shell-command command nil command)))
-        ;; Bind "s-<f2>" to "slock", a simple X display locker.
-        ([s-f2] . (lambda ()
-            (interactive)
-            (start-process "" nil "/usr/bin/slock")))
-        ([\s-<tab>] . persp-next)
         ))
+
+(defun anerenv/start-flameshot ()
+  (interactive)
+  (shell-command "flameshot gui")
+)
+
+(defun anerenv/start-qutebrowser ()
+  (interactive)
+  (start-process-shell-command "qutebrowser" nil "qutebrowser")
+)
+
+(define-key anerenv-global-minor-mode-map
+    (kbd "s-o c") 'anerenv/open-conf-file)
+(define-key anerenv-global-minor-mode-map
+    (kbd "s-o q") 'anerenv/start-qutebrowser)
+(define-key anerenv-global-minor-mode-map
+    (kbd "s-o p") 'run-python)
+(define-key anerenv-global-minor-mode-map
+  (kbd "<print>") 'anerenv/start-flameshot)
 #+end_src
 
 *** RANDR screen settings
@@ -1419,22 +1528,6 @@ https://www.reddit.com/r/emacs/comments/86jzk9/how_to_get_something_like_writero
 )
 #+end_src
 
-** Perspective
-
-#+begin_src emacs-lisp
-(use-package perspective
-   :config
-    (persp-mode 1)
-    (setq persp-show-modestring 'nil)
-)
-
-(use-package persp-projectile
-  :bind(:map projectile-command-map
-    ("p" . projectile-persp-switch-project)
-  )
-)
-#+end_src
-
 ** Background color
 
 #+begin_src emacs-lisp
@@ -1481,85 +1574,6 @@ This is not enabled.
 Setting these functions for window resizing so we can bind them
 
 #+begin_src emacs-lisp
-(defun set-window-width (n)
-    (adjust-window-trailing-edge (selected-window) ( - n (window-width)) t))
-(defun set-85-columns()
-    (interactive)
-    (set-window-width 85))
-#+end_src
-
-** General Keymaps
-
-Setting of keybindings based on [[https://stackoverflow.com/questions/49853494/the-best-way-to-set-a-key-to-do-nothing][this]]
-
-#+begin_src emacs-lisp
-(defun anerenv/start-flameshot ()
-  (interactive)
-  (shell-command "flameshot gui")
-)
-
-(defun anerenv/start-qutebrowser ()
-  (interactive)
-  (start-process-shell-command "qutebrowser" nil "qutebrowser")
-)
-
-(defvar anerenv-global-minor-mode-map
-  (let ((map (make-sparse-keymap)))
-
-    ;Window movement and manipulation
-    (define-key map (kbd "M-h") 'windmove-left)
-    (define-key map (kbd "M-l") 'windmove-right) ;Instead of downcase-word
-    (define-key map (kbd "M-k") 'windmove-up) ;Instead of kill-sentence
-    (define-key map (kbd "M-j") 'windmove-down) ;Instead of indent-new-comment-line
-
-    (define-key map (kbd "M-w h") 'evil-window-decrease-width)
-    (define-key map (kbd "M-w l") 'evil-window-increase-width) ;Instead of downcase-word
-    (define-key map (kbd "M-w k") 'evil-window-decrese-height) ;Instead of kill-sentence
-    (define-key map (kbd "M-w j") 'evil-window-increase-height) ;Instead of indent-new-comment-line
-
-    (define-key map (kbd "M-<left>") 'windmove-left) ;Instead of mark-paragraph
-    (define-key map (kbd "M-<right>") 'windmove-right) ;Instead of downcase-word
-    (define-key map (kbd "M-<up>") 'windmove-up) ;Instead of kill-sentence
-    (define-key map (kbd "M-<down>") 'windmove-down) ;Instead of indent-new-comment-line
-    (define-key map (kbd "M-d M-d") 'delete-window) ;Instead of indent-new-comment-line
-    (define-key map (kbd "s-d s-d") 'delete-window)
-    (define-key map (kbd "M-d D") 'kill-buffer-and-window) ;Instead of indent-new-comment-line
-    (define-key map (kbd "M-\\") 'split-window-horizontally) ;Instead of delete-horizontal-space
-    (define-key map (kbd "M-\-") 'split-window-vertically) ;Instead of negative-argument
-    (define-key map (kbd "M-d R") 'set-85-columns) ;Instead of indent-new-comment-line
-
-    ;Buffer operations
-    (define-key map (kbd "M-i") 'counsel-imenu) ;Instead of tab-to-tab-stop
-    (define-key map (kbd "M-b") 'counsel-switch-buffer) ;Unset the org-mode map of "org-mark-element"
-
-    ;Persp
-    (define-key map (kbd "M-<tab>") 'persp-next)
-    (define-key map (kbd "s-<tab>") 'persp-next)
-    (define-key map (kbd "M-`") 'persp-prev)
-    (define-key map (kbd "M-n") 'persp-switch)
-
-    ;Projectile
-    (define-key map (kbd "M-p") 'projectile-command-map)
-
-    ;Favorites
-    (define-key map (kbd "s-o c") (lambda() (interactive)(find-file (concat user-emacs-directory "config.org"))))
-    (define-key map (kbd "s-o q") 'anerenv/start-qutebrowser)
-    (define-key map (kbd "s-o p") 'run-python)
-
-    ;Other
-    (define-key map (kbd "<print>") 'anerenv/start-flameshot)
-    (define-key map (kbd "C-x C-f") 'counsel-find-file)
-    (define-key map (kbd "C-SPC") 'toggle-input-method)
-
-    map)
-  "anerenv-global-minor-mode keymap.")
-
-(define-minor-mode anerenv-global-minor-mode
-  "A minor mode for anerenv global keymaps."
-  :init-value t
-  :lighter "anerenv")
-
-(anerenv-global-minor-mode 1)
 #+end_src
 
 ** Diminish
