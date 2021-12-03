@@ -1130,6 +1130,26 @@ https://medium.com/emacs/using-elfeed-to-view-videos-6dfc798e51e6
 #+end_src
 
 * UI
+** Perspective
+
+#+begin_src emacs-lisp
+(use-package perspective
+   :config
+     (persp-mode 1)
+     (setq persp-show-modestring 'nil)
+   :bind(:map anerenv-global-minor-mode-map
+              ("M-<tab>" . persp-next)
+              ("M-n" . persp-switch)
+              ("M-`" . persp-prev)
+              ))
+
+(use-package persp-projectile
+  :bind(:map projectile-command-map
+    ("p" . projectile-persp-switch-project)
+  )
+)
+#+end_src
+
 ** EXWM
 We execute the following code only if started with EXWM argument
 
@@ -1220,6 +1240,11 @@ Here are a few examples:
 #+begin_src emacs-lisp
 (setq exwm-input-global-keys
       `(
+        ;; Bind "s-<f2>" to "slock", a simple X display locker.
+        ([s-f2] . (lambda ()
+            (interactive)
+            (start-process "" nil "/usr/bin/slock")))
+        ([s-<tab>] . persp-switch)
         ;; Bind "s-r" to exit char-mode and fullscreen mode.
         ([?\s-r] . exwm-reset)
         ;; Bind "s-w" to switch workspace interactively.
@@ -1236,10 +1261,6 @@ Here are a few examples:
         ([?\s-&] . (lambda (command)
              (interactive (list (read-shell-command "$ ")))
              (start-process-shell-command command nil command)))
-        ;; Bind "s-<f2>" to "slock", a simple X display locker.
-        ([s-f2] . (lambda ()
-            (interactive)
-            (start-process "" nil "/usr/bin/slock")))
         ))
 
 (defun anerenv/start-flameshot ()
@@ -1504,31 +1525,6 @@ https://www.reddit.com/r/emacs/comments/86jzk9/how_to_get_something_like_writero
 (use-package which-key
   :config
     (which-key-mode)
-)
-#+end_src
-
-** Perspective
-
-#+begin_src emacs-lisp
-(use-package perspective
-   :config
-    (persp-mode 1)
-    (setq persp-show-modestring 'nil)
-
-    (define-key anerenv-global-minor-mode-map
-      (kbd "M-<tab>") 'persp-next)
-    (define-key anerenv-global-minor-mode-map
-      (kbd "s-<tab>") 'persp-next)
-    (define-key anerenv-global-minor-mode-map
-      (kbd "M-`") 'persp-prev)
-    (define-key anerenv-global-minor-mode-map
-      (kbd "M-n") 'persp-switch)
-)
-
-(use-package persp-projectile
-  :bind(:map projectile-command-map
-    ("p" . projectile-persp-switch-project)
-  )
 )
 #+end_src
 
