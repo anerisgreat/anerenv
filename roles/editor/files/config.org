@@ -91,20 +91,21 @@ Setting of keybindings based on [[https://stackoverflow.com/questions/49853494/t
 
     ;Window movement and manipulation
     (define-key map (kbd "M-h") 'windmove-left)
-    (define-key map (kbd "M-l") 'windmove-right) ;Instead of downcase-word
-    (define-key map (kbd "M-k") 'windmove-up) ;Instead of kill-sentence
-    (define-key map (kbd "M-j") 'windmove-down) ;Instead of indent-new-comment-line
+    (define-key map (kbd "M-l") 'windmove-right)
+    (define-key map (kbd "M-k") 'windmove-up)
+    (define-key map (kbd "M-j") 'windmove-down)
 
-    (define-key map (kbd "M-<left>") 'windmove-left) ;Instead of mark-paragraph
-    (define-key map (kbd "M-<right>") 'windmove-right) ;Instead of downcase-word
-    (define-key map (kbd "M-<up>") 'windmove-up) ;Instead of kill-sentence
-    (define-key map (kbd "M-<down>") 'windmove-down) ;Instead of indent-new-comment-line
-    (define-key map (kbd "M-d M-d") 'delete-window) ;Instead of indent-new-comment-line
+    (define-key map (kbd "M-<left>") 'windmove-left)
+    (define-key map (kbd "M-<right>") 'windmove-right)
+    (define-key map (kbd "M-<up>") 'windmove-up)
+    (define-key map (kbd "M-<down>") 'windmove-down)
+    (define-key map (kbd "M-d M-d") 'delete-window)
     (define-key map (kbd "s-d s-d") 'delete-window)
-    (define-key map (kbd "M-d D") 'kill-buffer-and-window) ;Instead of indent-new-comment-line
-    (define-key map (kbd "M-\\") 'split-window-horizontally) ;Instead of delete-horizontal-space
-    (define-key map (kbd "M-\-") 'split-window-vertically) ;Instead of negative-argument
-    (define-key map (kbd "M-d R") (lambda () (set-window-width 85))) ;Instead of indent-new-comment-line
+    (define-key map (kbd "M-d D") 'kill-buffer-and-window)
+    (define-key map (kbd "M-\\") 'split-window-horizontally)
+    (define-key map (kbd "M-\-") 'split-window-vertically)
+    (define-key map (kbd "M-d R") (lambda () (interactive)
+                    (set-window-width 85)))
     map)
   "anerenv-global-minor-mode keymap.")
 
