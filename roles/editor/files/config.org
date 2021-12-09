@@ -481,19 +481,16 @@ the time.
 Watch based on https://emacs.stackexchange.com/questions/44389/how-to-watch-and-cat-and-grep-with-emacs
 
 #+begin_src emacs-lisp
-
 (use-package eshell
-  :straight
-  (:type built-in)
-  :config
-    (defun eshell/clear ()
-    "Clear the eshell buffer."
-    (let ((inhibit-read-only t))
-        (erase-buffer)
-        (eshell-send-input)))
+  :straight (:type built-in)
 
-    (defvar watch-history nil)
-    (defun watch (command &optional name)
+   :bind (:map eshell-proc-mode-map
+        ("C-c DEL" . (lambda () (interactive) (progn (eshell/clear-scrollback) (eshell-send-input))))
+    )
+)
+
+(defvar watch-history nil)
+(defun eshell/watch (command &optional name)
     "Runs \"watch COMMAND\" in a `term' buffer.  \"q\" to exit."
     (interactive
     (list (read-from-minibuffer "watch " nil nil nil 'watch-history)))
@@ -523,7 +520,6 @@ Watch based on https://emacs.stackexchange.com/questions/44389/how-to-watch-and-
                     (kill-buffer (process-buffer process)))))
         ;; Display the buffer.
         (switch-to-buffer termbuf)))
-)
 
 #+end_src
 
@@ -1148,7 +1144,7 @@ https://medium.com/emacs/using-elfeed-to-view-videos-6dfc798e51e6
    :config
      (persp-mode 1)
      (setq persp-show-modestring 'nil)
-   :bind(:map anerenv-global-minor-mode-map
+   :bind (:map anerenv-global-minor-mode-map
               ("M-<tab>" . persp-next)
               ("M-n" . persp-switch)
               ("M-`" . persp-prev)
