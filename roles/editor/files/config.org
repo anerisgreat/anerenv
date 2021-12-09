@@ -214,6 +214,17 @@ Enabling IVY. Taken from [[https://github.com/abo-abo/swiper][their website]].
         ("M-b" . counsel-switch-buffer)
         ("C-x C-f" . counsel-find-file))
   )
+
+(use-package swiper
+  :after ivy
+
+  :bind
+  (:map anerenv-global-minor-mode-map
+        ("C-s" . swiper-isearch))
+  (:map evil-motion-state-map
+        ("/" . swiper-isearch))
+  )
+
 #+end_src
 
 *** Keymaps
@@ -1173,7 +1184,6 @@ We execute the following code only if started with EXWM argument
 
 *** Workspaces
 
-;; Set the initial number of workspaces (they can also be created later).
 #+begin_src emacs-lisp
 (setq exwm-workspace-number 4)
 (setq exwm-layout-show-all-buffers t)
@@ -1546,13 +1556,6 @@ This is not enabled.
 
 #+begin_src emacs-lisp
 (defalias 'yes-or-no-p 'y-or-n-p)
-#+end_src
-
-** Window width
-
-Setting these functions for window resizing so we can bind them
-
-#+begin_src emacs-lisp
 #+end_src
 
 ** Diminish
