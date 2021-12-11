@@ -861,10 +861,24 @@ Snippet for src blocks
                                       nil
                                       nil
                                       nil
-                                      "C-b"
+                                      "C-c i b"
                                       nil
                                       nil
 )))
+
+(yas-define-snippets 'org-mode (list (list
+                                      nil
+                                      "#+begin_export latex\n\\begin{english}\n#+end_export\n#+begin_src $1\n$0\n\n#+end_src\n#+begin_export latex\n\\end{english}\n#+end_export"
+                                      "ORG_SRC_ENGLISH_BLOCK"
+                                      nil
+                                      nil
+                                      nil
+                                      nil
+                                      "C-c i B"
+                                      nil
+                                      nil
+)))
+
 
 #+end_src
 
