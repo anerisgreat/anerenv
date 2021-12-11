@@ -455,6 +455,64 @@ the time.
 
 #+end_src
 
+** Irony-mode
+
+Must work on this. While it does work, can get slow and for weird projects can show errors.
+
+#+begin_src emacs-lisp
+;; == irony-mode ==
+(use-package irony
+  :ensure t
+  :defer t
+  :init
+  (add-hook 'c++-mode-hook 'irony-mode)
+  (add-hook 'c-mode-hook 'irony-mode)
+  (add-hook 'objc-mode-hook 'irony-mode)
+  :config
+  ;; replace the `completion-at-point' and `complete-symbol' bindings in
+  ;; irony-mode's buffers by irony-mode's function
+  (defun my-irony-mode-hook ()
+    (define-key irony-mode-map [remap completion-at-point]
+      'irony-completion-at-point-async)
+    (define-key irony-mode-map [remap complete-symbol]
+      'irony-completion-at-point-async))
+  (add-hook 'irony-mode-hook 'my-irony-mode-hook)
+  (add-hook 'irony-mode-hook 'irony-cdb-autosetup-compile-options)
+  )
+
+#+end_src
+
+** Company mode
+
+#+begin_src emacs-lisp
+(use-package company
+  :ensure t
+  :defer t
+  :init (add-hook 'after-init-hook 'global-company-mode)
+  :config
+  (use-package company-irony :ensure t :defer t)
+  (setq
+        company-minimum-prefix-length   2
+        company-show-numbers            t
+        company-tooltip-limit           20
+        company-idle-delay              0.2
+  )
+  :bind ("C-;" . company-complete-common)
+  :hook (irony-mode . company-mode)
+  )
+#+end_src
+
+** Flycheck
+
+#+begin_src emacs-lisp
+(use-package flycheck-irony
+  :after flycheck
+  :config
+    (add-hook 'flycheck-mode-hook #'flycheck-irony-setup)
+    (add-hook 'c++-mode-hook (lambda () (setq flycheck-checker 'irony)))
+)
+#+end_src
+
 * Major modes
 
 ** Magit
@@ -485,9 +543,12 @@ Watch based on https://emacs.stackexchange.com/questions/44389/how-to-watch-and-
 (use-package eshell
   :straight (:type built-in)
 
-   :bind (:map eshell-proc-mode-map
+  :bind (:map eshell-proc-mode-map
         ("C-c DEL" . (lambda () (interactive) (progn (eshell/clear-scrollback) (eshell-send-input))))
-    )
+   )
+
+  :config
+    (add-hook 'eshell-mode-hook (company-mode -1))
 )
 
 (defvar watch-history nil)
@@ -924,64 +985,6 @@ org-toggle-latex-fragment
 
 #+begin_src emacs-lisp
 (use-package typescript-mode)
-#+end_src
-
-** Irony-mode
-
-Must work on this. While it does work, can get slow and for weird projects can show errors.
-
-#+begin_src emacs-lisp
-;; == irony-mode ==
-(use-package irony
-  :ensure t
-  :defer t
-  :init
-  (add-hook 'c++-mode-hook 'irony-mode)
-  (add-hook 'c-mode-hook 'irony-mode)
-  (add-hook 'objc-mode-hook 'irony-mode)
-  :config
-  ;; replace the `completion-at-point' and `complete-symbol' bindings in
-  ;; irony-mode's buffers by irony-mode's function
-  (defun my-irony-mode-hook ()
-    (define-key irony-mode-map [remap completion-at-point]
-      'irony-completion-at-point-async)
-    (define-key irony-mode-map [remap complete-symbol]
-      'irony-completion-at-point-async))
-  (add-hook 'irony-mode-hook 'my-irony-mode-hook)
-  (add-hook 'irony-mode-hook 'irony-cdb-autosetup-compile-options)
-  )
-
-#+end_src
-
-** Company mode
-
-#+begin_src emacs-lisp
-(use-package company
-  :ensure t
-  :defer t
-  :init (add-hook 'after-init-hook 'global-company-mode)
-  :config
-  (use-package company-irony :ensure t :defer t)
-  (setq
-        company-minimum-prefix-length   2
-        company-show-numbers            t
-        company-tooltip-limit           20
-        company-idle-delay              0.2
-  )
-  :bind ("C-;" . company-complete-common)
-  :hook (irony-mode . company-mode)
-  )
-#+end_src
-
-** Flycheck
-
-#+begin_src emacs-lisp
-(use-package flycheck-irony
-  :after flycheck
-  :config
-    (add-hook 'flycheck-mode-hook #'flycheck-irony-setup)
-    (add-hook 'c++-mode-hook (lambda () (setq flycheck-checker 'irony)))
-)
 #+end_src
 
 ** Mail
