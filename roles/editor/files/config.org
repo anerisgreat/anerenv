@@ -134,6 +134,8 @@ Redo taken from https://github.com/syl20bnr/spacemacs/issues/14036
 (setq evil-want-keybinding nil)
 
 (use-package evil
+  :init
+  (setq evil-want-C-i-jump nil)
   :config
   (require 'evil )
   (evil-mode 1)
