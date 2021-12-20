@@ -1296,35 +1296,39 @@ Partially from [[https://github.com/ch11ng/exwm/issues/202][here]]. (All comment
 
 #+begin_src emacs-lisp
 (require 'exwm-randr)
-;(setq exwm-randr-workspace-output-plist '(0 "VGA1"))
 
-;; (defun my-exwm-xrandr-hook ()
-;; (interactive)
-;; (let* ((connected-cmd "xrandr -q|awk '/ connected/ {print $1}'")
-;;     (connected (process-lines "bash" "-lc" connected-cmd))
-;;     (primary (nth 0 connected))
-;;     (other (nth 1 connected))
-;;     (previous (delete-dups (seq-remove
-;;                 'integerp
-;;                 exwm-randr-workspace-output-plist))))
-;;     (progn
-;;     (cond (other
-;;     (progn (my-exwm-xrandr-config primary other)
-;;         (my-exwm-xrandr-two-outputs primary other)))
-;;     (t (progn (my-exwm-xrandr-config primary primary)
-;;             (mapcar 'my-exwm-xrandr-off
-;;                 (delete primary previous)))))
-;;     (exwm-randr--refresh)
-;;     (exwm--log "Display: %s refreshed." connected))))
+(defun anerenv/re-seq (regexp string)
+  "Get a list of all regexp matches in a string"
+  (save-match-data
+    (let ((pos 0)
+          matches)
+      (while (string-match regexp string pos)
+        (push (match-string 0 string) matches)
+        (setq pos (match-end 0)))
+      matches)))
 
-;; (setq exwm-randr-screen-change-hook
-;;     (lambda () (my-exwm-xrandr-hook)))
+(defun anerenv/get-monitor-list ()
+    (mapcar (lambda (x) (match-string (string-match "^[A-Za-z]+-[0-9]+" x) x))
+        (anerenv/re-seq "^[A-Za-z]+-[0-9]+ connected" (shell-command-to-string "xrandr"))))
 
-(setq exwm-randr-workspace-output-plist '(1 "Virtual1" 2 "Virtual2"))
+(defun anerenv/add-indexes (list)
+  (anerenv/add-indexes-i list 1)
+)
+
+
+(defun anerenv/add-indexes-i (list i)
+  (if list
+        (cons i (cons (car list) (anerenv/add-indexes-i (cdr list) (+ i 1))))
+        nil))
+
 (add-hook 'exwm-randr-screen-change-hook
           (lambda ()
-            (start-process-shell-command
-            "xrandr" nil "xrandr --output Virtual1 --left-of Virtual2 --auto")))
+            (progn
+                (start-process-shell-command
+                "xlayoutdisplay" nil "xlayoutdisplay")
+                (setq exwm-randr-workspace-monitor-plist
+                      (anerenv/add-indexes (anerenv/get-monitor-list)))
+                (exwm-randr-refresh))))
 #+end_src
 
 Enabling exwm
@@ -1475,7 +1479,24 @@ https://gist.github.com/ajyoon/5323b999a01dce8db2d4456da1740fe3
     (kbd "<XF86AudioMute>")
         (lambda ()
             (interactive) (start-process-shell-command
-            "pactl" nil "pactl set-sink-mute 0 toggle && pactl set-sink-mute 0 toggle")))
+            "pactl" nil "pactl set-sink-mute 0 toggle")))
+
+(exwm-input-set-key
+    (kbd "<XF86AudioPlay>")
+    'desktop-environment-toggle-music)
+
+(exwm-input-set-key
+    (kbd "<XF86AudioNext>")
+    'desktop-environment-music-next)
+
+(exwm-input-set-key
+    (kbd "<XF86AudioPrev>")
+    'desktop-environment-music-previous)
+
+(exwm-input-set-key
+    (kbd "<XF86AudioStop>")
+    'desktop-environment-music-stop)
+
 #+end_src
 
 *** Input languages
