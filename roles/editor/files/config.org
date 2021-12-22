@@ -1468,12 +1468,12 @@ https://gist.github.com/ajyoon/5323b999a01dce8db2d4456da1740fe3
     (kbd "<XF86AudioRaiseVolume>")
     (lambda ()
         (interactive) (start-process-shell-command
-        "pactl" nil "pactl set-sink-volume 0 +5% && pactl set-sink-volume 0 +5%")))
+        "pactl" nil "pactl set-sink-volume 0 +5%")))
 (exwm-input-set-key
     (kbd "<XF86AudioLowerVolume>")
     (lambda ()
         (interactive) (start-process-shell-command
-        "pactl" nil "pactl set-sink-volume 0 -5% && pactl set-sink-volume 0 -5%")))
+        "pactl" nil "pactl set-sink-volume 0 -5%")))
 
 (exwm-input-set-key
     (kbd "<XF86AudioMute>")
@@ -1497,6 +1497,9 @@ https://gist.github.com/ajyoon/5323b999a01dce8db2d4456da1740fe3
     (kbd "<XF86AudioStop>")
     'desktop-environment-music-stop)
 
+(exwm-input-set-key
+    (kbd "<XF86AudioPause>")
+    'desktop-environment-toggle-music)
 #+end_src
 
 *** Input languages
