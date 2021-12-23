@@ -296,6 +296,19 @@ Must set up
 )
 #+end_src
 
+** No-modeline
+
+https://www.reddit.com/r/emacs/comments/86jzk9/how_to_get_something_like_writeroommodes_modeline/
+
+#+begin_src emacs-lisp
+(setq-default mode-line-format nil)
+
+(setq window-divider-default-bottom-width 1
+      window-divider-default-places 'bottom-only)
+
+(window-divider-mode 1)
+#+end_src
+
 * Text
 
 ** Text font
@@ -450,7 +463,8 @@ the time.
              'notmuch-search-mode
              'org-mode
              'magit-diff-mode
-             'inferior-python-mode)
+             'inferior-python-mode
+             'dired-mode)
       (whitespace-mode))))
 
 (anerenv/global-whitespace-mode 1)
@@ -1536,19 +1550,6 @@ Disabling the toolbar, the splash-screen, the menu-bar and the scroll-bar
     (scroll-bar-mode -1) ; no scroll bars
     (set-fringe-mode 0)
 )
-#+end_src
-
-** No-modeline
-
-https://www.reddit.com/r/emacs/comments/86jzk9/how_to_get_something_like_writeroommodes_modeline/
-
-#+begin_src emacs-lisp
-(setq-default mode-line-format nil)
-
-(setq window-divider-default-bottom-width 1
-      window-divider-default-places 'bottom-only)
-
-(window-divider-mode 1)
 #+end_src
 
 ** Which-Key
