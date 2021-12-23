@@ -464,7 +464,8 @@ the time.
              'org-mode
              'magit-diff-mode
              'inferior-python-mode
-             'dired-mode)
+             'dired-mode
+             'proced-mode)
       (whitespace-mode))))
 
 (anerenv/global-whitespace-mode 1)
