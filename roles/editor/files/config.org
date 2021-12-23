@@ -1383,14 +1383,12 @@ Sending simulated keys to X windows
   (interactive)
   (progn
     (efs/send-polybar-hook "exwm-buff-name" 1)
-    ; (efs/send-polybar-hook "exwm-file-name" 2)
   )
 )
 
 (defun efs/send-polybar-exwm-persp-hook ()
   (interactive)
   (progn
-    ; (echo "HI")
     (setq efs/last-persp-name (persp-name (persp-curr)))
     (efs/send-polybar-hook "exwm-persp-name" 1)
   )
@@ -1500,6 +1498,15 @@ https://gist.github.com/ajyoon/5323b999a01dce8db2d4456da1740fe3
 (exwm-input-set-key
     (kbd "<XF86AudioPause>")
     'desktop-environment-toggle-music)
+
+(exwm-input-set-key
+    (kbd "<XF86MonBrightnessUp>")
+    'desktop-environment-brightness-increment)
+
+(exwm-input-set-key
+    (kbd "<XF86MonBrightnessDown>")
+    'desktop-environment-brightness-decrement)
+
 #+end_src
 
 *** Input languages
