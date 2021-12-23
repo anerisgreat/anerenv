@@ -545,10 +545,6 @@ Watch based on https://emacs.stackexchange.com/questions/44389/how-to-watch-and-
 (use-package eshell
   :straight (:type built-in)
 
-  :bind (:map eshell-proc-mode-map
-        ("C-c DEL" . (lambda () (interactive) (progn (eshell/clear-scrollback) (eshell-send-input))))
-   )
-
   :config
     (add-hook 'eshell-mode-hook (company-mode -1))
 )
