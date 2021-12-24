@@ -1511,11 +1511,15 @@ https://gist.github.com/ajyoon/5323b999a01dce8db2d4456da1740fe3
 
 (exwm-input-set-key
     (kbd "<XF86MonBrightnessUp>")
-    'desktop-environment-brightness-increment)
+        (lambda ()
+            (interactive) (start-process-shell-command
+            "xbacklight" nil "xbacklight -inc 5")))
 
 (exwm-input-set-key
     (kbd "<XF86MonBrightnessDown>")
-    'desktop-environment-brightness-decrement)
+        (lambda ()
+            (interactive) (start-process-shell-command
+            "xbacklight" nil "xbacklight -dec 5")))
 
 #+end_src
 
