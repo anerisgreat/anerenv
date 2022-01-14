@@ -1289,7 +1289,7 @@ Here are a few examples:
              (start-process-shell-command command nil command)))
         ))
 
-(defun anerenv/start-flameshot ()
+(defun anerenv/take-screenshot ()
   (interactive)
   (shell-command "flameshot gui")
 )
@@ -1306,7 +1306,7 @@ Here are a few examples:
 (define-key anerenv-global-minor-mode-map
     (kbd "s-o p") 'run-python)
 (define-key anerenv-global-minor-mode-map
-  (kbd "<print>") 'anerenv/start-flameshot)
+  (kbd "<print>") 'anerenv/take-screenshot)
 #+end_src
 
 *** RANDR screen settings
@@ -1397,12 +1397,14 @@ Sending simulated keys to X windows
 
 (defun anerenv/start-panel ()
   (interactive)
-  (anerenv/kill-panel)
-  (setq anerenv/polybar-process
-    (start-process-shell-command "polybar" nil
-        (concat "polybar -c "
-          (concat (expand-file-name "~/.config/emacs/lazymacs/polybar-config")
-            " exwm-bar")))))
+  (progn
+    (anerenv/kill-panel)
+    (setq anerenv/polybar-process
+        (start-process-shell-command "polybar" nil
+            (concat "polybar -c "
+            (concat (expand-file-name "~/.config/emacs/lazymacs/polybar-config")
+                " exwm-bar"))))
+    (set-process-query-on-exit-flag anerenv/polybar-process nil)))
 
 (defun anerenv/send-polybar-hook (module-name hook-index)
   (start-process-shell-command "polybar-msg" nil (format "polybar-msg hook %s %s" module-name hook-index)))
@@ -1464,9 +1466,11 @@ Sending simulated keys to X windows
 
 (defun anerenv/start-dunst ()
   (interactive)
-  (anerenv/kill-dunst)
-  (setq anerenv/dunst-process
-    (start-process-shell-command "dunst" "*dunst*" "dunst")))
+  (progn
+    (anerenv/kill-dunst)
+    (setq anerenv/dunst-process
+        (start-process-shell-command "dunst" "*dunst*" "dunst")))
+    (set-process-query-on-exit-flag anerenv/dunst-process nil))
 
 (anerenv/start-dunst)
 #+end_src
@@ -1474,7 +1478,26 @@ Sending simulated keys to X windows
 *** Flameshot
 
 #+begin_src emacs-lisp
-(start-process-shell-command "polybar" nil "flameshot")
+(defvar anerenv/flameshot-process nil
+  "Holds the process of the background flameshot service, if any")
+
+(defun anerenv/kill-flameshot-process ()
+  (interactive)
+  (progn
+    (when anerenv/flameshot-process
+        (ignore-errors
+        (kill-process anerenv/flameshot-process)))
+    (setq anerenv/flameshot-process nil)))
+
+(defun anerenv/start-flameshot-process ()
+  (interactive)
+  (progn
+    (anerenv/kill-flameshot-process)
+    (setq anerenv/flameshot-process
+        (start-process-shell-command "flameshot" "*flameshot*" "flameshot"))
+    (set-process-query-on-exit-flag anerenv/flameshot-process nil)))
+
+(anerenv/start-flameshot-process)
 #+end_src
 
 *** Media keys
