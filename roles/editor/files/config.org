@@ -378,6 +378,7 @@ Taken from [[https://www.emacswiki.org/emacs/LineNumbers][this wiki entry]].
 
     :config
         (anerenv/global-linum-mode 1)
+        (set-face-attribute 'line-number nil :family (face-attribute 'fixed-pitch :family))
 )
 
 
@@ -667,6 +668,10 @@ Setting fixed fonts in org-mode so that mixed type works as intended.
         (setq org-src-tab-acts-natively t)
         (setq org-adapt-indentation nil)
         (setq org-startup-folded 'folded)
+        (set-face-attribute 'org-code nil
+            :family (face-attribute 'fixed-pitch :family))
+        (set-face-attribute 'org-block nil
+            :family (face-attribute 'fixed-pitch :family))
 )
 #+end_src
 
@@ -1637,6 +1642,13 @@ This is not enabled.
     (diminish 'flycheck-mode)
     (diminish 'anerenv-global-minor-mode)
 )
+#+end_src
+** Bell
+
+#+begin_src emacs-lisp
+
+(setq ring-bell-function (lambda () ()))
+
 #+end_src
 * Extras
 
