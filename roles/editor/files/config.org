@@ -359,7 +359,8 @@ Taken from [[https://www.emacswiki.org/emacs/LineNumbers][this wiki entry]].
               ansi-term-mode
               magit-mode
               magit-diff-mode
-              notmuch-hello)
+              notmuch-hello
+              pdf-view-mode)
             "Major modes on which to disable the linum mode, exempts them from global requirement"
             :group 'display-line-numbers
             :type 'list
@@ -460,6 +461,7 @@ the time.
              'term-mode
              'eshell-mode
              'notmuch-show-mode
+             'notmuch-hello
              'notmuch-search-mode
              'org-mode
              'magit-diff-mode
@@ -608,7 +610,11 @@ Broken for the time being
     (pdf-tools-install)
     (add-hook 'pdf-view-mode-hook
         (lambda () (blink-cursor-mode 0)))
+
+    (evil-collection-pdf-setup)
 )
+
+
 #+end_src
 
 *** Stop the blinking on PDF-View-Mode
@@ -1343,6 +1349,9 @@ Partially from [[https://github.com/ch11ng/exwm/issues/202][here]]. (All comment
 
 (add-hook 'exwm-randr-screen-change-hook
             'anerenv/update-exwm-randr-workspace-monitor-plist)
+
+(define-key anerenv-global-minor-mode-map
+  (kbd "s-o x") 'anerenv/update-exwm-randr-workspace-monitor-plist)
 #+end_src
 
 Enabling exwm
