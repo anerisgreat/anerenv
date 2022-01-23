@@ -468,6 +468,7 @@ the time.
              'magit-diff-mode
              'inferior-python-mode
              'dired-mode
+             'image-dired-thumbnail-mode
              'proced-mode)
       (whitespace-mode))))
 
@@ -1177,6 +1178,12 @@ https://medium.com/emacs/using-elfeed-to-view-videos-6dfc798e51e6
 (use-package password-store)
 #+end_src
 
+** Chess
+#+begin_src emacs-lisp
+
+(use-package chess)
+
+#+end_src
 * UI
 ** Perspective
 
@@ -1680,6 +1687,3 @@ This is not enabled.
   :config (setq load-dirs (concat user-emacs-directory "extra/")))
 #+end_src
 
-I really think this could be OK.
-
-Is it though?
