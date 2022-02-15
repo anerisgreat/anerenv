@@ -468,9 +468,12 @@ the time.
              'notmuch-search-mode
              'org-mode
              'magit-diff-mode
+             'magit-status-mode
              'inferior-python-mode
              'dired-mode
              'image-dired-thumbnail-mode
+             'Buffer-menu-mode
+             'ibuffer-mode
              'proced-mode)
       (whitespace-mode))))
 
@@ -1186,6 +1189,44 @@ https://medium.com/emacs/using-elfeed-to-view-videos-6dfc798e51e6
 (use-package chess)
 
 #+end_src
+** Ibuffer
+
+#+begin_src emacs-lisp
+
+(evil-collection-ibuffer-setup)
+(define-key anerenv-global-minor-mode-map
+    (kbd "C-x C-b") 'ibuffer)
+
+#+end_src
+
+** Wiki-summary
+#+begin_src emacs-lisp
+(use-package wiki-summary)
+#+end_src
+** Dashboard
+#+begin_src emacs-lisp
+(setq inhibit-startup-screen t)
+(use-package dashboard
+    :config
+    (add-hook 'after-init-hook
+        (lambda () (dashboard-insert-startupify-lists)))
+    (add-hook 'emacs-startup-hook (lambda ()
+        (switch-to-buffer dashboard-buffer-name)
+        (goto-char (point-min))
+        (redisplay)
+        (run-hooks 'dashboard-after-initialize-hook)))
+    (setq dashboard-items '((recents  . 5)
+                        (bookmarks . 5)
+                        (projects . 5)
+                        (agenda . 5)))
+    (setq dashboard-center-content t)
+    (defun anerenv/stupid-func () (message "Cheese whiz!"))
+    (defun dashboard-insert-custom (list-size)
+        (insert "Custom text"))
+    (add-to-list 'dashboard-item-generators  '(anerenv/stupid-func . dashboard-insert-custom))
+    (add-to-list 'dashboard-items '(anerenv/stupid-func) t)
+)
+#+end_src
 * UI
 ** Perspective
 
@@ -1416,7 +1457,8 @@ Sending simulated keys to X windows
     (set-process-query-on-exit-flag anerenv/polybar-process nil)))
 
 (defun anerenv/send-polybar-hook (module-name hook-index)
-  (start-process-shell-command "polybar-msg" nil (format "polybar-msg hook %s %s" module-name hook-index)))
+  (start-process-shell-command "polybar-msg" nil
+        (format "polybar-msg hook %s %s" module-name hook-index)))
 
 (defun anerenv/send-polybar-exwm-info ()
   (interactive)
@@ -1597,7 +1639,6 @@ Close parens, then add to command switch.
 Disabling the toolbar, the splash-screen, the menu-bar and the scroll-bar
 #+begin_src emacs-lisp
 
-(customize-set-variable 'inhibit-startup-screen t) ; no splash screen on start
 (menu-bar-mode -1)   ; no menu bar
 (when (display-graphic-p)
     (tool-bar-mode -1)   ; no tool bar with icons
