@@ -122,14 +122,9 @@
 
 - name: Clone chemacs
   git:
-    repo: https://github.com/plexus/chemacs.git
+    repo: https://github.com/plexus/chemacs2.git
     dest: "{{ chemacs_src_dir }}"
     version: master
-
-- name: Install chemacs
-  command: bash install.sh
-  args:
-    chdir: "{{ chemacs_src_dir }}/"
 
 - name: Create directory for emacs configurations
   file:
