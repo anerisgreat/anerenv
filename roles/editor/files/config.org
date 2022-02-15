@@ -274,6 +274,8 @@ Parts taken from [[https://emacs.stackexchange.com/questions/40787/display-corre
   :custom
     (tramp-verbose 6)
 )
+
+(use-package counsel-tramp)
 #+end_src
 
 ** YASnippet
