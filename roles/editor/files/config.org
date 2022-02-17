@@ -449,34 +449,18 @@ culprit being terminal modes where whitespace occur naturally and are a pain to 
 the time.
 
 #+begin_src emacs-lisp
-
 (setq-default whitespace-style
       '(face tabs trailing tab-mark
              lines-tail indentation))
 
-(define-global-minor-mode anerenv/global-whitespace-mode whitespace-mode
-  (lambda ()
-    (unless (derived-mode-p
-             'rmail-mode
-             'vterm-mode
-             'term-mode
-             'eshell-mode
-             'notmuch-show-mode
-             'notmuch-hello
-             'notmuch-search-mode
-             'org-mode
-             'magit-diff-mode
-             'magit-status-mode
-             'inferior-python-mode
-             'dired-mode
-             'image-dired-thumbnail-mode
-             'Buffer-menu-mode
-             'ibuffer-mode
-             'proced-mode)
-      (whitespace-mode))))
+(defun anerenv/whitespace-mode-func ()
+  (interactive)
+    (if (derived-mode-p 'text-mode 'prog-mode)
+        (whitespace-mode 1) (whitespace-mode -1)))
 
-(anerenv/global-whitespace-mode 1)
-
+#+end_src
+#+begin_src emacs-lisp
+(add-hook 'change-major-mode-hook 'anerenv/whitespace-mode-func)
 #+end_src
 
 ** Irony-mode
@@ -553,9 +537,8 @@ Must work on this. While it does work, can get slow and for weird projects can s
 #+begin_src emacs-lisp
 (use-package vterm
   :config
-    (add-hook 'vterm-mode-hook (lambda () (setq-local whitespace-mode nil)))
-    (add-hook 'vterm-mode-hook (lambda () (setq-local global-whitespace-mode nil)))
-    (add-hook 'vterm-mode-hook (lambda () (setq-local global-hl-line-mode nil)))
+  (add-hook 'vterm-mode-hook
+            (lambda () (setq-local global-hl-line-mode nil)))
 )
 
 #+end_src
@@ -583,7 +566,7 @@ Watch based on https://emacs.stackexchange.com/questions/44389/how-to-watch-and-
         (set-buffer termbuf)
         (term-mode)
         (term-char-mode)
-        (setq show-trailing-whitespace nil)
+        (setq-local show-trailing-whitespace nil)
         ;; Kill the process interactively with "q".
         (set-process-query-on-exit-flag proc nil)
         (let ((map (make-sparse-keymap))
@@ -667,7 +650,7 @@ Setting fixed fonts in org-mode so that mixed type works as intended.
         (set-org-mode-fixed-pitch-faces)
         (add-hook 'org-mode-hook 'anerenv/set-bidi-env)
         (add-hook 'org-mode-hook (lambda ()
-            (setq whitespace-style '(face tabs trailing tab-mark
+            (setq-local whitespace-style '(face tabs trailing tab-mark
             indentation))))
         (setq org-src-tab-acts-natively t)
         (setq org-adapt-indentation nil)
@@ -1224,6 +1207,10 @@ https://medium.com/emacs/using-elfeed-to-view-videos-6dfc798e51e6
     (add-to-list 'dashboard-item-generators  '(anerenv/stupid-func . dashboard-insert-custom))
     (add-to-list 'dashboard-items '(anerenv/stupid-func) t)
 )
+#+end_src
+** Calendar
+#+begin_src emacs-lisp
+(evil-collection-calendar-setup)
 #+end_src
 * UI
 ** Perspective
