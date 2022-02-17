@@ -457,7 +457,7 @@ the time.
 
 (defun anerenv/whitespace-mode-func ()
   (interactive)
-    (if (derived-mode-p 'text-mode 'prog-mode)
+    (if (derived-mode-p 'text-mode 'prog-mode 'org-mode)
         (whitespace-mode 1) (whitespace-mode -1)))
 
 #+end_src
