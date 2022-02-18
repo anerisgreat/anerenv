@@ -667,9 +667,8 @@ Setting fixed fonts in org-mode so that mixed type works as intended.
 *** Agenda
 
 #+begin_src emacs-lisp
-
 (setq org-agenda-files (list "~/.tasks"))
-
+(setq org-default-notes-file "~/.tasks/tasks.org")
 #+end_src
 
 *** Babel
