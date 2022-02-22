@@ -440,11 +440,6 @@ Highlighting lines.
 (global-hl-line-mode)
 #+end_src
 
-Exempting terminal from line highlighting.
-
-#+begin_src emacs-lisp
-#+end_src
-
 ** Line wrap
 
 #+begin_src emacs-lisp
@@ -810,23 +805,8 @@ Creating classes
       )
     )
 
-(setq org-export-with-toc nil)
-(setq org-export-with-section-numbers nil)
-#+end_src
-
-*** Fixing previews for things with polygloss
-#+begin_src emacs-lisp
-;(setq-default org-preview-latex-process-alist (car(get 'standard-value 'org-preview-latex-process-alist)))
-
-;Filtering out Hebrew from latex fragments
-(defun my-latex-filter-nolang (text backend info)
-  "No language in latex fragment exports"
-  (when (org-export-derived-backend-p backend 'latex)
-    (replace-regexp-in-string "aner" "cheese" text)))
-#+end_src
-
-#+begin_src emacs-lisp
-;(add-to-list 'org-export-filter-latex-fragment-functions 'my-latex-filter-nolang)
+(setq org-export-with-toc nil
+      org-export-with-section-numbers nil)
 #+end_src
 
 This should render Hebrew text.
@@ -842,10 +822,6 @@ This should render Hebrew text.
 *** Org block highlighting
 
 #+begin_src emacs-lisp
-;Set for solarized theme
-;(set-face-background 'org-block-begin-line "#FFF3D6")
-;(set-face-background 'org-block-end-line "#FFF3D6")
-;(set-face-background 'org-block (face-attribute 'default :background))
 (use-package color)
 #+end_src
 
@@ -1243,19 +1219,21 @@ https://medium.com/emacs/using-elfeed-to-view-videos-6dfc798e51e6
         (goto-char (point-min))
         (redisplay)
         (run-hooks 'dashboard-after-initialize-hook)))
+    (add-to-list 'evil-emacs-state-modes 'dashboard-mode)
     (setq dashboard-items '((recents  . 5)
                         (bookmarks . 5)
                         (projects . 5)
-                        (agenda . 5)))
-    (setq dashboard-center-content t)
-    (setq dashboard-set-init-info nil)
-    (setq dashboard-set-footer nil)
-    (setq dashboard-startup-banner nil)
+                        (agenda . 5))
+          dashboard-center-content t
+          dashboard-set-init-info nil
+          dashboard-set-footer nil
+          dashboard-startup-banner nil)
     ;; (defun anerenv/stupid-func () (message "Cheese whiz!"))
     ;; (defun dashboard-insert-custom (list-size)
     ;;     (insert "Custom text"))
     ;; (add-to-list 'dashboard-item-generators  '(anerenv/stupid-func . dashboard-insert-custom))
     ;; (add-to-list 'dashboard-items '(anerenv/stupid-func) t)
+
 )
 #+end_src
 ** Calendar
@@ -1345,6 +1323,10 @@ We execute the following code only if started with EXWM argument
 
 #+end_src
 
+*** Turn off evil
+#+begin_src emacs-lisp
+(add-to-list 'evil-emacs-state-modes 'exwm-mode)
+#+end_src
 *** Basic keybindings
 
 Global keybindings can be defined with `exwm-input-global-keys'.
