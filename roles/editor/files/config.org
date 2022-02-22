@@ -145,7 +145,6 @@ Redo taken from https://github.com/syl20bnr/spacemacs/issues/14036
                  evil-emacs-state-map))
     (define-key (eval map) "\C-w" nil)))
 
-  ;Keybindings
   :bind
   (:map anerenv-global-minor-mode-map
         ("M-w h" . evil-window-decreace-width)
@@ -242,6 +241,7 @@ Enabling IVY. Taken from [[https://github.com/abo-abo/swiper][their website]].
 (use-package projectile
   :config
     (projectile-mode +1)
+    (setq projectile-mode-line-function (lambda () ""))
   :bind
     (:map projectile-command-map
           ("a" . projectile-add-known-project)
