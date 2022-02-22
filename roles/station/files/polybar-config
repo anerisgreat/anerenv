@@ -59,22 +59,6 @@ tray-maxsize = 28
 cursor-click = pointer
 cursor-scroll = ns-resize
 
-[module/exwm-buff-name]
-type = custom/ipc
-hook-0 = emacsclient -e "(anerenv/get-buff-name-str)" | sed -e 's/^"//' -e 's/"$//'
-initial =
-format-underline = ${colors.underline-1}
-
-[module/exwm-file-name]
-type = custom/ipc
-hook-0 = emacsclient -e "(anerenv/get-file-name-str)" | sed -e 's/^"//' -e 's/"$//'
-initial =
-
-[module/exwm-persp-name]
-type = custom/ipc
-hook-0 = emacsclient -e "(anerenv/get-persp-name-str)" | sed -e 's/^"//' -e 's/"$//'
-initial =
-
 [module/cpu]
 type = internal/cpu
 interval = 2
