@@ -1493,48 +1493,6 @@ Sending simulated keys to X windows
                 " exwm-bar"))))
     (set-process-query-on-exit-flag anerenv/polybar-process nil)))
 
-(defun anerenv/send-polybar-hook (module-name hook-index)
-  (start-process-shell-command "polybar-msg" nil
-        (format "polybar-msg hook %s %s" module-name hook-index)))
-
-(defun anerenv/send-polybar-exwm-info ()
-  (interactive)
-  (progn
-    (anerenv/send-polybar-hook "exwm-buff-name" 1)
-  )
-)
-
-(defun anerenv/send-polybar-exwm-persp-hook ()
-  (interactive)
-  (progn
-    (setq anerenv/last-persp-name (persp-name (persp-curr)))
-    (anerenv/send-polybar-hook "exwm-persp-name" 1)
-  )
-)
-
-(defun anerenv/get-buff-name-str ()
-  (frame-parameter nil 'name)
-)
-
-(defun anerenv/get-file-name-str ()
-  (with-current-buffer (window-buffer (selected-window)) (buffer-file-name))
-)
-
-(defun anerenv/get-persp-name-str ()
-  anerenv/last-persp-name
-)
-
-(defun anerenv/send-polybar-exwm-info-if-not-minibuff ()
-  (if (not (minibuffer-window-active-p (window-buffer (selected-window))))
-    (anerenv/send-polybar-exwm-info)
-  )
-)
-
-; (add-hook 'buffer-list-update-hook 'anerenv/send-polybar-exwm-info)
-(add-hook 'post-command-hook 'anerenv/send-polybar-exwm-info-if-not-minibuff)
-;(add-hook 'window-buffer-change-functions 'anerenv/send-polybar-exwm-info-if-not-minibuff)
-(add-hook 'persp-switch-hook 'anerenv/send-polybar-exwm-persp-hook)
-
 (anerenv/start-panel)
 
 #+end_src
