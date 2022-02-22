@@ -298,17 +298,63 @@ Must set up
 )
 #+end_src
 
-** No-modeline
-
-https://www.reddit.com/r/emacs/comments/86jzk9/how_to_get_something_like_writeroommodes_modeline/
+** Window dividers
 
 #+begin_src emacs-lisp
-(setq-default mode-line-format nil)
-
 (setq window-divider-default-bottom-width 1
       window-divider-default-places 'bottom-only)
 
 (window-divider-mode 1)
+#+end_src
+** Modeline
+
+Setting colors
+#+begin_src emacs-lisp
+(set-face-attribute 'mode-line nil :box nil :background "LightBlue2")
+(set-face-attribute 'mode-line-inactive nil :box nil :background "LightYellow3")
+#+end_src
+
+We use [[https://emacs.stackexchange.com/questions/5529/how-to-right-align-some-items-in-the-modeline][this stackoverflow page]] to make left\right aligned stuff.
+
+We use [[https://www.reddit.com/r/emacs/comments/4mhphb/spacemacs_how_to_limit_the_length_of_displayed/][this article]] to try and limit the mode name length.
+
+#+begin_src emacs-lisp
+(setq evil-normal-state-tag
+    (propertize " NORMAL  " 'face '((:background "DarkGoldenrod2" :foreground "black")))
+    evil-emacs-state-tag
+    (propertize " EMACS   " 'face '((:background "SkyBlue2" :foreground "black")))
+    evil-insert-state-tag
+    (propertize " INSERT  " 'face '((:background "chartreuse3" :foreground "black")))
+    evil-replace-state-tag
+    (propertize " REPLACE " 'face '((:background "chocolate" :foreground "black")))
+    evil-motion-state-tag
+    (propertize " MOTION  " 'face '((:background "plum3" :foreground "black")))
+    evil-visual-state-tag
+    (propertize " VISUAL  " 'face '((:background "gray" :foreground "black")))
+    evil-operator-state-tag
+    (propertize " OPERATE " 'face '((:background "sandy brown" :foreground "black"))))
+
+
+
+(defun simple-mode-line-render (left right)
+  "Return a string of `window-width' length containing LEFT, and RIGHT
+ aligned respectively."
+  (let* ((available-width (- (window-width) (length left) 2)))
+    (format (format " %%s %%%ds " available-width) left right)))
+
+(setq-default mode-line-buffer-identification
+    (list -80 (propertized-buffer-identification "%12b")))
+
+(setq-default mode-line-format
+    '((:eval (simple-mode-line-render
+        ;;Left
+        (concat
+            (propertize (format-mode-line "%b") 'face '((:foreground "maroon")))
+            (format-mode-line " (%m) "))
+        ;;Right
+        (concat
+            (format-mode-line "%5lL%4cC ")
+            evil-mode-line-tag)))))
 #+end_src
 
 * Text
@@ -1689,7 +1735,9 @@ This is not enabled.
 #+end_src
 
 ** Diminish
+From [[https://www.emacswiki.org/emacs/DiminishedModes][here]].
 #+begin_src emacs-lisp
+
 (use-package diminish
   :config
     (diminish 'ivy-mode)
@@ -1704,6 +1752,7 @@ This is not enabled.
     (diminish 'buffer-face-mode)
     (diminish 'company-mode)
     (diminish 'flycheck-mode)
+    (diminish 'projectile)
     (diminish 'anerenv-global-minor-mode)
 )
 #+end_src
