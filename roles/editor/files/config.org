@@ -1673,6 +1673,14 @@ This is not enabled.
 (defalias 'yes-or-no-p 'y-or-n-p)
 #+end_src
 
+** Minibuff
+#+begin_src emacs-lisp
+(add-hook 'minibuffer-setup-hook
+          (lambda ()
+            (make-local-variable 'face-remapping-alist)
+            (add-to-list 'face-remapping-alist '(default (:background "WhiteSmoke")))))
+#+end_src
+
 ** Bell
 
 #+begin_src emacs-lisp
