@@ -1646,35 +1646,6 @@ Disabling the toolbar, the splash-screen, the menu-bar and the scroll-bar
 (add-to-list 'default-frame-alist '(background-color . "LightYellow"))
 #+end_src
 
-** Active background switch
-
-This is not enabled.
-
-#+begin_src emacs-lisp
-(defun anerenv/highlight-selected-window ()
-    ;Walk through all buffers, set all other buffers to
-    ;default background
-    (walk-windows (lambda (w)
-    (with-current-buffer (window-buffer w)
-        (unless (eq w (selected-window))
-        (progn
-            (buffer-face-set 'default)
-            ;(face-remap-remove-relative fringeface)
-                )
-        )
-    )
-    ))
-    ;Finally, set current buffer background
-    (buffer-face-set '(:background "PaleTurquoise1"))
-    (if (minibuffer-window-active-p (selected-window))
-        (buffer-face-set '(:background "PaleTurquoise1"))
-        (buffer-face-set '(:background "LightYellow"))
-    )
-)
-;(add-hook 'buffer-list-update-hook 'anerenv/highlight-selected-window)
-;(add-hook 'post-command-hook 'anerenv/highlight-selected-window)
-#+end_src
-
 ** Easy Prompt
 
 #+begin_src emacs-lisp
