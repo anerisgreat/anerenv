@@ -18,6 +18,7 @@
       - notmuch
       - xorg
       - xorg-xinit
+      - feh
   become: yes
 
 - name: Create directory for dunstrc
