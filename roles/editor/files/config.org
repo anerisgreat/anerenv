@@ -1215,7 +1215,13 @@ https://medium.com/emacs/using-elfeed-to-view-videos-6dfc798e51e6
 ** Chess
 #+begin_src emacs-lisp
 
-(use-package chess)
+(use-package chess
+  :config
+  (setq chess-images-separate-frame nil)
+  (setq chess-images-default-size 60)
+  (add-to-list 'evil-emacs-state-modes 'chess-display-mode)
+  (advice-add 'chess-display-mode :before '(lambda () (setq-local global-hl-line-mode nil)))
+)
 
 #+end_src
 ** Ibuffer
