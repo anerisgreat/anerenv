@@ -986,6 +986,12 @@ Snippet for src blocks
 
 #+end_src
 
+*** Tree slide
+#+begin_src emacs-lisp
+(use-package org-tree-slide
+    :config
+    (setq org-tree-slide-slide-in-effect nil))
+#+end_src
 *** Useful to remember
 
 To preview latex fragment as image embedded in text
