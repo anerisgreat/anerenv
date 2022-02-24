@@ -578,6 +578,15 @@ Using Hideshow
 (add-hook 'prog-mode-hook 'hs-minor-mode)
 #+end_src
 
+** Emojis!
+
+#+begin_src emacs-lisp
+(use-package emojify
+  :hook (after-init . global-emojify-mode))
+#+end_src
+
+:smile:
+
 * Major modes
 
 ** Magit
