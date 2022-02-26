@@ -1209,8 +1209,13 @@ https://medium.com/emacs/using-elfeed-to-view-videos-6dfc798e51e6
 
 (use-package chess
   :config
-  (setq chess-images-separate-frame nil)
-  (setq chess-images-default-size 60)
+  (setq chess-images-separate-frame nil
+        chess-images-default-size 60
+        chess-images-dark-color "LightYellow3"
+        chess-images-light-color "LightYellow2"
+        chess-images-white-color "gray100"
+        chess-images-black-color "gray10")
+        )
   (add-to-list 'evil-emacs-state-modes 'chess-display-mode)
   (advice-add 'chess-display-mode :before '(lambda () (setq-local global-hl-line-mode nil)))
 )
