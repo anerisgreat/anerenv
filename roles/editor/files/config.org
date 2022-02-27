@@ -1215,7 +1215,6 @@ https://medium.com/emacs/using-elfeed-to-view-videos-6dfc798e51e6
         chess-images-light-color "LightYellow2"
         chess-images-white-color "gray100"
         chess-images-black-color "gray10")
-        )
   (add-to-list 'evil-emacs-state-modes 'chess-display-mode)
   (advice-add 'chess-display-mode :before '(lambda () (setq-local global-hl-line-mode nil)))
 )
