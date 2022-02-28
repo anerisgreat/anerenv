@@ -99,3 +99,14 @@
     dest: "{{ anerenv_user_home }}/.gnupg/gpg-agent.conf"
     state: link
 
+- name: Create picom dir
+  file:
+    path: "{{picom_dir}}"
+    state: directory
+
+- name: Link picom file
+  file:
+    src: "{{ anerenv_home }}/roles/station/files/picom.conf"
+    dest: "{{ picom_dir }}/picom.conf"
+    state: link
+

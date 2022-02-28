@@ -1628,6 +1628,41 @@ https://gist.github.com/ajyoon/5323b999a01dce8db2d4456da1740fe3
 (anerenv/enable-heb)
 #+end_src
 
+*** Compositor
+
+Setting frame transparency to 95% for active and inactive frames.
+
+#+begin_src emacs-lisp
+(set-frame-parameter (selected-frame) 'alpha '(95 . 95))
+(add-to-list 'default-frame-alist '(alpha . (95 . 95)))
+#+end_src
+
+Creating the compositor process.
+
+#+begin_src emacs-lisp
+(defvar anerenv/picom-process nil
+  "Holds the process of the running picom instance, if any")
+
+(defun anerenv/kill-picom ()
+  (interactive)
+  (when anerenv/picom-process
+    (ignore-errors
+      (kill-process anerenv/picom-process)))
+  (setq anerenv/picom-process nil))
+
+(defun anerenv/start-picom ()
+  (interactive)
+  (progn
+    (anerenv/kill-picom)
+    (setq anerenv/picom-process
+        (start-process-shell-command "picom"
+                                     "*picom*"
+                                     "picom --config ~/.config/picom/picom.conf")))
+    (set-process-query-on-exit-flag anerenv/picom-process nil))
+
+(anerenv/start-picom)
+#+end_src
+
 *** Ending
 
 End the execute only if EXWM block.
@@ -1686,6 +1721,35 @@ Disabling the toolbar, the splash-screen, the menu-bar and the scroll-bar
 (setq ring-bell-function (lambda () ()))
 
 #+end_src
+*** Transparency
+
+We do this externally to not deal with function definition problems
+
+We create processes for feh to display wallpaper
+
+#+begin_src emacs-lisp
+(defvar anerenv/feh-process nil
+  "Holds the process of the running feh instance, if any")
+
+(defun anerenv/kill-feh ()
+  (interactive)
+  (when anerenv/feh-process
+    (ignore-errors
+      (kill-process anerenv/feh-process)))
+  (setq anerenv/feh-process nil))
+
+(defun anerenv/display-background-feh (path)
+  "Starts feh to display background from certain path"
+  (interactive)
+  (progn
+    (anerenv/kill-feh)
+    (setq anerenv/feh-process
+        (start-process-shell-command "feh" "*feh*"
+            (concat "feh --bg-scale "
+                (concat (file-name-as-directory path) "*"))))
+    (set-process-query-on-exit-flag anerenv/feh-process nil)))
+#+end_src
+
 * Extras
 
 #+begin_src emacs-lisp
