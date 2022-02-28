@@ -1,3 +1,5 @@
 qutebrowser_dir: "{{ config_dir }}/qutebrowser"
 download_dir: "{{ ansible_env.HOME }}/downloads"
 picom_dir: "{{ config_dir }}/picom"
+images_dir: "{{ anerenv_user_home }}/images"
+wallpapers_dir: "{{ images_dir }}/wallpapers"

@@ -1671,6 +1671,37 @@ Creating the compositor process.
 (anerenv/start-picom)
 #+end_src
 
+*** Transparency
+
+We do this externally to not deal with function definition problems
+
+We create processes for feh to display wallpaper
+
+#+begin_src emacs-lisp
+(defvar anerenv/feh-process nil
+  "Holds the process of the running feh instance, if any")
+
+(defun anerenv/kill-feh ()
+  (interactive)
+  (when anerenv/feh-process
+    (ignore-errors
+      (kill-process anerenv/feh-process)))
+  (setq anerenv/feh-process nil))
+
+(defun anerenv/display-background-feh (path)
+  "Starts feh to display background from certain path"
+  (interactive)
+  (progn
+    (anerenv/kill-feh)
+    (setq anerenv/feh-process
+        (start-process-shell-command "feh" "*feh*"
+            (concat "feh --bg-scale "
+                (concat (file-name-as-directory path) "*"))))
+    (set-process-query-on-exit-flag anerenv/feh-process nil)))
+
+(anerenv/display-background-feh "~/images/wallpapers")
+#+end_src
+
 *** Ending
 
 End the execute only if EXWM block.
@@ -1729,35 +1760,6 @@ Disabling the toolbar, the splash-screen, the menu-bar and the scroll-bar
 (setq ring-bell-function (lambda () ()))
 
 #+end_src
-*** Transparency
-
-We do this externally to not deal with function definition problems
-
-We create processes for feh to display wallpaper
-
-#+begin_src emacs-lisp
-(defvar anerenv/feh-process nil
-  "Holds the process of the running feh instance, if any")
-
-(defun anerenv/kill-feh ()
-  (interactive)
-  (when anerenv/feh-process
-    (ignore-errors
-      (kill-process anerenv/feh-process)))
-  (setq anerenv/feh-process nil))
-
-(defun anerenv/display-background-feh (path)
-  "Starts feh to display background from certain path"
-  (interactive)
-  (progn
-    (anerenv/kill-feh)
-    (setq anerenv/feh-process
-        (start-process-shell-command "feh" "*feh*"
-            (concat "feh --bg-scale "
-                (concat (file-name-as-directory path) "*"))))
-    (set-process-query-on-exit-flag anerenv/feh-process nil)))
-#+end_src
-
 * Extras
 
 #+begin_src emacs-lisp

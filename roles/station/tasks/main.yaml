@@ -110,3 +110,12 @@
     dest: "{{ picom_dir }}/picom.conf"
     state: link
 
+- name: Create images dir
+  file:
+    path: "{{images_dir}}"
+    state: directory
+
+- name: Create wallpapers dir
+  file:
+    path: "{{wallpapers_dir}}"
+    state: directory
