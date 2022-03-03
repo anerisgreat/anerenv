@@ -485,11 +485,12 @@ aligned left\right accordingly.
 
 ** Whitespace mode
 
-We define a custom global-whitespace-mode in order to enable it only on relevant modes.
+We define a custom global-whitespace-mode in order to enable it only on
+relevant modes.
 
-We check if the current mode doesn't derive from a set of blacklisted mode, the main
-culprit being terminal modes where whitespace occur naturally and are a pain to see all
-the time.
+We check if the current mode doesn't derive from a set of blacklisted mode, the
+main culprit being terminal modes where whitespace occur naturally and are a
+pain to see all the time.
 
 #+begin_src emacs-lisp
 (setq-default whitespace-style
@@ -501,9 +502,7 @@ the time.
     (if (derived-mode-p 'text-mode 'prog-mode 'org-mode)
         (whitespace-mode 1) (whitespace-mode -1)))
 
-#+end_src
-#+begin_src emacs-lisp
-(add-hook 'change-major-mode-hook 'anerenv/whitespace-mode-func)
+(add-hook 'after-change-major-mode-hook 'anerenv/whitespace-mode-func)
 #+end_src
 
 ** Irony-mode
@@ -724,7 +723,6 @@ Setting fixed fonts in org-mode so that mixed type works as intended.
         (org-mode . (lambda ()
             (setq-local whitespace-style '(face tabs trailing tab-mark
             indentation))))
-        (org-mode . whitespace-mode)
     :config
         (set-org-mode-fixed-pitch-faces)
         (setq org-src-tab-acts-natively t
