@@ -745,24 +745,67 @@ Setting fixed fonts in org-mode so that mixed type works as intended.
 )
 #+end_src
 
-*** Agenda
+*** Capture
+
+Basic setup for org-capture
 
 #+begin_src emacs-lisp
 (setq org-agenda-files (list "~/org/agenda")
-      org-default-notes-file "~/org/agenda/tasks.org")
+      org-default-notes-file "~/org/agenda/notes.org")
 
 (define-key anerenv-global-minor-mode-open-map
     (kbd "c") 'counsel-org-capture)
+
+(add-hook 'org-capture-mode-hook 'evil-insert-state)
 #+end_src
 
-*** Journal
-
 #+begin_src emacs-lisp
-(use-package org-journal
-  :config
-  (setq org-journal-dir "~/org/journal"))
+(setq org-capture-templates '(
+("tf" "Todo w/file" entry
+    (file "~/org/agenda/tasks.org")
+"* TODO %?
+:PROPERTIES:
+:CREATED: %U
+:FILE: %l
+:END:\n")
 
-**** TODO Finish setting up
+
+("tdf" "Todo w/deadline, file" entry
+    (file "~/org/agenda/tasks.org")
+"* TODO %^t %?
+:PROPERTIES:
+:CREATED: %U
+:FILE: %l
+:END:\n")
+
+("tg" "Todo general" entry
+    (file "~/org/agenda/tasks.org")
+"* TODO %?
+:PROPERTIES:
+:CREATED: %U
+:END:\n")
+
+("tdg" "Todo general w/date" entry
+ (file "~/org/agenda/tasks.org")
+"* TODO %^t %?
+:PROPERTIES:
+:CREATED: %U
+:END:\n")
+
+("n" "Notes" item
+    (file+headline "~/org/notes.org" "Notes")
+"%?")
+
+("j" "Journal entry" entry
+    (file+datetree "~/org/journal/journal.org")
+"* %U
+:PROPERTIES:
+:CREATED: %U
+:MOOD: %^{General mood?|happy|angry|sad}
+:ENERGY: %^{Energy?|tired|energetic}
+:END:
+%?")
+))
 
 #+end_src
 
