@@ -1460,7 +1460,8 @@ Partially from [[https://github.com/ch11ng/exwm/issues/202][here]]. (All comment
 
 (defun anerenv/get-monitor-list ()
     (mapcar (lambda (x) (match-string (string-match "^[A-Za-z]+-*[0-9]+" x) x))
-        (anerenv/re-seq "^[A-Za-z]+-*[0-9]+ connected" (shell-command-to-string "xrandr"))))
+        (anerenv/re-seq "^[A-Za-z]+-*[0-9]+ connected"
+                        (shell-command-to-string "xrandr"))))
 
 (defun anerenv/add-indexes (list)
   (anerenv/add-indexes-i list 1)
