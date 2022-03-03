@@ -986,11 +986,9 @@ Snippet for src blocks
 
 #+end_src
 
-*** Tree slide
+*** Presentation
 #+begin_src emacs-lisp
-(use-package org-tree-slide
-    :config
-    (setq org-tree-slide-slide-in-effect nil))
+(use-package epresent)
 #+end_src
 *** Useful to remember
 
