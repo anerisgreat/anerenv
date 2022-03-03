@@ -485,11 +485,12 @@ aligned left\right accordingly.
 
 ** Whitespace mode
 
-We define a custom global-whitespace-mode in order to enable it only on relevant modes.
+We define a custom global-whitespace-mode in order to enable it only on
+relevant modes.
 
-We check if the current mode doesn't derive from a set of blacklisted mode, the main
-culprit being terminal modes where whitespace occur naturally and are a pain to see all
-the time.
+We check if the current mode doesn't derive from a set of blacklisted mode, the
+main culprit being terminal modes where whitespace occur naturally and are a
+pain to see all the time.
 
 #+begin_src emacs-lisp
 (setq-default whitespace-style
@@ -501,14 +502,13 @@ the time.
     (if (derived-mode-p 'text-mode 'prog-mode 'org-mode)
         (whitespace-mode 1) (whitespace-mode -1)))
 
-#+end_src
-#+begin_src emacs-lisp
-(add-hook 'change-major-mode-hook 'anerenv/whitespace-mode-func)
+(add-hook 'after-change-major-mode-hook 'anerenv/whitespace-mode-func)
 #+end_src
 
 ** Irony-mode
 
-Must work on this. While it does work, can get slow and for weird projects can show errors.
+Must work on this. While it does work, can get slow and for weird projects can
+show errors.
 
 #+begin_src emacs-lisp
 ;; == irony-mode ==
@@ -587,6 +587,13 @@ Using Hideshow
 
 :smile:
 
+** Olivetti
+
+#+begin_src emacs-lisp
+(use-package olivetti
+  :init
+  (setq olivetti-body-width 86))
+#+end_src
 * Major modes
 
 ** Magit
@@ -712,15 +719,16 @@ Setting fixed fonts in org-mode so that mixed type works as intended.
         (:type built-in)
     :hook
         (org-mode . variable-pitch-mode)
-    :config
-        (set-org-mode-fixed-pitch-faces)
-        (add-hook 'org-mode-hook 'anerenv/set-bidi-env)
-        (add-hook 'org-mode-hook (lambda ()
+        (org-mode . anerenv/set-bidi-env)
+        (org-mode . (lambda ()
             (setq-local whitespace-style '(face tabs trailing tab-mark
             indentation))))
-        (setq org-src-tab-acts-natively t)
-        (setq org-adapt-indentation nil)
-        (setq org-startup-folded 'folded)
+    :config
+        (set-org-mode-fixed-pitch-faces)
+        (setq org-src-tab-acts-natively t
+              org-adapt-indentation nil
+              org-startup-folded 'folded
+              org-hide-emphasis-markers t)
         (set-face-attribute 'org-code nil
             :family (face-attribute 'fixed-pitch :family))
         (set-face-attribute 'org-block nil
@@ -731,8 +739,19 @@ Setting fixed fonts in org-mode so that mixed type works as intended.
 *** Agenda
 
 #+begin_src emacs-lisp
-(setq org-agenda-files (list "~/.tasks"))
-(setq org-default-notes-file "~/.tasks/tasks.org")
+(setq org-agenda-files (list "~/org/agenda")
+      org-default-notes-file "~/org/agenda/tasks.org")
+#+end_src
+
+*** Journal
+
+#+begin_src emacs-lisp
+(use-package org-journal
+  :config
+  (setq org-journal-dir "~/org/journal"))
+
+**** TODO Finish setting up
+
 #+end_src
 
 *** Babel

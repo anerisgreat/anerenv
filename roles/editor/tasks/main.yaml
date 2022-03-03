@@ -172,8 +172,17 @@
   changed_when: check_notmuch_reg.rc == 1
   failed_when: false
 
-- name: Create directory for tasks
+- name: Create directory for org
   file:
-    path: "{{ anerenv_user_home }}/.tasks"
+    path: "{{ org_dir }}"
     state: directory
 
+- name: Create directory for agenda
+  file:
+    path: "{{ agenda_dir }}"
+    state: directory
+
+- name: Create directory for journal
+  file:
+    path: "{{ journal_dir }}"
+    state: directory
