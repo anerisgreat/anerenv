@@ -84,7 +84,15 @@ Setting of keybindings based on [[https://stackoverflow.com/questions/49853494/t
     (find-file (concat user-emacs-directory "config.org"))
     )
 
+;Unbind face menu map
+(define-key global-map (kbd "M-o") nil)
+
 ;We'll define a basic keymap and already load window-manip funcs
+(defvar anerenv-global-minor-mode-open-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "c") 'anerenv/open-conf-file)
+    map)
+  "global keymap for opening stuff on anerenv")
 
 (defvar anerenv-global-minor-mode-map
   (let ((map (make-sparse-keymap)))
@@ -100,14 +108,15 @@ Setting of keybindings based on [[https://stackoverflow.com/questions/49853494/t
     (define-key map (kbd "M-<up>") 'windmove-up)
     (define-key map (kbd "M-<down>") 'windmove-down)
     (define-key map (kbd "M-d M-d") 'delete-window)
-    (define-key map (kbd "s-d s-d") 'delete-window)
     (define-key map (kbd "M-d D") 'kill-buffer-and-window)
     (define-key map (kbd "M-\\") 'split-window-horizontally)
     (define-key map (kbd "M-\-") 'split-window-vertically)
     (define-key map (kbd "M-d R") (lambda () (interactive)
                     (set-window-width 85)))
+    (define-key map (kbd "M-o") anerenv-global-minor-mode-open-map)
     map)
   "anerenv-global-minor-mode keymap.")
+
 
 (define-minor-mode anerenv-global-minor-mode
   "A minor mode for anerenv global keymaps."
@@ -741,6 +750,9 @@ Setting fixed fonts in org-mode so that mixed type works as intended.
 #+begin_src emacs-lisp
 (setq org-agenda-files (list "~/org/agenda")
       org-default-notes-file "~/org/agenda/tasks.org")
+
+(define-key anerenv-global-minor-mode-open-map
+    (kbd "c") 'counsel-org-capture)
 #+end_src
 
 *** Journal
@@ -1419,12 +1431,10 @@ Here are a few examples:
   (start-process-shell-command "qutebrowser" nil "qutebrowser")
 )
 
-(define-key anerenv-global-minor-mode-map
-    (kbd "s-o c") 'anerenv/open-conf-file)
-(define-key anerenv-global-minor-mode-map
-    (kbd "s-o q") 'anerenv/start-qutebrowser)
-(define-key anerenv-global-minor-mode-map
-    (kbd "s-o p") 'run-python)
+(define-key anerenv-global-minor-mode-open-map
+    (kbd "q") 'anerenv/start-qutebrowser)
+(define-key anerenv-global-minor-mode-open-map
+    (kbd "p") 'run-python)
 (define-key anerenv-global-minor-mode-map
   (kbd "<print>") 'anerenv/take-screenshot)
 #+end_src
@@ -1476,7 +1486,7 @@ Partially from [[https://github.com/ch11ng/exwm/issues/202][here]]. (All comment
             'anerenv/update-exwm-randr-workspace-monitor-plist)
 
 (define-key anerenv-global-minor-mode-map
-  (kbd "s-o x") 'anerenv/update-exwm-randr-workspace-monitor-plist)
+  (kbd "s-x") 'anerenv/update-exwm-randr-workspace-monitor-plist)
 #+end_src
 
 Enabling exwm
