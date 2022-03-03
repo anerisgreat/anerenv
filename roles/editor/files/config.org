@@ -588,6 +588,13 @@ Using Hideshow
 
 :smile:
 
+** Olivetti
+
+#+begin_src emacs-lisp
+(use-package olivetti
+  :init
+  (setq olivetti-body-width 86))
+#+end_src
 * Major modes
 
 ** Magit
