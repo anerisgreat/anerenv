@@ -90,7 +90,7 @@ Setting of keybindings based on [[https://stackoverflow.com/questions/49853494/t
 ;We'll define a basic keymap and already load window-manip funcs
 (defvar anerenv-global-minor-mode-open-map
   (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "c") 'anerenv/open-conf-file)
+    (define-key map (kbd "o") 'anerenv/open-conf-file)
     map)
   "global keymap for opening stuff on anerenv")
 
@@ -179,7 +179,6 @@ Taken from: https://github.com/emacs-evil/evil/issues/1288
 Meant to fix indentation for tabs in source blocks.
 
 #+begin_src emacs-lisp
-
 (defun evil-org-insert-state-in-edit-buffer (fun &rest args)
   "Bind `evil-default-state' to `insert' before calling FUN with ARGS."
   (let ((evil-default-state 'insert)
@@ -195,7 +194,13 @@ Meant to fix indentation for tabs in source blocks.
 
 (advice-add 'org-babel-do-key-sequence-in-edit-buffer
             :around #'evil-org-insert-state-in-edit-buffer)
+#+end_src
 
+Unbinding "C-z". We want it for other things.
+
+#+begin_src emacs-lisp
+(define-key evil-motion-state-map
+    (kbd "C-z") nil)
 #+end_src
 
 ** IVY
@@ -1179,6 +1184,9 @@ Adding emails can be done with notmuch new
     (run-with-timer 0 (* 60 10) 'anerenv/sync-mail-n-notify)
     (add-hook 'notmuch-show-mode 'anerenv/emacs-notmuch-face)
     (setq send-mail-function 'sendmail-send-it)
+  :bind
+    (:map anerenv-global-minor-mode-open-map
+        ("m" . notmuch))
 )
 #+end_src
 
@@ -1633,6 +1641,60 @@ Sending simulated keys to X windows
 (anerenv/start-flameshot-process)
 #+end_src
 
+*** EAF - Base
+
+The Emacs application framework!
+
+For customization see https://github.com/emacs-eaf/emacs-application-framework/wiki/Customization
+
+#+begin_src emacs-lisp
+(add-to-list 'load-path "~/.git-repos/eaf/")
+(require 'eaf)
+(add-to-list 'evil-emacs-state-modes 'eaf-mode)
+#+end_src
+
+*** EAF - Browser
+#+begin_src emacs-lisp
+(require 'eaf-browser)
+(setq eaf-browser-continue-where-left-off t
+      eaf-browser-enable-adblocker t
+      browse-url-browser-function 'eaf-open-browser
+      eaf-browser-download-path "~/downloads")
+(defalias 'browse-web #'eaf-open-browser)
+(define-key anerenv-global-minor-mode-open-map
+    (kbd "w") 'eaf-open-browser)
+(define-key anerenv-global-minor-mode-open-map
+    (kbd "W") 'eaf-open-browser-with-history)
+#+end_src
+
+Unbinding unwanted key bindings
+#+begin_src emacs-lisp
+;Unbinding dark mode keymap
+(eaf-bind-key nil "M-d" eaf-browser-keybinding)
+(eaf-bind-key nil "M-o" eaf-browser-keybinding)
+
+(dolist
+    (k '("M-d" "M-o" "M-b"))
+  (eaf-bind-key nil k eaf-browser-keybinding))
+#+end_src
+
+Rebinding wanted functionality
+#+begin_src emacs-lisp
+(eaf-bind-key edit_url "C-o" eaf-browser-keybinding)
+(eaf-bind-key history_forward "C-f" eaf-browser-keybinding)
+(eaf-bind-key history_backward "C-b" eaf-browser-keybinding)
+(eaf-bind-key open_link "C-v" eaf-browser-keybinding)
+(eaf-bind-key open_link_new_buffer "C-S-v" eaf-browser-keybinding)
+#+end_src
+
+*** EAF - Terminal
+#+begin_src emacs-lisp
+(require 'eaf-terminal)
+#+end_src
+*** EAF - Video Player
+#+begin_src emacs-lisp
+(require 'eaf-video-player)
+#+end_src
 *** Media keys
 
 https://gist.github.com/ajyoon/5323b999a01dce8db2d4456da1740fe3

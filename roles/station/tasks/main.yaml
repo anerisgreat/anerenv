@@ -21,6 +21,18 @@
       - feh
   become: yes
 
+- name: Clone eaf
+  git:
+    repo: https://github.com/emacs-eaf/emacs-application-framework.git
+    dest: "{{ eaf_dir }}"
+    version: master
+    depth: 1
+
+- name: Install eaf
+  shell:
+    chdir: "{{ eaf_dir }}"
+    cmd: "./install-eaf.py --install-all-apps"
+
 - name: Create directory for dunstrc
   file:
     path: "{{ config_dir }}/dunst"
@@ -119,3 +131,4 @@
   file:
     path: "{{wallpapers_dir}}"
     state: directory
+
