@@ -705,6 +705,10 @@ Disabled for now
 ;    (set (make-local-variable 'evil-emacs-state-cursor) (list nil))))
 #+end_src
 
+** Graphviz
+#+begin_src emacs-lisp
+(use-package graphviz-dot)
+#+end_src
 ** ORG
 
 All things org!
