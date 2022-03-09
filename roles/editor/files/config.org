@@ -609,15 +609,6 @@ Using Hideshow
 
 * Major modes
 
-** Magit
-
-#+begin_src emacs-lisp
-(use-package magit
-  :config
-    (evil-collection-magit-setup)
-)
-#+end_src
-
 ** VTerm
 
 #+begin_src emacs-lisp
@@ -1406,6 +1397,18 @@ Need to autoload dired-x for dired-omit
 (autoload 'dired-omit-mode "dired-x")
 (setq dired-omit-files "^\\...+$")
 (add-hook 'dired-mode-hook (lambda () (dired-omit-mode)))
+#+end_src
+
+** Magit
+
+#+begin_src emacs-lisp
+(use-package magit
+    :config
+        (evil-collection-magit-setup)
+    :bind
+        (:map anerenv-global-minor-mode-open-map
+            ("g" . 'magit-status))
+)
 #+end_src
 
 * UI
