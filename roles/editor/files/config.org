@@ -57,7 +57,6 @@ Taken from [[https://stackoverflow.com/questions/151945/how-do-i-control-how-ema
       version-control t)
 #+end_src
 
-
 Load all the packages that define the work environment.
 
 ** Garbage collection
@@ -116,7 +115,6 @@ Setting of keybindings based on [[https://stackoverflow.com/questions/49853494/t
     (define-key map (kbd "M-o") anerenv-global-minor-mode-open-map)
     map)
   "anerenv-global-minor-mode keymap.")
-
 
 (define-minor-mode anerenv-global-minor-mode
   "A minor mode for anerenv global keymaps."
@@ -320,6 +318,7 @@ Must set up
 
 (window-divider-mode 1)
 #+end_src
+
 ** Modeline
 
 Setting colors
@@ -347,8 +346,6 @@ We use [[https://www.reddit.com/r/emacs/comments/4mhphb/spacemacs_how_to_limit_t
     (propertize " VISUAL  " 'face '((:background "gray" :foreground "black")))
     evil-operator-state-tag
     (propertize " OPERATE " 'face '((:background "sandy brown" :foreground "black"))))
-
-
 
 (defun simple-mode-line-render (left right)
   "Return a string of `window-width' length containing LEFT, and RIGHT
@@ -428,7 +425,8 @@ Taken from [[https://www.emacswiki.org/emacs/LineNumbers][this wiki entry]].
             :type 'list
             :version "green")
 
-        (define-global-minor-mode anerenv/global-linum-mode display-line-numbers-mode
+        (define-global-minor-mode anerenv/global-linum-mode
+            display-line-numbers-mode
             (lambda () (if (and
                 (not (apply 'derived-mode-p display-line-numbers-exempt-modes))
                 (not (minibufferp)))
@@ -440,9 +438,9 @@ Taken from [[https://www.emacswiki.org/emacs/LineNumbers][this wiki entry]].
 
     :config
         (anerenv/global-linum-mode 1)
-        (set-face-attribute 'line-number nil :family (face-attribute 'fixed-pitch :family))
+        (set-face-attribute 'line-number nil
+            :family (face-attribute 'fixed-pitch :family))
 )
-
 
 #+end_src
 
@@ -608,6 +606,7 @@ Using Hideshow
   :init
   (setq olivetti-body-width 86))
 #+end_src
+
 * Major modes
 
 ** Magit
@@ -631,6 +630,7 @@ Using Hideshow
 #+end_src
 
 ** Eshell
+
 Watch based on https://emacs.stackexchange.com/questions/44389/how-to-watch-and-cat-and-grep-with-emacs
 
 #+begin_src emacs-lisp
@@ -689,7 +689,6 @@ Broken for the time being
     (evil-collection-pdf-setup)
 )
 
-
 #+end_src
 
 *** Stop the blinking on PDF-View-Mode
@@ -706,10 +705,14 @@ Disabled for now
 #+end_src
 
 ** Graphviz
+
 #+begin_src emacs-lisp
 (use-package graphviz-dot)
 #+end_src
+
 ** ORG
+
+*** Base
 
 All things org!
 
@@ -751,6 +754,9 @@ Setting fixed fonts in org-mode so that mixed type works as intended.
             :family (face-attribute 'fixed-pitch :family))
         (set-face-attribute 'org-block nil
             :family (face-attribute 'fixed-pitch :family))
+    :bind
+        ("C-a" . nil)
+        ("C-a l" . org-toggle-latex-fragment)
 )
 #+end_src
 
@@ -777,7 +783,6 @@ Basic setup for org-capture
 :CREATED: %U
 :FILE: %l
 :END:\n")
-
 
 ("tdf" "Todo w/deadline, file" entry
     (file "~/org/agenda/tasks.org")
@@ -957,17 +962,6 @@ This should render Hebrew text.
   (add-hook 'org-babel-after-execute-hook 'shk-fix-inline-images))
 #+end_src
 
-*** Sticky headers
-
-#+begin_src emacs-lisp
-
-;; (use-package org-sticky-header
-;;   :config
-;;         (add-hook 'org-mode-hook (lambda () (org-sticky-header-mode)))
-;;    )
-
-#+end_src
-
 *** Snippets
 
 Want to create snippets for latex insertion.
@@ -1066,26 +1060,74 @@ Snippet for src blocks
                                       nil
 )))
 
-
 #+end_src
 
 *** Presentation
+
 #+begin_src emacs-lisp
 (use-package epresent)
 #+end_src
+
+*** Formatter
+
+https://emacs.stackexchange.com/questions/16792/easiest-way-to-check-if-current-line-is-empty-ignoring-whitespace
+https://stackoverflow.com/questions/52121961/emacs-org-mode-insert-text-after-heading-properties
+https://stackoverflow.com/questions/4419576/delete-extra-blank-lines-in-emacs
+
+#+begin_src emacs-lisp
+(defun anerenv/testfunc () (interactive)
+       (org-end-of-meta-data t)
+)
+
+(defun anerenv/current-line-empty-p ()
+  (save-excursion
+    (beginning-of-line)
+    (looking-at-p "[[:space:]]*$")))
+
+(defun anerenv/format-org ()
+  "Formats org buffer to proper format"
+  (interactive)
+  (save-excursion ;Make sure not to actually change cursor position
+    (save-match-data ;Don't mess with search data
+      (progn
+        (goto-char (point-min)) ;Reset after each search through
+
+        ;For each org header, check if prev line is empty. If not, make it
+        (while (re-search-forward org-heading-regexp nil t) ;For each org header
+            (if (not (eq (line-beginning-position) (point-min))) (progn
+                (previous-line 1)
+                (if (anerenv/current-line-empty-p)
+                    (next-line 2)
+                    (progn
+                        (next-line 1)
+                        (goto-char (line-beginning-position))
+                        (newline)
+                        (next-line 1))))))
+
+        (goto-char (point-min))
+        ;For each org header, check if next line is empty (after metadata)
+        (while (re-search-forward org-heading-regexp nil t)
+            (org-end-of-meta-data t)
+            (goto-char (line-beginning-position))
+            (if (not (anerenv/current-line-empty-p))
+                    (newline)))
+
+        (goto-char (point-min))
+        ;Delete extra newlines
+        (while (re-search-forward "\\(^\\s-*$\\)\n" nil t)
+            (replace-match "\n")
+            (forward-char 1))
+
+        ;Finally, general whitespace cleanup
+        (whitespace-cleanup)))))
+#+end_src
+
 *** Useful to remember
 
 To preview latex fragment as image embedded in text
 #+begin_example
 org-toggle-latex-fragment
 #+end_example
-
-*** Binding
-
-#+begin_src emacs-lisp
-(define-key org-mode-map (kbd "C-a") nil)
-(define-key org-mode-map (kbd "C-a l") 'org-toggle-latex-fragment)
-#+end_src
 
 ** Markdown
 
@@ -1265,7 +1307,6 @@ https://medium.com/emacs/using-elfeed-to-view-videos-6dfc798e51e6
             do (elfeed-v-mpv it))
         (mapc #'elfeed-search-update-entry entries)))
 
-
         (defun slurp (f)
         (with-temp-buffer
             (insert-file-contents f)
@@ -1289,8 +1330,8 @@ https://medium.com/emacs/using-elfeed-to-view-videos-6dfc798e51e6
 #+end_src
 
 ** Chess
-#+begin_src emacs-lisp
 
+#+begin_src emacs-lisp
 (use-package chess
   :config
   (setq chess-images-separate-frame nil
@@ -1299,26 +1340,30 @@ https://medium.com/emacs/using-elfeed-to-view-videos-6dfc798e51e6
         chess-images-light-color "LightYellow2"
         chess-images-white-color "gray100"
         chess-images-black-color "gray10")
+  ;Disable evil
   (add-to-list 'evil-emacs-state-modes 'chess-display-mode)
-  (advice-add 'chess-display-mode :before '(lambda () (setq-local global-hl-line-mode nil)))
+  ;Disable hl-line-mode
+  (advice-add 'chess-display-mode
+    :before '(lambda () (setq-local global-hl-line-mode nil)))
 )
-
 #+end_src
+
 ** Ibuffer
 
 #+begin_src emacs-lisp
-
 (evil-collection-ibuffer-setup)
 (define-key anerenv-global-minor-mode-map
     (kbd "C-x C-b") 'ibuffer)
-
 #+end_src
 
 ** Wiki-summary
+
 #+begin_src emacs-lisp
 (use-package wiki-summary)
 #+end_src
+
 ** Dashboard
+
 #+begin_src emacs-lisp
 (setq inhibit-startup-screen t)
 (use-package dashboard
@@ -1347,12 +1392,15 @@ https://medium.com/emacs/using-elfeed-to-view-videos-6dfc798e51e6
 
 )
 #+end_src
+
 ** Calendar
+
 #+begin_src emacs-lisp
 (evil-collection-calendar-setup)
 #+end_src
 
 ** Dired
+
 Need to autoload dired-x for dired-omit
 #+begin_src emacs-lisp
 (autoload 'dired-omit-mode "dired-x")
@@ -1361,6 +1409,7 @@ Need to autoload dired-x for dired-omit
 #+end_src
 
 * UI
+
 ** Perspective
 
 #+begin_src emacs-lisp
@@ -1382,6 +1431,7 @@ Need to autoload dired-x for dired-omit
 #+end_src
 
 ** EXWM
+
 We execute the following code only if started with EXWM argument
 
 *** Setup
@@ -1443,6 +1493,7 @@ We execute the following code only if started with EXWM argument
 #+end_src
 
 *** Turn off evil
+
 #+begin_src emacs-lisp
 (add-to-list 'evil-emacs-state-modes 'exwm-mode)
 #+end_src
@@ -1521,7 +1572,6 @@ Partially from [[https://github.com/ch11ng/exwm/issues/202][here]]. (All comment
 (defun anerenv/add-indexes (list)
   (anerenv/add-indexes-i list 1)
 )
-
 
 (defun anerenv/add-indexes-i (list i)
   (if list
@@ -1658,6 +1708,7 @@ For customization see https://github.com/emacs-eaf/emacs-application-framework/w
 #+end_src
 
 *** EAF - Browser
+
 #+begin_src emacs-lisp
 (require 'eaf-browser)
 (setq eaf-browser-continue-where-left-off t
@@ -1692,10 +1743,12 @@ Rebinding wanted functionality
 #+end_src
 
 *** EAF - Terminal
+
 #+begin_src emacs-lisp
 (require 'eaf-terminal)
 #+end_src
 *** EAF - Video Player
+
 #+begin_src emacs-lisp
 (require 'eaf-video-player)
 #+end_src
@@ -1843,13 +1896,15 @@ We create processes for feh to display wallpaper
 
 End the execute only if EXWM block.
 Close parens, then add to command switch.
+
 #+begin_src emacs-lisp
-))
+)) ;Closing off progn for EXWM
 
 (add-to-list 'command-switch-alist '("--start-exwm" . anerenv-load-exwm))
 #+end_src
 
 ** Clean UI
+
 Disabling the toolbar, the splash-screen, the menu-bar and the scroll-bar
 #+begin_src emacs-lisp
 
@@ -1857,8 +1912,8 @@ Disabling the toolbar, the splash-screen, the menu-bar and the scroll-bar
 (when (display-graphic-p)
     (tool-bar-mode -1)   ; no tool bar with icons
     (scroll-bar-mode -1) ; no scroll bars
-    (set-fringe-mode 0)
-)
+    (set-fringe-mode 0))
+
 #+end_src
 
 ** Which-Key
@@ -1883,6 +1938,7 @@ Disabling the toolbar, the splash-screen, the menu-bar and the scroll-bar
 #+end_src
 
 ** Minibuff
+
 #+begin_src emacs-lisp
 (add-hook 'minibuffer-setup-hook
           (lambda ()
@@ -1893,14 +1949,12 @@ Disabling the toolbar, the splash-screen, the menu-bar and the scroll-bar
 ** Bell
 
 #+begin_src emacs-lisp
-
 (setq ring-bell-function (lambda () ()))
-
 #+end_src
+
 * Extras
 
 #+begin_src emacs-lisp
 (use-package load-dir
   :config (setq load-dirs (concat user-emacs-directory "extra/")))
 #+end_src
-
