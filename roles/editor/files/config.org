@@ -1497,6 +1497,7 @@ We execute the following code only if started with EXWM argument
 #+begin_src emacs-lisp
 (add-to-list 'evil-emacs-state-modes 'exwm-mode)
 #+end_src
+
 *** Basic keybindings
 
 Global keybindings can be defined with `exwm-input-global-keys'.
@@ -1747,11 +1748,13 @@ Rebinding wanted functionality
 #+begin_src emacs-lisp
 (require 'eaf-terminal)
 #+end_src
+
 *** EAF - Video Player
 
 #+begin_src emacs-lisp
 (require 'eaf-video-player)
 #+end_src
+
 *** Media keys
 
 https://gist.github.com/ajyoon/5323b999a01dce8db2d4456da1740fe3
