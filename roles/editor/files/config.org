@@ -1632,9 +1632,6 @@ Sending simulated keys to X windows
 (defvar anerenv/polybar-process nil
   "Holds the process of the running Polybar instance, if any")
 
-(defvar anerenv/last-persp-name nil
-  "Name of last active persp")
-
 (defun anerenv/kill-panel ()
   (interactive)
   (when anerenv/polybar-process
