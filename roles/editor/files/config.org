@@ -1684,11 +1684,16 @@ Unbinding unwanted key bindings
 
 Rebinding wanted functionality
 #+begin_src emacs-lisp
+(defun anerenv/eaf-interactive-search-it ()
+  (interactive)
+    (setq current-prefix-arg '(1)) (call-interactively 'eaf-search-it))
+
 (eaf-bind-key edit_url "C-o" eaf-browser-keybinding)
 (eaf-bind-key history_forward "C-f" eaf-browser-keybinding)
 (eaf-bind-key history_backward "C-b" eaf-browser-keybinding)
 (eaf-bind-key open_link "C-v" eaf-browser-keybinding)
 (eaf-bind-key open_link_new_buffer "C-S-v" eaf-browser-keybinding)
+(eaf-bind-key anerenv/eaf-interactive-search-it "C-f" eaf-browser-keybinding)
 #+end_src
 
 *** EAF - Terminal
