@@ -1423,21 +1423,73 @@ Need to autoload dired-x for dired-omit
 ** Perspective
 
 #+begin_src emacs-lisp
-(use-package perspective
-   :config
-     (persp-mode 1)
-     (setq persp-show-modestring 'nil)
-   :bind (:map anerenv-global-minor-mode-map
-              ("M-<tab>" . persp-next)
-              ("M-n" . persp-switch)
-              ("M-`" . persp-prev)
-              ))
+;; (use-package perspective
+;;    :config
+;;      (persp-mode 1)
+;;      (setq persp-show-modestring 'nil)
+;;    :bind (:map anerenv-global-minor-mode-map
+;;               ("M-<tab>" . persp-next)
+;;               ("M-n" . persp-switch)
+;;               ("M-`" . persp-prev)
+;;               ))
 
-(use-package persp-projectile
-  :bind(:map projectile-command-map
-    ("p" . projectile-persp-switch-project)
-  )
-)
+;; (use-package persp-projectile
+;;   :bind(:map projectile-command-map
+;;     ("p" . projectile-persp-switch-project)
+;;   )
+;; )
+#+end_src
+
+** Tab bar
+
+Prettification of tab bar. We only use tab-bar if the version is greater than 27.1.
+We also use this section to bind keys.
+
+#+begin_src emacs-lisp
+;; If version greater than 27.1
+(if (version<= "27.1" emacs-version) (progn
+    (tab-bar-mode 1)
+    (set-face-attribute 'tab-bar nil
+                        :background "LightYellow4")
+    (set-face-attribute 'tab-bar-tab nil
+                        :box nil
+                        :background "LightYellow2"
+                        :foreground "DarkBlue")
+    (set-face-attribute 'tab-bar-tab-inactive nil
+                        :background "LightYellow3"
+                        :foreground "DarkSlateGrey")
+
+    (define-key anerenv-global-minor-mode-map
+        (kbd "M-<tab>") 'tab-next)
+    (define-key anerenv-global-minor-mode-map
+        (kbd "M-'") 'tab-previous)
+    (define-key anerenv-global-minor-mode-map
+        (kbd "M-n") 'tab-switch)
+    (define-key anerenv-global-minor-mode-map
+        (kbd "M-t r") 'tab-bar-rename-tab)
+    ))
+#+end_src
+
+Let's check out the tab bars
+
+#+begin_src emacs-lisp
+(defvar anerenv/tab-bar-right-group '('current-time-string)
+    "A list of items to be displayed on the right of the tab-bar")
+(defun anerenv/tab-bar-right-group-func ()
+  "Function that returns a string to be displayed on right of tab-bar"
+  (propertize (concat " "
+                (mapconcat 'eval (mapcar 'funcall anerenv/tab-bar-right-group)))
+            'face '(:background "lightblue" :foreground "DarkSlateGrey")
+    ))
+(if (version<= "28.1" emacs-version) (progn
+    (setq tab-bar-format
+        '(tab-bar-format-history
+        tab-bar-format-tabs
+        tab-bar-separator
+        tab-bar-format-add-tab
+        tab-bar-format-align-right
+        anerenv/tab-bar-right-group-func))
+))
 #+end_src
 
 ** EXWM
@@ -1650,7 +1702,7 @@ Sending simulated keys to X windows
                 " exwm-bar"))))
     (set-process-query-on-exit-flag anerenv/polybar-process nil)))
 
-(anerenv/start-panel)
+;(anerenv/start-panel)
 
 #+end_src
 
@@ -1737,7 +1789,7 @@ Unbinding unwanted key bindings
 (eaf-bind-key nil "M-o" eaf-browser-keybinding)
 
 (dolist
-    (k '("M-d" "M-o" "M-b"))
+    (k '("M-d" "M-o" "M-b" "n"))
   (eaf-bind-key nil k eaf-browser-keybinding))
 #+end_src
 
@@ -1752,6 +1804,7 @@ Rebinding wanted functionality
 (eaf-bind-key history_backward "C-b" eaf-browser-keybinding)
 (eaf-bind-key open_link "C-v" eaf-browser-keybinding)
 (eaf-bind-key open_link_new_buffer "C-S-v" eaf-browser-keybinding)
+(eaf-bind-key export_text "C-e" eaf-browser-keybinding)
 (eaf-bind-key anerenv/eaf-interactive-search-it "C-f" eaf-browser-keybinding)
 #+end_src
 
