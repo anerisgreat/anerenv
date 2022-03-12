@@ -814,6 +814,13 @@ Basic setup for org-capture
 
 #+end_src
 
+*** Agenda
+
+#+begin_src emacs-lisp
+(define-key anerenv-global-minor-mode-open-map
+    (kbd "a") 'org-agenda)
+#+end_src
+
 *** Babel
 
 Define languages to use
