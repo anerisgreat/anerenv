@@ -1903,7 +1903,7 @@ We create processes for feh to display wallpaper
     (anerenv/kill-feh)
     (setq anerenv/feh-process
         (start-process-shell-command "feh" "*feh*"
-            (concat "feh --bg-scale "
+            (concat "feh --bg-fill "
                 (concat (file-name-as-directory path) "*"))))
     (set-process-query-on-exit-flag anerenv/feh-process nil)))
 
