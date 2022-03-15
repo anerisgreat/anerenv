@@ -1473,17 +1473,32 @@ We also use this section to bind keys.
     ))
 #+end_src
 
-Let's check out the tab bars
+From emacs 28.1 there is support for right-aligned text on the tab-bar. We may use this to display more information.
 
 #+begin_src emacs-lisp
-(defvar anerenv/tab-bar-right-group '(current-time-string)
+(defun anerenv/bat-string () "Get good battery string for up right"
+    (if display-battery-mode
+        (let ((percentage (format "%3s" (cdr (assq ?p (funcall battery-status-function))))))
+            (concat "Bat: " (propertize percentage 'font-lock-face '(:foreground "red" :background "blue"))))
+        ""))
+
+(defvar anerenv/tab-bar-right-group '(current-time-string anerenv/bat-string)
     "A list of items to be displayed on the right of the tab-bar")
+
 (defun anerenv/tab-bar-right-group-func ()
   "Function that returns a string to be displayed on right of tab-bar"
   (propertize (concat " "
-                (mapconcat 'eval (mapcar 'funcall anerenv/tab-bar-right-group)))
+                (mapconcat 'eval (mapcar 'funcall anerenv/tab-bar-right-group)
+                           "\t| "))
             'face '(:background "LightYellow3" :foreground "DarkSlateGrey")
     ))
+(defvar anerenv/tab-bar-timer nil "Timer to update the tab-bar")
+
+(defun anerenv/run-tab-bar-timer () "Run the tab bar timer" (progn
+       (if anerenv/tab-bar-timer (cancel-timer anerenv/tab-bar-timer))
+       (setq anerenv/tab-bar-timer
+             (run-with-timer 0 5 'force-mode-line-update))))
+
 (if (version<= "28.1" emacs-version) (progn
     (setq tab-bar-format
         '(tab-bar-format-history
@@ -1492,8 +1507,31 @@ Let's check out the tab bars
         tab-bar-format-add-tab
         tab-bar-format-align-right
         anerenv/tab-bar-right-group-func))
+    ;(anerenv/run-tab-bar-timer)
 ))
 #+end_src
+
+#+begin_src emacs-lisp
+(run-with-timer 0 (* 60 10) 'anerenv/sync-mail-n-notify)
+#+end_src
+
+#+begin_example
+	    (setq remaining-time
+                  (format "%d:%02d" hours (% minutes 60)))))))
+    (list (cons ?v (or driver-version "N/A"))
+	  (cons ?V (or bios-version "N/A"))
+	  (cons ?I (or bios-interface "N/A"))
+	  (cons ?L (or line-status "N/A"))
+	  (cons ?B (or battery-status "N/A"))
+	  (cons ?b (or battery-status-symbol ""))
+	  (cons ?p (or load-percentage "N/A"))
+          (cons ?s (if seconds (number-to-string seconds) "N/A"))
+          (cons ?m (if minutes (number-to-string minutes) "N/A"))
+          (cons ?h (if hours (number-to-string hours) "N/A"))
+	  (cons ?t (or remaining-time "N/A")))))
+
+(cdr (assq ?L (funcall battery-status-function)))
+#+end_example
 
 ** EXWM
 
