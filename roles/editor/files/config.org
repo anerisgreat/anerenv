@@ -1480,6 +1480,8 @@ We also use this section to bind keys.
         (kbd "M-t x") 'tab-bar-close-tab)
     (define-key anerenv-global-minor-mode-map
         (kbd "M-t c") 'anerenv/new-tab-and-rename)
+    (setq tab-bar-close-button-show nil
+          tab-bar-new-button-show nil)
     ))
 #+end_src
 
