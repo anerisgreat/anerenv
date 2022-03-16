@@ -1387,8 +1387,7 @@ https://medium.com/emacs/using-elfeed-to-view-videos-6dfc798e51e6
     (add-to-list 'evil-emacs-state-modes 'dashboard-mode)
     (setq dashboard-items '((recents  . 5)
                         (bookmarks . 5)
-                        (projects . 5)
-                        (agenda . 5))
+                        (projects . 5))
           dashboard-center-content t
           dashboard-set-init-info nil
           dashboard-set-footer nil
