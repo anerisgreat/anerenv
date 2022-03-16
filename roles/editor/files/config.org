@@ -1482,7 +1482,8 @@ We also use this section to bind keys.
         (kbd "M-t c") 'anerenv/new-tab-and-rename)
     (setq tab-bar-close-button-show nil
           tab-bar-new-button-show nil)
-    ))
+    (add-hook 'emacs-startup-hook (lambda () (tab-bar-rename-tab "home" 1)))
+))
 #+end_src
 
 From emacs 28.1 there is support for right-aligned text on the tab-bar. We may use this to display more information.
