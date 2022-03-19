@@ -1532,6 +1532,7 @@ From emacs 28.1 there is support for right-aligned text on the tab-bar. We may u
         anerenv/tab-bar-right-group-func))
     (define-key anerenv-global-minor-mode-map
         (kbd "M-n") 'tab-switch)
+    (display-battery-mode)
     ;(anerenv/run-tab-bar-timer)
 ))
 #+end_src
