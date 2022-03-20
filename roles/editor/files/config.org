@@ -1452,6 +1452,8 @@ Need to autoload dired-x for dired-omit
 
 ** Tab bar
 
+*** Base
+
 Prettification of tab bar. We only use tab-bar if the version is greater than 27.1.
 We also use this section to bind keys.
 
@@ -1468,6 +1470,7 @@ We also use this section to bind keys.
     (tab-bar-mode 1)
     (set-face-attribute 'tab-bar nil
                         :background "LightYellow4")
+
     (set-face-attribute 'tab-bar-tab nil
                         :box nil
                         :background "AliceBlue"
@@ -1496,6 +1499,8 @@ We also use this section to bind keys.
 ))
 #+end_src
 
+*** Right group
+
 From emacs 28.1 there is support for right-aligned text on the tab-bar. We may use this to display more information.
 
 #+begin_src emacs-lisp
@@ -1512,7 +1517,7 @@ From emacs 28.1 there is support for right-aligned text on the tab-bar. We may u
   "Function that returns a string to be displayed on right of tab-bar"
   (propertize (concat " "
                 (mapconcat 'eval (mapcar 'funcall anerenv/tab-bar-right-group)
-                           "\t| "))
+                           " | "))
             'face '(:background "LightYellow3" :foreground "DarkSlateGrey")
     ))
 (defvar anerenv/tab-bar-timer nil "Timer to update the tab-bar")
@@ -1522,17 +1527,26 @@ From emacs 28.1 there is support for right-aligned text on the tab-bar. We may u
        (setq anerenv/tab-bar-timer
              (run-with-timer 0 5 'force-mode-line-update))))
 
+(defun anerenv/tab-bar-spaces () "Return spacing for beginning of tab bar"
+       "            ")
+
+(defun anerenv/tab-bar-name-format-space ()
+  "Normal tab name format but with spacing"
+  (format " %s " (tab-bar-tab-name-current)))
+
 (if (version<= "28.1" emacs-version) (progn
     (setq tab-bar-format
-        '(tab-bar-format-history
+        '(anerenv/tab-bar-spaces
+        tab-bar-format-history
         tab-bar-format-tabs
         tab-bar-separator
         tab-bar-format-add-tab
         tab-bar-format-align-right
-        anerenv/tab-bar-right-group-func))
+        anerenv/tab-bar-right-group-func)
+        tab-bar-tab-name-function 'anerenv/tab-bar-name-format-space)
     (define-key anerenv-global-minor-mode-map
         (kbd "M-n") 'tab-switch)
-    (display-battery-mode)
+;    (display-battery-mode)
     ;(anerenv/run-tab-bar-timer)
 ))
 #+end_src
@@ -1723,12 +1737,6 @@ Partially from [[https://github.com/ch11ng/exwm/issues/202][here]]. (All comment
 
 (define-key anerenv-global-minor-mode-map
   (kbd "s-x") 'anerenv/update-exwm-randr-workspace-monitor-plist)
-#+end_src
-
-Enabling exwm
-#+begin_src emacs-lisp
-(exwm-randr-enable)
-(exwm-enable)
 #+end_src
 
 *** Prefix keys
@@ -2032,6 +2040,12 @@ We create processes for feh to display wallpaper
     (set-process-query-on-exit-flag anerenv/feh-process nil)))
 
 (anerenv/display-background-feh "~/images/wallpapers")
+#+end_src
+
+*** Enabling exwm
+#+begin_src emacs-lisp
+(exwm-randr-enable)
+(exwm-enable)
 #+end_src
 
 *** Ending
