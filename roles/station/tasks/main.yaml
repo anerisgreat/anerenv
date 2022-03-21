@@ -19,6 +19,7 @@
       - xorg
       - xorg-xinit
       - feh
+      - aria2
   become: yes
 
 - name: Clone eaf
