@@ -623,6 +623,7 @@ Using Hideshow
 
 #+begin_src emacs-lisp
 (use-package vterm
+  :if  (member system-type '('gnu 'gnu/linux))
   :config
   (add-hook 'vterm-mode-hook
             (lambda () (setq-local global-hl-line-mode nil)))
