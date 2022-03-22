@@ -1962,6 +1962,13 @@ https://gist.github.com/ajyoon/5323b999a01dce8db2d4456da1740fe3
 (anerenv/enable-heb)
 #+end_src
 
+*** System tray
+
+#+begin_src emacs-lisp
+(require 'exwm-systemtray)
+(exwm-systemtray-enable)
+#+end_src
+
 *** Compositor
 
 Setting frame transparency to 95% for active and inactive frames.
