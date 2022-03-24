@@ -771,7 +771,8 @@ Basic setup for org-capture
 
 #+begin_src emacs-lisp
 (setq org-agenda-files (list "~/org/agenda")
-      org-default-notes-file "~/org/agenda/notes.org")
+      org-default-notes-file "~/org/agenda/notes.org"
+      org-agenda-tags-column -80)
 
 (define-key anerenv-global-minor-mode-open-map
     (kbd "c") 'counsel-org-capture)
@@ -780,43 +781,83 @@ Basic setup for org-capture
 #+end_src
 
 #+begin_src emacs-lisp
-(setq org-capture-templates '(
+(defvar anerenv/org-capture-default-proj-name
+  "general"
+  "Default project name")
+
+(defvar anerenv/org-capture-proj-name
+  anerenv/org-capture-default-proj-name
+  "Temporary var to store prev buffers proj name before capture")
+
+(defun anerenv/org-capture-get-project-name ()
+  "Gets project name, returns 'general' if not"
+  (let ((ret (projectile-project-name)))
+    (if (string-equal ret "-") "general" ret)))
+
+(defun anerenv/org-capture-set-project-name (&rest args)
+  "Sets variable with project name"
+  (setq anerenv/org-capture-proj-name (anerenv/org-capture-get-project-name)))
+
+(advice-add 'org-capture :before 'anerenv/org-capture-set-project-name)
+
+(setq org-capture-templates `(
 ("tf" "Todo w/file" entry
-    (file "~/org/agenda/tasks.org")
-"* TODO %?
+    (file "agenda/tasks.org")
+"* TODO %?%(org-set-tags anerenv/org-capture-proj-name)
 :PROPERTIES:
 :CREATED: %U
 :FILE: %l
+:PROJECT: %(eval anerenv/org-capture-proj-name)
+:END:\n")
+
+("tp" "Todo w/project" entry
+    (file "agenda/tasks.org")
+"* TODO %?%(org-set-tags anerenv/org-capture-proj-name)
+:PROPERTIES:
+:CREATED: %U
+:PROJECT: %(eval anerenv/org-capture-proj-name)
 :END:\n")
 
 ("tdf" "Todo w/deadline, file" entry
-    (file "~/org/agenda/tasks.org")
-"* TODO %^t %?
+    (file "agenda/tasks.org")
+"* TODO %^t %?%(org-set-tags anerenv/org-capture-proj-name)
 :PROPERTIES:
 :CREATED: %U
 :FILE: %l
+:PROJECT: %(eval anerenv/org-capture-proj-name)
+:END:\n")
+
+("tdp" "Todo w/project, file" entry
+    (file "agenda/tasks.org")
+"* TODO %^t %?%(org-set-tags anerenv/org-capture-proj-name)
+:PROPERTIES:
+:CREATED: %U
+:FILE: %l
+:PROJECT: %(eval anerenv/org-capture-proj-name)
 :END:\n")
 
 ("tg" "Todo general" entry
-    (file "~/org/agenda/tasks.org")
-"* TODO %?
+    (file "agenda/tasks.org")
+"* TODO %?%(org-set-tags \"general\")
 :PROPERTIES:
+:PROJECT: general
 :CREATED: %U
 :END:\n")
 
 ("tdg" "Todo general w/date" entry
- (file "~/org/agenda/tasks.org")
-"* TODO %^t %?
+    (file "agenda/tasks.org")
+"* TODO %^t %?%(org-set-tags \"general\")
 :PROPERTIES:
+:PROJECT: general
 :CREATED: %U
 :END:\n")
 
 ("n" "Notes" item
-    (file+headline "~/org/notes.org" "Notes")
+    (file "notes.org")
 "%?")
 
 ("j" "Journal entry" entry
-    (file+datetree "~/org/journal/journal.org")
+    (file+datetree "journal/journal.org")
 "* %U
 :PROPERTIES:
 :CREATED: %U
@@ -826,6 +867,7 @@ Basic setup for org-capture
 %?")
 ))
 
+(add-hook 'org-capture-prepare-finalize-hook 'org-align-all-tags)
 #+end_src
 
 *** Agenda
@@ -1425,7 +1467,9 @@ Need to autoload dired-x for dired-omit
 (use-package dired-subtree
     :config
     (evil-collection-define-key 'normal 'dired-mode-map
-        (kbd "SPC") 'dired-subtree-toggle)
+        (kbd "SPC") 'dired-subtree-toggle
+        (kbd "TAB") 'dired-subtree-cycle
+        )
   (setq dired-subtree-use-backgrounds nil))
 #+end_src
 
