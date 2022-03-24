@@ -1528,6 +1528,11 @@ We also use this section to bind keys.
 
 #+begin_src emacs-lisp
 ;; If version greater than 27.1
+
+(defun anerenv/tab-bar-name-format-space ()
+  "Normal tab name format but with spacing"
+  (format " %s " (tab-bar-tab-name-current)))
+
 (defun anerenv/new-tab-and-rename ()
     "Created for back compatibility with emacs 27"
     (interactive)
@@ -1563,7 +1568,8 @@ We also use this section to bind keys.
     (define-key anerenv-global-minor-mode-map
         (kbd "M-t c") 'anerenv/new-tab-and-rename)
     (setq tab-bar-close-button-show nil
-          tab-bar-new-button-show nil)
+        tab-bar-new-button-show nil
+        tab-bar-tab-name-function 'anerenv/tab-bar-name-format-space)
     (add-hook 'emacs-startup-hook (lambda () (tab-bar-rename-tab "home" 1)))
 ))
 #+end_src
@@ -1599,10 +1605,6 @@ From emacs 28.1 there is support for right-aligned text on the tab-bar. We may u
 (defun anerenv/tab-bar-spaces () "Return spacing for beginning of tab bar"
        "            ")
 
-(defun anerenv/tab-bar-name-format-space ()
-  "Normal tab name format but with spacing"
-  (format " %s " (tab-bar-tab-name-current)))
-
 (if (version<= "28.1" emacs-version) (progn
     (setq tab-bar-format
         '(anerenv/tab-bar-spaces
@@ -1611,8 +1613,7 @@ From emacs 28.1 there is support for right-aligned text on the tab-bar. We may u
         tab-bar-separator
         tab-bar-format-add-tab
         tab-bar-format-align-right
-        anerenv/tab-bar-right-group-func)
-        tab-bar-tab-name-function 'anerenv/tab-bar-name-format-space)
+        anerenv/tab-bar-right-group-func))
     (define-key anerenv-global-minor-mode-map
         (kbd "M-n") 'tab-switch)
 ;    (display-battery-mode)
