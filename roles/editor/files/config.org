@@ -1417,6 +1417,16 @@ Need to autoload dired-x for dired-omit
 (autoload 'dired-omit-mode "dired-x")
 (setq dired-omit-files "^\\...+$")
 (add-hook 'dired-mode-hook (lambda () (dired-omit-mode)))
+(add-hook 'dired-mode-hook 'dired-hide-details-mode)
+(evil-collection-dired-setup)
+#+end_src
+
+#+begin_src emacs-lisp
+(use-package dired-subtree
+    :config
+    (evil-collection-define-key 'normal 'dired-mode-map
+        (kbd "SPC") 'dired-subtree-toggle)
+  (setq dired-subtree-use-backgrounds nil))
 #+end_src
 
 ** Magit
