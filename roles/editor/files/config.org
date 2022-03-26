@@ -767,7 +767,11 @@ Setting fixed fonts in org-mode so that mixed type works as intended.
 
 *** Capture
 
-Basic setup for org-capture
+Basic setup for org-capture.
+
+One thing of note is that when we insert the project name in org-capture, we replace
+the project name's dashes with underlines. This is because we would like to make them
+into tags, and org mode tags do not support dashes, but they do support underlines.
 
 #+begin_src emacs-lisp
 (setq org-agenda-files (list "~/org/agenda")
@@ -790,9 +794,9 @@ Basic setup for org-capture
   "Temporary var to store prev buffers proj name before capture")
 
 (defun anerenv/org-capture-get-project-name ()
-  "Gets project name, returns 'general' if not"
+  "Gets project name, returns 'general' if not, replaces dashes with underlines"
   (let ((ret (projectile-project-name)))
-    (if (string-equal ret "-") "general" ret)))
+    (if (string-equal ret "-") "general" (string-replace "-" "_" ret))))
 
 (defun anerenv/org-capture-set-project-name (&rest args)
   "Sets variable with project name"
@@ -875,6 +879,17 @@ Basic setup for org-capture
 #+begin_src emacs-lisp
 (define-key anerenv-global-minor-mode-open-map
     (kbd "a") 'org-agenda)
+#+end_src
+
+For good keybindings in org agenda we use evil org. But we'll do it only for org agenda.
+
+#+begin_src emacs-lisp
+(use-package evil-org
+  :ensure t
+  :after org
+  :config
+  (require 'evil-org-agenda)
+  (evil-org-agenda-set-keys))
 #+end_src
 
 *** Babel
