@@ -51,6 +51,9 @@
     - name: Install chromium-widevine from YAY
       command: yay -S chromium-widevine --nocleanmenu --nodiffmenu --noeditmenu --noupgrademenu --noconfirm
 
+    - name: Install lieer from YAY
+      command: yay -S gmailieer --nocleanmenu --nodiffmenu --noeditmenu --noupgrademenu --noconfirm
+
     - name: Check if polybar is installed
       command: polybar --version
       register: check_polybar_reg

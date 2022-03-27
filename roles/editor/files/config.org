@@ -1276,29 +1276,65 @@ Adding emails can be done with notmuch new
         notmuch-search-oldest-first nil
         notmuch-always-prompt-for-sender t
         message-sendmail-envelope-from 'header)
+
+    (defvar anerenv/lieer-mail-dir-list nil "List of mail dirs for lieer")
+    (defvar anerenv/mailsync-timer nil "Timer for syncing mail")
+
     (defun anerenv/sync-mail-notify ()
         (interactive)
-        (setq sync-mail-process
-            (start-process-shell-command
-             "mailsync"
-             "*mailsync*"
-             "{ mbsync -a && { if [[ $(notmuch new | grep \"No new mail\") ]]; then dunstify -u low \"Synced mail\" ; else dunstify \"New mail!\" ; fi ; } ; } || dunstify -u critical \"Error syncing mail\"")))
+        (if anerenv/lieer-mail-dir-list
+            (dolist (maildir anerenv/lieer-mail-dir-list)
+                (start-process-shell-command
+                    (concat "mailsync-" maildir)
+                    (concat "*mailsync-" maildir "*")
+                    (concat "{ cd " maildir " && gmi sync -s && { if [[ $(notmuch new | grep \"No new mail\") ]]; then dunstify -u low \"Synced mail\" ; else dunstify \"New mail!\" ; fi ; } ; } || dunstify -u critical \"Error syncing mail\"")))))
     (defun anerenv/sync-mail-n-notify ()
         (interactive)
-        (setq sync-mail-process
-            (start-process-shell-command
-             "mailsync"
-             "*mailsync*"
-             "{ mbsync -a && { if [[ $(notmuch new | grep \"No new mail\") ]]; then : ; else dunstify \"New mail!\" ; fi ; } ; }")))
+        (if anerenv/lieer-mail-dir-list
+            (dolist (maildir anerenv/lieer-mail-dir-list)
+                (start-process-shell-command
+                    (concat "mailsync-" maildir)
+                    (concat "*mailsync-" maildir "*")
+                    (concat "{ cd " maildir " && gmi sync -s && { if [[ $(notmuch new | grep \"No new mail\") ]]; then : ; else dunstify \"New mail!\" ; fi ; } ; }")))))
+
+    (defun anerenv/set-lieer-mail-dir-list (lieer-mail-dir-list)
+        "Set list of mails and start timer"
+        (progn
+            (setq anerenv/lieer-mail-dir-list lieer-mail-dir-list)
+            (if (lieer-mail-dir-list)
+                (progn
+                    (if anerenv/mailsync-timer (cancel-timer anerenv/mailsync-timer))
+                    (run-with-timer 0 (* 60 10) 'anerenv/sync-mail-n-notify)))))
+
     (defun anerenv/emacs-notmuch-face ()
-        (face-remap-add-relative 'default '(:inherit 'variable-pitch))
-        )
+        (face-remap-add-relative 'default '(:inherit 'variable-pitch)))
 
   :config
     (evil-collection-notmuch-setup)
-    (run-with-timer 0 (* 60 10) 'anerenv/sync-mail-n-notify)
     (add-hook 'notmuch-show-mode 'anerenv/emacs-notmuch-face)
     (setq send-mail-function 'sendmail-send-it)
+    (defun anerenv/notmuch-archive () "Archive a message" (interactive)
+        (progn
+            (evil-collection-notmuch-toggle-tag "archived" "search" 'ignore)
+            (evil-collection-notmuch-toggle-tag "inbox" "search"
+                                                'notmuch-search-next-thread)
+            ))
+    (defun anerenv/notmuch-delete-gmail () "Delete a message, no inbox"
+        (interactive)
+        (progn
+            (evil-collection-notmuch-toggle-tag "deleted" "search" 'ignore)
+            (evil-collection-notmuch-toggle-tag "trash" "search" 'ignore)
+            (evil-collection-notmuch-toggle-tag "inbox" "search" 'notmuch-search-next-thread)
+            ))
+    (defun anerenv/notmuch-toggle-inbox () "Toggles inbox tag" (interactive)
+            (evil-collection-notmuch-toggle-tag "inbox" "search" 'ignore))
+    (dolist (state '(normal visual))
+        (evil-collection-define-key state 'notmuch-search-mode-map
+          "d" 'anerenv/notmuch-delete-gmail
+          "I" 'anerenv/notmuch-toggle-inbox
+          "D" 'evil-collection-notmuch-search-toggle-delete
+          "A" 'anerenv/notmuch-archive))
+
   :bind
     (:map anerenv-global-minor-mode-open-map
         ("m" . notmuch))
@@ -1688,10 +1724,6 @@ From emacs 28.1 there is support for right-aligned text on the tab-bar. We may u
 ;    (display-battery-mode)
     ;(anerenv/run-tab-bar-timer)
 ))
-#+end_src
-
-#+begin_src emacs-lisp
-(run-with-timer 0 (* 60 10) 'anerenv/sync-mail-n-notify)
 #+end_src
 
 #+begin_example
