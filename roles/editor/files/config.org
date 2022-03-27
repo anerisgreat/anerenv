@@ -1075,7 +1075,7 @@ function toggle-input-method.
 ;Not inline
 (yas-define-snippets 'org-mode (list (list
                                       nil
-                                      "\n\n\$\$$1\$\$\n\n$0"
+                                      "\$\$$1\$\$$0"
                                       "ORG_LATEX_OUTLINE_SNIPPET_ENG"
                                       '(not (eval current-input-method))
                                       nil
@@ -1087,7 +1087,7 @@ function toggle-input-method.
                                       )))
 (yas-define-snippets 'org-mode (list (list
                                       nil
-                                      "\n\n\$\$$1\$\$\n\n$0"
+                                      "\$\$$1\$\$$0"
                                       "ORG_LATEX_OUTLINE_SNIPPET_OTHER_LANG"
                                       '(eval current-input-method)
                                       nil
