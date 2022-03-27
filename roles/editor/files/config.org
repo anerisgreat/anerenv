@@ -1684,13 +1684,23 @@ We also use this section to bind keys.
 From emacs 28.1 there is support for right-aligned text on the tab-bar. We may use this to display more information.
 
 #+begin_src emacs-lisp
-(defun anerenv/bat-string () "Get good battery string for up right"
-    (if display-battery-mode
-        (let ((percentage (format "%3s" (cdr (assq ?p (funcall battery-status-function))))))
-            (concat "Bat: " (propertize percentage 'font-lock-face '(:foreground "red" :background "blue"))))
-        ""))
+(defun anerenv/get-bat-percentage-number () "Gets battery percentage as number"
+    (string-to-number
+     (let
+         ((commandout (string-clean-whitespace (shell-command-to-string (concat
+            "upower -i /org/freedesktop/UPower/devices/DisplayDevice "
+            "| grep percentage | awk '{print $2}'")))))
+            (match-string (string-match "^[0-9]+" commandout)
+        commandout))))
 
-(defvar anerenv/tab-bar-right-group '(current-time-string anerenv/bat-string)
+(defvar anerenv/bat-string nil "Holds battery string")
+
+(defun anerenv/set-bat-string () "Sets battery-string"
+       (setq anerenv/bat-string
+             (format "%2d" (anerenv/get-bat-percentage-number))))
+
+(defvar anerenv/tab-bar-right-group '(anerenv/get-tab-bar-time-string
+                                      (lambda () anerenv/bat-string))
     "A list of items to be displayed on the right of the tab-bar")
 
 (defun anerenv/tab-bar-right-group-func ()
@@ -1702,10 +1712,19 @@ From emacs 28.1 there is support for right-aligned text on the tab-bar. We may u
     ))
 (defvar anerenv/tab-bar-timer nil "Timer to update the tab-bar")
 
+(defun anerenv/get-tab-bar-time-string () "Get tab bar time string"
+       (format-time-string "%a, %b %d %H:%M"))
+
+(defun anerenv/tab-bar-update-func () "Function to update the tab bar"
+       (progn
+         (anerenv/set-bat-string)
+         (force-mode-line-update)
+         ))
+
 (defun anerenv/run-tab-bar-timer () "Run the tab bar timer" (progn
        (if anerenv/tab-bar-timer (cancel-timer anerenv/tab-bar-timer))
        (setq anerenv/tab-bar-timer
-             (run-with-timer 0 5 'force-mode-line-update))))
+             (run-with-timer 0 5 'anerenv/tab-bar-update-func))))
 
 (defun anerenv/tab-bar-spaces () "Return spacing for beginning of tab bar"
        "            ")
@@ -1721,8 +1740,7 @@ From emacs 28.1 there is support for right-aligned text on the tab-bar. We may u
         anerenv/tab-bar-right-group-func))
     (define-key anerenv-global-minor-mode-map
         (kbd "M-n") 'tab-switch)
-;    (display-battery-mode)
-    ;(anerenv/run-tab-bar-timer)
+    (anerenv/run-tab-bar-timer)
 ))
 #+end_src
 
