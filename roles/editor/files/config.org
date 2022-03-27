@@ -1603,26 +1603,6 @@ Rebinding wanted functionality
 
 * UI
 
-** Perspective
-
-#+begin_src emacs-lisp
-;; (use-package perspective
-;;    :config
-;;      (persp-mode 1)
-;;      (setq persp-show-modestring 'nil)
-;;    :bind (:map anerenv-global-minor-mode-map
-;;               ("M-<tab>" . persp-next)
-;;               ("M-n" . persp-switch)
-;;               ("M-`" . persp-prev)
-;;               ))
-
-;; (use-package persp-projectile
-;;   :bind(:map projectile-command-map
-;;     ("p" . projectile-persp-switch-project)
-;;   )
-;; )
-#+end_src
-
 ** Tab bar
 
 *** Base
