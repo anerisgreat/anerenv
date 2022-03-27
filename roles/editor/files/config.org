@@ -1134,7 +1134,7 @@ Snippet for src blocks
 *** Presentation
 
 #+begin_src emacs-lisp
-(use-package epresent)
+;(use-package epresent)
 #+end_src
 
 *** Formatter
