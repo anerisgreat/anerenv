@@ -54,17 +54,6 @@
     - name: Install lieer from YAY
       command: yay -S gmailieer --nocleanmenu --nodiffmenu --noeditmenu --noupgrademenu --noconfirm
 
-    - name: Check if polybar is installed
-      command: polybar --version
-      register: check_polybar_reg
-      ignore_errors: true
-      changed_when: check_polybar_reg.rc == 1
-      failed_when: false
-
-    - name: Install polybar from YAY
-      when: check_polybar_reg.rc != 0
-      command: yay -S polybar --nocleanmenu --nodiffmenu --noeditmenu --noupgrademenu --noconfirm
-
 - name: Create downloads directory
   file:
     path: "{{ download_dir }}"

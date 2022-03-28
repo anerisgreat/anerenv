@@ -1314,7 +1314,7 @@ Adding emails can be done with notmuch new
     (setq send-mail-function 'sendmail-send-it)
     (defun anerenv/notmuch-archive () "Archive a message" (interactive)
         (progn
-            (evil-collection-notmuch-toggle-tag "archived" "search" 'ignore)
+            (evil-collection-notmuch-toggle-tag "arx" "search" 'ignore)
             (evil-collection-notmuch-toggle-tag "inbox" "search"
                                                 'notmuch-search-next-thread)
             ))
@@ -1858,9 +1858,7 @@ Here are a few examples:
 
 *** RANDR screen settings
 
-Enabling randr
-
-Partially from [[https://github.com/ch11ng/exwm/issues/202][here]]. (All commented out now)
+Enabling randr. Automatic mapping of randr screens to workspaces.
 
 #+begin_src emacs-lisp
 (require 'exwm-randr)
@@ -1918,34 +1916,6 @@ Sending simulated keys to X windows
 
 #+begin_src emacs-lisp
 (use-package desktop-environment)
-#+end_src
-
-*** Polybar
-
-#+begin_src emacs-lisp
-(defvar anerenv/polybar-process nil
-  "Holds the process of the running Polybar instance, if any")
-
-(defun anerenv/kill-panel ()
-  (interactive)
-  (when anerenv/polybar-process
-    (ignore-errors
-      (kill-process anerenv/polybar-process)))
-  (setq anerenv/polybar-process nil))
-
-(defun anerenv/start-panel ()
-  (interactive)
-  (progn
-    (anerenv/kill-panel)
-    (setq anerenv/polybar-process
-        (start-process-shell-command "polybar" nil
-            (concat "polybar -c "
-            (concat (expand-file-name "~/.config/emacs/lazymacs/polybar-config")
-                " exwm-bar"))))
-    (set-process-query-on-exit-flag anerenv/polybar-process nil)))
-
-;(anerenv/start-panel)
-
 #+end_src
 
 *** Dunst
