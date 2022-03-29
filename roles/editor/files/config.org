@@ -889,7 +889,11 @@ For good keybindings in org agenda we use evil org. But we'll do it only for org
   :after org
   :config
   (require 'evil-org-agenda)
-  (evil-org-agenda-set-keys))
+  (evil-org-agenda-set-keys)
+  ;We don't want the M-j M-k definitions
+  (evil-define-key 'motion org-agenda-mode-map
+    (kbd "M-j") nil
+    (kbd "M-k") nil))
 #+end_src
 
 *** Babel
