@@ -1520,7 +1520,13 @@ Need to autoload dired-x for dired-omit
         (kbd "SPC") 'dired-subtree-toggle
         (kbd "TAB") 'dired-subtree-cycle
         )
-  (setq dired-subtree-use-backgrounds nil))
+    (setq dired-subtree-use-backgrounds nil)
+    ;Evil collection binds these keys, we need them for window movement
+    (evil-collection-define-key 'normal 'dired-mode-map
+        (kbd "M-j") nil
+        (kbd "M-k") nil)
+)
+
 #+end_src
 
 ** Magit
