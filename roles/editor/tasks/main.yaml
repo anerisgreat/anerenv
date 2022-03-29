@@ -10,6 +10,7 @@
       - graphviz
       - offlineimap
       - gmime3
+      - gnuchess
       - xapian-core
       - talloc
       - notmuch
