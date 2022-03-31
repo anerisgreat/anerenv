@@ -796,7 +796,7 @@ into tags, and org mode tags do not support dashes, but they do support underlin
 (defun anerenv/org-capture-get-project-name ()
   "Gets project name, returns 'general' if not, replaces dashes with underlines"
   (let ((ret (projectile-project-name)))
-    (if (string-equal ret "-") "general" (string-replace "-" "_" ret))))
+    (if (string-equal ret "-") "general" (replace-regexp-in-string "-" "_" ret))))
 
 (defun anerenv/org-capture-set-project-name (&rest args)
   "Sets variable with project name"
