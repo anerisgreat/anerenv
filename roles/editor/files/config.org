@@ -1234,6 +1234,8 @@ org-toggle-latex-fragment
 
 ** Mail
 
+*** General instructions
+
 Due to the fact that setting up email in general is complicated, I'll recap the process here.
 
 Before ANYTHING, setup pass.
@@ -1268,6 +1270,8 @@ https://notmuchmail.org/getting-started/
 We then RUN notmuch, and notmuch setup for prompt.
 
 Adding emails can be done with notmuch new
+
+*** Config
 
 #+begin_src emacs-lisp
 (defvar anerenv/lieer-mail-dir-list nil "List of mail dirs for lieer")
@@ -1309,7 +1313,7 @@ Adding emails can be done with notmuch new
         notmuch-hello-sections
             '(notmuch-hello-insert-saved-searches
               notmuch-hello-insert-alltags)
-        notmuch-search-oldest-first nil
+        notmuch-search-oldest-first t
         notmuch-always-prompt-for-sender t
         message-sendmail-envelope-from 'header)
   :config
