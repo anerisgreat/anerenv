@@ -1350,6 +1350,9 @@ Adding emails can be done with notmuch new
           "I" 'anerenv/notmuch-toggle-inbox
           "D" 'evil-collection-notmuch-search-toggle-delete
           "A" 'anerenv/notmuch-archive))
+    (evil-collection-define-key 'normal 'notmuch-show-mode-map
+        (kbd "M-j") nil
+        (kbd "M-k") nil)
 
   :bind
     (:map anerenv-global-minor-mode-open-map
