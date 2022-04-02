@@ -997,6 +997,15 @@ This should render Hebrew text.
 \end{hebrew}
 #+end_export
 
+*** Latex previews
+
+We don't want to create ltximg directories all over the place.
+Let's store all ltximg previews in tmp directory.
+
+#+begin_src emacs-lisp
+(setq org-preview-latex-image-directory (concat user-emacs-directory "ltximg/"))
+#+end_src
+
 *** Org block highlighting
 
 #+begin_src emacs-lisp
