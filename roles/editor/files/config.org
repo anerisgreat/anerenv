@@ -1407,7 +1407,7 @@ https://medium.com/emacs/using-elfeed-to-view-videos-6dfc798e51e6
     :init
         (defun elfeed-v-mpv (url)
             "Watch a video from URL in MPV"
-            (start-process-shell-command "mpv" nil (concat "mpv " url)))
+            (start-process "mpv" nil "mpv" url))
 
         (defun elfeed-view-mpv (&optional use-generic-p)
         "Youtube-feed link"
@@ -1859,7 +1859,7 @@ Here are a few examples:
 
 (defun anerenv/start-qutebrowser ()
   (interactive)
-  (start-process-shell-command "qutebrowser" nil "qutebrowser")
+  (start-process "qutebrowser" nil "qutebrowser")
 )
 
 (define-key anerenv-global-minor-mode-open-map
@@ -1904,8 +1904,8 @@ Enabling randr. Automatic mapping of randr screens to workspaces.
 (defun anerenv/update-exwm-randr-workspace-monitor-plist ()
   (interactive)
     (progn
-        (start-process-shell-command
-        "xlayoutdisplay" nil "xlayoutdisplay")
+        (start-process
+            "xlayoutdisplay" nil "xlayoutdisplay")
         (setq exwm-randr-workspace-monitor-plist
                 (anerenv/add-indexes (anerenv/get-monitor-list)))
         (exwm-randr-refresh))
@@ -1950,7 +1950,7 @@ Sending simulated keys to X windows
   (progn
     (anerenv/kill-dunst)
     (setq anerenv/dunst-process
-        (start-process-shell-command "dunst" "*dunst*" "dunst")))
+        (start-process "dunst" "*dunst*" "dunst")))
     (set-process-query-on-exit-flag anerenv/dunst-process nil))
 
 (anerenv/start-dunst)
@@ -1975,7 +1975,7 @@ Sending simulated keys to X windows
   (progn
     (anerenv/kill-flameshot-process)
     (setq anerenv/flameshot-process
-        (start-process-shell-command "flameshot" "*flameshot*" "flameshot"))
+        (start-process "flameshot" nil "flameshot"))
     (set-process-query-on-exit-flag anerenv/flameshot-process nil)))
 
 (anerenv/start-flameshot-process)
@@ -1997,19 +1997,19 @@ https://gist.github.com/ajyoon/5323b999a01dce8db2d4456da1740fe3
 (exwm-input-set-key
     (kbd "<XF86AudioRaiseVolume>")
     (lambda ()
-        (interactive) (start-process-shell-command
-        "pactl" nil "pactl set-sink-volume 0 +5%")))
+        (interactive) (start-process
+            "pactl" nil "pactl" "set-sink-volume" "0" "+5%")))
 (exwm-input-set-key
     (kbd "<XF86AudioLowerVolume>")
     (lambda ()
-        (interactive) (start-process-shell-command
-        "pactl" nil "pactl set-sink-volume 0 -5%")))
+        (interactive) (start-process
+            "pactl" nil "pactl" "set-sink-volume" "0" "-5%")))
 
 (exwm-input-set-key
     (kbd "<XF86AudioMute>")
         (lambda ()
-            (interactive) (start-process-shell-command
-            "pactl" nil "pactl set-sink-mute 0 toggle")))
+            (interactive) (start-process
+                "pactl" nil "pactl" "set-sink-mute" "0" "toggle")))
 
 (exwm-input-set-key
     (kbd "<XF86AudioPlay>")
@@ -2034,15 +2034,14 @@ https://gist.github.com/ajyoon/5323b999a01dce8db2d4456da1740fe3
 (exwm-input-set-key
     (kbd "<XF86MonBrightnessUp>")
         (lambda ()
-            (interactive) (start-process-shell-command
-            "xbacklight" nil "xbacklight -inc 5")))
+            (interactive) (start-process
+                "xbacklight" nil "xbacklight" "-inc" "5")))
 
 (exwm-input-set-key
     (kbd "<XF86MonBrightnessDown>")
         (lambda ()
-            (interactive) (start-process-shell-command
-            "xbacklight" nil "xbacklight -dec 5")))
-
+            (interactive) (start-process
+                "xbacklight" nil "xbacklight" "-dec" "5")))
 #+end_src
 
 *** Input languages
@@ -2089,9 +2088,9 @@ Creating the compositor process.
   (progn
     (anerenv/kill-picom)
     (setq anerenv/picom-process
-        (start-process-shell-command "picom"
-                                     "*picom*"
-                                     "picom --config ~/.config/picom/picom.conf")))
+        (start-process "picom" "*picom*"
+                       "picom" "--config"
+                       (expand-file-name "~/.config/picom/picom.conf"))))
     (set-process-query-on-exit-flag anerenv/picom-process nil))
 
 (anerenv/start-picom)
@@ -2120,9 +2119,9 @@ We create processes for feh to display wallpaper
   (progn
     (anerenv/kill-feh)
     (setq anerenv/feh-process
-        (start-process-shell-command "feh" "*feh*"
-            (concat "feh --bg-fill "
-                (concat (file-name-as-directory path) "*"))))
+        (start-process "feh" "*feh*" "feh" "--bg-fill"
+            (file-name-as-directory
+                (expand-file-name path))))
     (set-process-query-on-exit-flag anerenv/feh-process nil)))
 
 (anerenv/display-background-feh "~/images/wallpapers")
