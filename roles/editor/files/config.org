@@ -881,6 +881,12 @@ into tags, and org mode tags do not support dashes, but they do support underlin
     (kbd "a") 'org-agenda)
 #+end_src
 
+Setting org agenda to open in current window
+
+#+begin_src emacs-lisp
+(setq org-agenda-window-setup 'current-window)
+#+end_src
+
 For good keybindings in org agenda we use evil org. But we'll do it only for org agenda.
 
 #+begin_src emacs-lisp
