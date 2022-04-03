@@ -2007,6 +2007,44 @@ Sending simulated keys to X windows
 (anerenv/start-flameshot-process)
 #+end_src
 
+*** Spotify
+
+First let's run Spotifyd
+
+#+begin_src emacs-lisp
+(defvar anerenv/spotifyd-process nil
+  "Holds the process of the background spotifyd service, if any")
+
+(defun anerenv/kill-spotifyd-process ()
+  (interactive)
+  (progn
+    (when anerenv/spotifyd-process
+        (ignore-errors
+        (kill-process anerenv/spotifyd-process)))
+    (setq anerenv/spotifyd-process nil)))
+
+(defun anerenv/start-spotifyd-process ()
+  (interactive)
+  (progn
+    (anerenv/kill-flameshot-process)
+    (setq anerenv/spotifyd-process
+        (start-process "spotifyd" "*spotifyd*" "spotifyd" "--no-daemon"))
+    (set-process-query-on-exit-flag anerenv/spotifyd-process nil)))
+
+(anerenv/start-spotifyd-process)
+#+end_src
+
+Then we run smudge. We use this to control
+
+#+begin_src emacs-lisp
+(use-package smudge
+  :bind
+    (:map anerenv-global-minor-mode-open-map
+        ("s" . 'smudge-command-map)))
+#+end_src
+
+We have to set =smudge-oauth2-client-id= and =smudge-oauth2-client-secret= in a seperate file.
+
 *** Media keys
 
 https://gist.github.com/ajyoon/5323b999a01dce8db2d4456da1740fe3
@@ -2068,6 +2106,12 @@ https://gist.github.com/ajyoon/5323b999a01dce8db2d4456da1740fe3
         (lambda ()
             (interactive) (start-process
                 "xbacklight" nil "xbacklight" "-dec" "5")))
+#+end_src
+
+In the event =xbacklight= doesn't work, the following command can be run:
+
+#+begin_src emacs-lisp
+xrandr --output eDP1 --brightness 0.5
 #+end_src
 
 *** Input languages
