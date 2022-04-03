@@ -2110,9 +2110,9 @@ https://gist.github.com/ajyoon/5323b999a01dce8db2d4456da1740fe3
 
 In the event =xbacklight= doesn't work, the following command can be run:
 
-#+begin_src emacs-lisp
+#+begin_example
 xrandr --output eDP1 --brightness 0.5
-#+end_src
+#+end_example
 
 *** Input languages
 
