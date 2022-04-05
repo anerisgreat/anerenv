@@ -2099,13 +2099,13 @@ https://gist.github.com/ajyoon/5323b999a01dce8db2d4456da1740fe3
     (kbd "<XF86MonBrightnessUp>")
         (lambda ()
             (interactive) (start-process
-                "xbacklight" nil "xbacklight" "-inc" "5")))
+                "light" nil "light" "-A" "5")))
 
 (exwm-input-set-key
     (kbd "<XF86MonBrightnessDown>")
         (lambda ()
             (interactive) (start-process
-                "xbacklight" nil "xbacklight" "-dec" "5")))
+                "light" nil "light" "-U" "5")))
 #+end_src
 
 In the event =xbacklight= doesn't work, the following command can be run:

@@ -10,6 +10,7 @@
       - qutebrowser
       - mpv
       - youtube-dl
+      - light
       - isync
       - upower
       - pass
