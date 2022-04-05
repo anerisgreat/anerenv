@@ -1217,7 +1217,30 @@ Snippet for src blocks
 *** Presentation
 
 #+begin_src emacs-lisp
-;(use-package epresent)
+(use-package org-present
+  :config
+    (add-hook 'org-present-mode-hook (lambda ()
+            (evil-emacs-state)
+            (blink-cursor-mode 0)
+            (org-present-big)
+            (org-display-inline-images)
+            (org-present-read-only)
+            (setq-local global-hl-line-mode nil)
+            (org-present-hide-cursor)
+            (olivetti-mode 1)
+            (display-line-numbers-mode 0)))
+
+    (add-hook 'org-present-mode-quit-hook (lambda ()
+            (org-present-small)
+            (blink-cursor-mode 1)
+            (org-remove-inline-images)
+            (org-present-show-cursor)
+            (org-present-read-write)
+            (evil-normal-state)
+            (setq-local global-hl-line-mode 1)
+            (olivetti-mode 0)
+            (display-line-numbers-mode 1)))
+)
 #+end_src
 
 *** Formatter
