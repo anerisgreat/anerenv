@@ -2147,7 +2147,7 @@ We create processes for feh to display wallpaper
 (defun anerenv/display-background-feh (path)
   "Starts feh to display background from certain path"
   (interactive)
-  (anerenv/run-service "feh" "feh"
+  (anerenv/run-service 'feh "feh"
         (list "--bg-fill" (file-name-as-directory (expand-file-name path))) t))
 
 (anerenv/display-background-feh "~/images/wallpapers")
