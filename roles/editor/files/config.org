@@ -1721,6 +1721,7 @@ Rebinding wanted functionality
 #+end_src
 
 ** Python
+
 #+begin_src emacs-lisp
 
 (define-key anerenv-global-minor-mode-open-map
@@ -1730,6 +1731,7 @@ Rebinding wanted functionality
     python-shell-completion-native-enable nil)
 
 #+end_src
+
 * UI
 
 ** Tab bar
