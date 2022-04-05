@@ -78,6 +78,44 @@ Might as well be here for everyone to use
   :straight (:type built-in))
 #+end_src
 
+** Services
+
+The variable =anerenv/service-table= is a hash table mapping between name to process.
+
+This way we can keep one instance of every process we wish to run as a psuedo-service.
+
+#+begin_src emacs-lisp
+(defvar anerenv/service-table (make-hash-table)
+  "Table to store psuedo-service processes in")
+#+end_src
+
+=anerenv/run-service= makes sure an entry in the service table exists. If it does,
+and it's a process, kill it. Then run a new process.
+
+#+begin_src emacs-lisp
+(defun anerenv/kill-service (servicename) "Kills a service from the table."
+    (progn
+        (let ((proc (gethash servicename anerenv/service-table)))
+            (if proc (progn (delete-process proc) (sleep-for 0.1))))
+        (remhash servicename anerenv/service-table)))
+
+(defun anerenv/run-service (servicename command args &optional wbuff)
+    (progn
+        (anerenv/kill-service servicename)
+        (let ((servicestr (symbol-name servicename)))
+            (let ((buffname (if wbuff
+                                (concat "*" servicestr "*")
+                                nil)))
+                (let ((arglist
+                    (append (list 'start-process servicestr buffname command)
+                                args)))
+                    (puthash servicename (apply arglist)
+                        anerenv/service-table))))
+        (set-process-query-on-exit-flag
+            (gethash servicename anerenv/service-table)
+            nil)))
+#+end_src
+
 ** Keymap setup
 
 Setting of keybindings based on [[https://stackoverflow.com/questions/49853494/the-best-way-to-set-a-key-to-do-nothing][this]]
@@ -1962,50 +2000,13 @@ Sending simulated keys to X windows
 *** Dunst
 
 #+begin_src emacs-lisp
-(defvar anerenv/dunst-process nil
-  "Holds the process of the running Dunst instance, if any")
-
-(defun anerenv/kill-dunst ()
-  (interactive)
-  (when anerenv/dunst-process
-    (ignore-errors
-      (kill-process anerenv/dunst-process)))
-  (setq anerenv/dunst-process nil))
-
-(defun anerenv/start-dunst ()
-  (interactive)
-  (progn
-    (anerenv/kill-dunst)
-    (setq anerenv/dunst-process
-        (start-process "dunst" "*dunst*" "dunst")))
-    (set-process-query-on-exit-flag anerenv/dunst-process nil))
-
-(anerenv/start-dunst)
+(anerenv/run-service 'dunst "dunst" nil)
 #+end_src
 
 *** Flameshot
 
 #+begin_src emacs-lisp
-(defvar anerenv/flameshot-process nil
-  "Holds the process of the background flameshot service, if any")
-
-(defun anerenv/kill-flameshot-process ()
-  (interactive)
-  (progn
-    (when anerenv/flameshot-process
-        (ignore-errors
-        (kill-process anerenv/flameshot-process)))
-    (setq anerenv/flameshot-process nil)))
-
-(defun anerenv/start-flameshot-process ()
-  (interactive)
-  (progn
-    (anerenv/kill-flameshot-process)
-    (setq anerenv/flameshot-process
-        (start-process "flameshot" nil "flameshot"))
-    (set-process-query-on-exit-flag anerenv/flameshot-process nil)))
-
-(anerenv/start-flameshot-process)
+(anerenv/run-service 'flameshot "flameshot" '())
 #+end_src
 
 *** Spotify
@@ -2013,26 +2014,7 @@ Sending simulated keys to X windows
 First let's run Spotifyd
 
 #+begin_src emacs-lisp
-(defvar anerenv/spotifyd-process nil
-  "Holds the process of the background spotifyd service, if any")
-
-(defun anerenv/kill-spotifyd-process ()
-  (interactive)
-  (progn
-    (when anerenv/spotifyd-process
-        (ignore-errors
-        (kill-process anerenv/spotifyd-process)))
-    (setq anerenv/spotifyd-process nil)))
-
-(defun anerenv/start-spotifyd-process ()
-  (interactive)
-  (progn
-    (anerenv/kill-flameshot-process)
-    (setq anerenv/spotifyd-process
-        (start-process "spotifyd" "*spotifyd*" "spotifyd" "--no-daemon"))
-    (set-process-query-on-exit-flag anerenv/spotifyd-process nil)))
-
-(anerenv/start-spotifyd-process)
+(anerenv/run-service 'spotifyd "spotifyd" '("--no-daemon"))
 #+end_src
 
 Then we run smudge. We use this to control
@@ -2144,27 +2126,11 @@ Setting frame transparency to 95% for active and inactive frames.
 Creating the compositor process.
 
 #+begin_src emacs-lisp
-(defvar anerenv/picom-process nil
-  "Holds the process of the running picom instance, if any")
-
-(defun anerenv/kill-picom ()
-  (interactive)
-  (when anerenv/picom-process
-    (ignore-errors
-      (kill-process anerenv/picom-process)))
-  (setq anerenv/picom-process nil))
-
-(defun anerenv/start-picom ()
-  (interactive)
-  (progn
-    (anerenv/kill-picom)
-    (setq anerenv/picom-process
-        (start-process "picom" "*picom*"
-                       "picom" "--config"
-                       (expand-file-name "~/.config/picom/picom.conf"))))
-    (set-process-query-on-exit-flag anerenv/picom-process nil))
-
-(anerenv/start-picom)
+(anerenv/run-service
+    'picom
+    "picom"
+    (list "--config" (expand-file-name "~/.config/picom/picom.conf"))
+    t)
 #+end_src
 
 *** Transparency
@@ -2174,26 +2140,11 @@ We do this externally to not deal with function definition problems
 We create processes for feh to display wallpaper
 
 #+begin_src emacs-lisp
-(defvar anerenv/feh-process nil
-  "Holds the process of the running feh instance, if any")
-
-(defun anerenv/kill-feh ()
-  (interactive)
-  (when anerenv/feh-process
-    (ignore-errors
-      (kill-process anerenv/feh-process)))
-  (setq anerenv/feh-process nil))
-
 (defun anerenv/display-background-feh (path)
   "Starts feh to display background from certain path"
   (interactive)
-  (progn
-    (anerenv/kill-feh)
-    (setq anerenv/feh-process
-        (start-process "feh" "*feh*" "feh" "--bg-fill"
-            (file-name-as-directory
-                (expand-file-name path))))
-    (set-process-query-on-exit-flag anerenv/feh-process nil)))
+  (anerenv/run-service "feh" "feh"
+        (list "--bg-fill" (file-name-as-directory (expand-file-name path))) t))
 
 (anerenv/display-background-feh "~/images/wallpapers")
 #+end_src
