@@ -995,6 +995,13 @@ were used in the appropriate major mode.
 (setq org-src-fontify-natively t
       org-src-tab-acts-natively t
       org-src-preserve-indentation t)
+
+(set-face-attribute 'org-block nil
+    :background "LemonChiffon1")
+(set-face-attribute 'org-block-begin-line nil
+    :background "LightYellow2")
+(set-face-attribute 'org-block-end-line nil
+    :background "LightYellow2")
 #+end_src
 
 *** PDF exporting
