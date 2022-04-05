@@ -689,6 +689,7 @@ Broken for the time being
     (pdf-tools-install)
     (add-hook 'pdf-view-mode-hook
         (lambda () (blink-cursor-mode 0)))
+    (add-hook 'pdf-view-mode-hook 'pdf-view-fit-page-to-window)
 
     (evil-collection-pdf-setup)
 )
