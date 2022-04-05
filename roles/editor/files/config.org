@@ -92,6 +92,10 @@ This way we can keep one instance of every process we wish to run as a psuedo-se
 =anerenv/run-service= makes sure an entry in the service table exists. If it does,
 and it's a process, kill it. Then run a new process.
 
+=anerenv-kill/service= kills the process and deletes the entry. We use a sleep function
+inside because some processes cannot run concurrently. Killing and immediately starting
+these processes causes some problems with the process lock.
+
 #+begin_src emacs-lisp
 (defun anerenv/kill-service (servicename) "Kills a service from the table."
     (progn
