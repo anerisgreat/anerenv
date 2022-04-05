@@ -945,6 +945,20 @@ For good keybindings in org agenda we use evil org. But we'll do it only for org
     (kbd "M-k") nil))
 #+end_src
 
+Custom views
+
+#+begin_src emacs-lisp
+(setq org-agenda-custom-commands
+      '(("h" "High priority"
+         ((agenda "")
+            (tags-todo "priority")
+            (tags-todo "general")
+          ))
+        ("o" "Config"
+         ((agenda "")
+          (tags-todo "anerenv")))))
+#+end_src
+
 *** Babel
 
 Define languages to use
