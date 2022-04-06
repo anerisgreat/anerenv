@@ -129,28 +129,49 @@ and it's a process, kill it. Then run a new process.
 
 ** Keymap setup
 
-Setting of keybindings based on [[https://stackoverflow.com/questions/49853494/the-best-way-to-set-a-key-to-do-nothing][this]]
+In this section global keybindings are defined using a global minor mode.
+
+First, utility functions that will be bound are defined.
+
+The first, =anerenv/set-window-width= is a helper function that resizes a window. Used because I wanted a function
+that resizes a window to 85 cols easily.
+
+The second, =anerenv/open-conf-file=,  opens the configuration file.
 
 #+begin_src emacs-lisp
-
-(defun set-window-width (n)
+(defun anerenv/set-window-width (n)
     (adjust-window-trailing-edge (selected-window) ( - n (window-width)) t))
 
 (defun anerenv/open-conf-file ()
     (interactive)
-    (find-file (concat user-emacs-directory "config.org"))
-    )
+    (find-file (concat user-emacs-directory "config.org")))
+#+end_src
 
+Now let's define keybindings. To start, we'd like =M-o= to be available to us, so let's unbind it.
+
+#+begin_src emacs-lisp
 ;Unbind face menu map
 (define-key global-map (kbd "M-o") nil)
+#+end_src
 
+This creates an "open keymap", a bunch of keybindings we'll use to open basic applications and files.
+This will be mapped to =M-o=, and things will be opened form this sub-menu.
+We'll start it with a binding to open the conf file with =M-o o= (MOO!)
+
+Setting of keybindings based on [[https://stackoverflow.com/questions/49853494/the-best-way-to-set-a-key-to-do-nothing][this]]
+
+#+begin_src emacs-lisp
 ;We'll define a basic keymap and already load window-manip funcs
 (defvar anerenv-global-minor-mode-open-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "o") 'anerenv/open-conf-file)
     map)
   "global keymap for opening stuff on anerenv")
+#+end_src
 
+At this stage a minor-mode-map is defined with keybindings, and an accompanying minor-mode is added.
+
+#+begin_src emacs-lisp
 (defvar anerenv-global-minor-mode-map
   (let ((map (make-sparse-keymap)))
 
@@ -180,7 +201,6 @@ Setting of keybindings based on [[https://stackoverflow.com/questions/49853494/t
   :lighter "anerenv")
 
 (anerenv-global-minor-mode 1)
-
 #+end_src
 
 This keymap will be referenced many times during this document at relevant points.
@@ -191,9 +211,11 @@ Keymaps are included with relevant sections.
 
 Using evil mode.
 
-Unbinding C-w taken from https://stackoverflow.com/questions/24988406/unbinding-evils-c-w-mappings
+This section includes unbinding =C-w= (I honestly forget why).
 
-Redo taken from https://github.com/syl20bnr/spacemacs/issues/14036
+This section binds keys for changing window size. Done here because can only do after evil loads.
+
+Unbinding C-w taken from https://stackoverflow.com/questions/24988406/unbinding-evils-c-w-mappings
 
 #+begin_src emacs-lisp
 (setq evil-want-keybinding nil)
@@ -204,11 +226,6 @@ Redo taken from https://github.com/syl20bnr/spacemacs/issues/14036
   :config
   (require 'evil )
   (evil-mode 1)
-  (eval-after-load "evil-maps"
-  (dolist (map '(evil-motion-state-map
-                 evil-insert-state-map
-                 evil-emacs-state-map))
-    (define-key (eval map) "\C-w" nil)))
 
   :bind
   (:map anerenv-global-minor-mode-map
@@ -217,48 +234,32 @@ Redo taken from https://github.com/syl20bnr/spacemacs/issues/14036
         ("M-w k" . evil-window-decrease-height)
         ("M-w j" . evil-window-increase-height))
 )
+#+end_src
 
+Loading evil collection. Functions from this package will be referenced many times later in the configuration.
+
+#+begin_src emacs-lisp
 (use-package evil-collection
   :config
   (setq evil-collection-setup-minibuffer t)
 )
+#+end_src
 
+** Undo tree
+
+Loading =undo-tree= for undo/redo functionality with evil.
+
+Redo taken from https://github.com/syl20bnr/spacemacs/issues/14036
+
+#+begin_src emacs-lisp
 (use-package undo-tree
+  :after evil
   :config
     (evil-set-undo-system 'undo-tree)
     (setq undo-tree-history-directory-alist
         (list (cons "." (concat user-emacs-directory "undo-tree"))))
     (global-undo-tree-mode 1)
 )
-#+end_src
-
-Taken from: https://github.com/emacs-evil/evil/issues/1288
-
-Meant to fix indentation for tabs in source blocks.
-
-#+begin_src emacs-lisp
-(defun evil-org-insert-state-in-edit-buffer (fun &rest args)
-  "Bind `evil-default-state' to `insert' before calling FUN with ARGS."
-  (let ((evil-default-state 'insert)
-        ;; Force insert state
-        evil-emacs-state-modes
-        evil-normal-state-modes
-        evil-motion-state-modes
-        evil-visual-state-modes
-        evil-operator-state-modes
-        evil-replace-state-modes)
-    (apply fun args)
-    (evil-refresh-cursor)))
-
-(advice-add 'org-babel-do-key-sequence-in-edit-buffer
-            :around #'evil-org-insert-state-in-edit-buffer)
-#+end_src
-
-Unbinding "C-z". We want it for other things.
-
-#+begin_src emacs-lisp
-(define-key evil-motion-state-map
-    (kbd "C-z") nil)
 #+end_src
 
 ** IVY
@@ -283,21 +284,21 @@ Enabling IVY. Taken from [[https://github.com/abo-abo/swiper][their website]].
   :after ivy
 
   :bind
-  (:map anerenv-global-minor-mode-map
+    (:map anerenv-global-minor-mode-map
         ("M-i" . counsel-imenu)
         ("M-b" . counsel-switch-buffer)
         ("C-x C-f" . counsel-find-file))
-  )
+)
 
 (use-package swiper
-  :after ivy
+    :after ivy
 
-  :bind
-  (:map anerenv-global-minor-mode-map
+    :bind
+    (:map anerenv-global-minor-mode-map
         ("C-s" . swiper-isearch))
-  (:map evil-motion-state-map
+    (:map evil-motion-state-map
         ("/" . swiper-isearch))
-  )
+)
 
 #+end_src
 
@@ -990,6 +991,28 @@ Define languages to use
 (add-to-list 'org-src-lang-modes (quote ("dot". graphviz-dot)))
 (add-to-list 'org-src-lang-modes (quote ("plantuml" . fundamental)))
 (add-to-list 'org-babel-tangle-lang-exts '("clojure" . "clj"))
+#+end_src
+
+This section makes code-indentation correction work inside source blocks.
+Taken from: https://github.com/emacs-evil/evil/issues/1288
+
+
+#+begin_src emacs-lisp
+(defun evil-org-insert-state-in-edit-buffer (fun &rest args)
+  "Bind `evil-default-state' to `insert' before calling FUN with ARGS."
+  (let ((evil-default-state 'insert)
+        ;; Force insert state
+        evil-emacs-state-modes
+        evil-normal-state-modes
+        evil-motion-state-modes
+        evil-visual-state-modes
+        evil-operator-state-modes
+        evil-replace-state-modes)
+    (apply fun args)
+    (evil-refresh-cursor)))
+
+(advice-add 'org-babel-do-key-sequence-in-edit-buffer
+            :around #'evil-org-insert-state-in-edit-buffer)
 #+end_src
 
 *** Code blocks
