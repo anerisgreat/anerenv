@@ -34,8 +34,7 @@ Straight initialization found [[https://www.github.com/raxod502/straight.el][her
 (setq vc-follow-symlinks t)
 #+end_src
 
-Install use-package
-
+Installing use-package
 Installation of usepackage taken from [[https://github.com/KaratasFurkan/.emacs.d/][KaratasFurkan's generously shared emacs config]].
 
 #+begin_src emacs-lisp
@@ -47,6 +46,8 @@ Installation of usepackage taken from [[https://github.com/KaratasFurkan/.emacs.
 
 Taken from [[https://stackoverflow.com/questions/151945/how-do-i-control-how-emacs-makes-backup-files][this post on StackOverflow]]
 
+Backups are moved to a =.cache= directory in order to keep them out of local dirs.
+
 #+begin_src emacs-lisp
 (setq backup-directory-alist `(("." . "~/.cache/emacs-backups/"))
       auto-save-file-name-transforms '((".*" "~/.cache/emacs-backups/" t))
@@ -56,8 +57,6 @@ Taken from [[https://stackoverflow.com/questions/151945/how-do-i-control-how-ema
       kept-old-versions 2
       version-control t)
 #+end_src
-
-Load all the packages that define the work environment.
 
 ** Garbage collection
 
@@ -71,37 +70,108 @@ Setting garbage collection to 100M to make it stop freaking out every time I scr
 
 ** CL
 
-Might as well be here for everyone to use
+CL is a base library that has a bunch of useful stuff, primarily for lists.
+We are using the built-in version, no need to pull from anywhere.
+This just makes sure the code is loaded early on for later use.
 
 #+begin_src emacs-lisp
 (use-package cl
   :straight (:type built-in))
 #+end_src
 
-** Keymap setup
+** Services
 
-Setting of keybindings based on [[https://stackoverflow.com/questions/49853494/the-best-way-to-set-a-key-to-do-nothing][this]]
+This section defines functions and variables primarily used when Emacs is used as the OS
+The aim of this section is to provide functions to run programs that run in the background.
+This way we can run psuedo-services that run while Emacs runs.
+
+The variable =anerenv/service-table= is a hash table mapping between name to process.
+
+This way we can keep one instance of every process we wish to run as a psuedo-service.
 
 #+begin_src emacs-lisp
+(defvar anerenv/service-table (make-hash-table)
+  "Table to store psuedo-service processes in")
+#+end_src
 
-(defun set-window-width (n)
+=anerenv-kill/service= kills the process and deletes the entry. We use a sleep function
+inside because some processes cannot run concurrently. Killing and immediately starting
+these processes causes some problems with the process lock.
+
+#+begin_src emacs-lisp
+(defun anerenv/kill-service (servicename) "Kills a service from the table."
+    (progn
+        (let ((proc (gethash servicename anerenv/service-table)))
+            (if proc (progn (delete-process proc) (sleep-for 0.1))))
+        (remhash servicename anerenv/service-table)))
+#+end_src
+
+=anerenv/run-service= makes sure an entry in the service table exists. If it does,
+and it's a process, kill it. Then run a new process.
+
+#+begin_src emacs-lisp
+(defun anerenv/run-service (servicename command args &optional wbuff)
+    (progn
+        (anerenv/kill-service servicename)
+        (let ((servicestr (symbol-name servicename)))
+            (let ((buffname (if wbuff
+                                (concat "*" servicestr "*")
+                                nil)))
+                (let ((arglist
+                    (append (list 'start-process servicestr buffname command)
+                                args)))
+                    (puthash servicename (apply arglist)
+                        anerenv/service-table))))
+        (set-process-query-on-exit-flag
+            (gethash servicename anerenv/service-table)
+            nil)))
+#+end_src
+
+** Keymap setup
+
+In this section global keybindings are defined using a global minor mode.
+
+First, utility functions that will be bound are defined.
+
+The first, =anerenv/set-window-width= is a helper function that resizes a window. Used because I wanted a function
+that resizes a window to 85 cols easily.
+
+The second, =anerenv/open-conf-file=,  opens the configuration file.
+
+#+begin_src emacs-lisp
+(defun anerenv/set-window-width (n)
     (adjust-window-trailing-edge (selected-window) ( - n (window-width)) t))
 
 (defun anerenv/open-conf-file ()
     (interactive)
-    (find-file (concat user-emacs-directory "config.org"))
-    )
+    (find-file (concat user-emacs-directory "config.org")))
+#+end_src
 
+Now let's define keybindings. To start, we'd like =M-o= to be available to us, so let's unbind it.
+
+#+begin_src emacs-lisp
 ;Unbind face menu map
 (define-key global-map (kbd "M-o") nil)
+#+end_src
 
+This creates an "open keymap", a bunch of keybindings we'll use to open basic applications and files.
+This will be mapped to =M-o=, and things will be opened form this sub-menu.
+We'll start it with a binding to open the conf file with =M-o o= (MOO!)
+
+Setting of keybindings based on [[https://stackoverflow.com/questions/49853494/the-best-way-to-set-a-key-to-do-nothing][this]]
+
+#+begin_src emacs-lisp
 ;We'll define a basic keymap and already load window-manip funcs
 (defvar anerenv-global-minor-mode-open-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "o") 'anerenv/open-conf-file)
     map)
   "global keymap for opening stuff on anerenv")
+#+end_src
 
+At this stage a minor-mode-map is defined with keybindings, and an accompanying minor-mode is added.
+
+#+begin_src emacs-lisp
 (defvar anerenv-global-minor-mode-map
   (let ((map (make-sparse-keymap)))
 
@@ -131,7 +201,6 @@ Setting of keybindings based on [[https://stackoverflow.com/questions/49853494/t
   :lighter "anerenv")
 
 (anerenv-global-minor-mode 1)
-
 #+end_src
 
 This keymap will be referenced many times during this document at relevant points.
@@ -142,9 +211,11 @@ Keymaps are included with relevant sections.
 
 Using evil mode.
 
-Unbinding C-w taken from https://stackoverflow.com/questions/24988406/unbinding-evils-c-w-mappings
+This section includes unbinding =C-w= (I honestly forget why).
 
-Redo taken from https://github.com/syl20bnr/spacemacs/issues/14036
+This section binds keys for changing window size. Done here because can only do after evil loads.
+
+Unbinding C-w taken from https://stackoverflow.com/questions/24988406/unbinding-evils-c-w-mappings
 
 #+begin_src emacs-lisp
 (setq evil-want-keybinding nil)
@@ -155,11 +226,6 @@ Redo taken from https://github.com/syl20bnr/spacemacs/issues/14036
   :config
   (require 'evil )
   (evil-mode 1)
-  (eval-after-load "evil-maps"
-  (dolist (map '(evil-motion-state-map
-                 evil-insert-state-map
-                 evil-emacs-state-map))
-    (define-key (eval map) "\C-w" nil)))
 
   :bind
   (:map anerenv-global-minor-mode-map
@@ -168,13 +234,26 @@ Redo taken from https://github.com/syl20bnr/spacemacs/issues/14036
         ("M-w k" . evil-window-decrease-height)
         ("M-w j" . evil-window-increase-height))
 )
+#+end_src
 
+Loading evil collection. Functions from this package will be referenced many times later in the configuration.
+
+#+begin_src emacs-lisp
 (use-package evil-collection
   :config
   (setq evil-collection-setup-minibuffer t)
 )
+#+end_src
 
+** Undo tree
+
+Loading =undo-tree= for undo/redo functionality with evil.
+
+Redo taken from https://github.com/syl20bnr/spacemacs/issues/14036
+
+#+begin_src emacs-lisp
 (use-package undo-tree
+  :after evil
   :config
     (evil-set-undo-system 'undo-tree)
     (setq undo-tree-history-directory-alist
@@ -183,38 +262,11 @@ Redo taken from https://github.com/syl20bnr/spacemacs/issues/14036
 )
 #+end_src
 
-Taken from: https://github.com/emacs-evil/evil/issues/1288
-
-Meant to fix indentation for tabs in source blocks.
-
-#+begin_src emacs-lisp
-(defun evil-org-insert-state-in-edit-buffer (fun &rest args)
-  "Bind `evil-default-state' to `insert' before calling FUN with ARGS."
-  (let ((evil-default-state 'insert)
-        ;; Force insert state
-        evil-emacs-state-modes
-        evil-normal-state-modes
-        evil-motion-state-modes
-        evil-visual-state-modes
-        evil-operator-state-modes
-        evil-replace-state-modes)
-    (apply fun args)
-    (evil-refresh-cursor)))
-
-(advice-add 'org-babel-do-key-sequence-in-edit-buffer
-            :around #'evil-org-insert-state-in-edit-buffer)
-#+end_src
-
-Unbinding "C-z". We want it for other things.
-
-#+begin_src emacs-lisp
-(define-key evil-motion-state-map
-    (kbd "C-z") nil)
-#+end_src
-
 ** IVY
 
 Enabling IVY. Taken from [[https://github.com/abo-abo/swiper][their website]].
+
+Using ivy, hydra, counsel.
 
 #+begin_src emacs-lisp
 (use-package ivy
@@ -234,22 +286,25 @@ Enabling IVY. Taken from [[https://github.com/abo-abo/swiper][their website]].
   :after ivy
 
   :bind
-  (:map anerenv-global-minor-mode-map
+    (:map anerenv-global-minor-mode-map
         ("M-i" . counsel-imenu)
         ("M-b" . counsel-switch-buffer)
         ("C-x C-f" . counsel-find-file))
-  )
+)
+#+end_src
 
+Using swiper. Replacing evil search with swiper search.
+
+#+begin_src emacs-lisp
 (use-package swiper
-  :after ivy
+    :after ivy evil
+    :config
+    (setq evil-search-module 'swiper-isearch)
 
-  :bind
-  (:map anerenv-global-minor-mode-map
+    :bind
+    (:map anerenv-global-minor-mode-map
         ("C-s" . swiper-isearch))
-  (:map evil-motion-state-map
-        ("/" . swiper-isearch))
-  )
-
+)
 #+end_src
 
 *** Keymaps
@@ -259,6 +314,12 @@ Enabling IVY. Taken from [[https://github.com/abo-abo/swiper][their website]].
 #+end_src
 
 ** Projectile
+
+Startup up projectile.
+
+A config line here disables modeline display because I don't want my modeline to be cluttered.
+
+Mapping modeline commands to =M-p= prefix. Also adding a shortcut to add project.
 
 #+begin_src emacs-lisp
 (use-package projectile
@@ -277,6 +338,8 @@ Enabling IVY. Taken from [[https://github.com/abo-abo/swiper][their website]].
 Ivy for projectile:
 Parts taken from [[https://emacs.stackexchange.com/questions/40787/display-corresponding-key-binding-of-command-during-m-x-completion][this post]] and [[https://emacs.stackexchange.com/questions/38841/counsel-m-x-always-shows][this post]] from StackOverflow.
 
+Helps with many functions to use counsel's/ivy's autocomplete with projectile.
+
 #+begin_src emacs-lisp
 (use-package counsel-projectile
   :config
@@ -291,17 +354,18 @@ Parts taken from [[https://emacs.stackexchange.com/questions/40787/display-corre
 
 ** Tramp
 
+Ensuring tramp is loaded, and loading counsel-tramp for easy tramping.
+
 #+begin_src emacs-lisp
 (use-package tramp
-  :straight (:type built-in)
-  :custom
-    (tramp-verbose 6)
-)
+  :straight (:type built-in))
 
 (use-package counsel-tramp)
 #+end_src
 
 ** YASnippet
+
+Loading yasnippet. Useful for snippeting. Mode-specific snippets defined in relevant sections.
 
 #+begin_src emacs-lisp
 (use-package yasnippet
@@ -312,7 +376,7 @@ Parts taken from [[https://emacs.stackexchange.com/questions/40787/display-corre
 
 ** Flycheck
 
-Must set up
+Flycheck is for syntax checking. Mode-specific configs in their relevant sections.
 
 #+begin_src emacs-lisp
 (use-package flycheck
@@ -321,69 +385,18 @@ Must set up
 )
 #+end_src
 
-** Window dividers
-
-#+begin_src emacs-lisp
-(setq window-divider-default-bottom-width 1
-      window-divider-default-places 'bottom-only)
-
-(window-divider-mode 1)
-#+end_src
-
-** Modeline
-
-Setting colors
-#+begin_src emacs-lisp
-(set-face-attribute 'mode-line nil :box nil :background "AliceBlue")
-(set-face-attribute 'mode-line-inactive nil :box nil :background "LightYellow3")
-#+end_src
-
-We use [[https://emacs.stackexchange.com/questions/5529/how-to-right-align-some-items-in-the-modeline][this stackoverflow page]] to make left\right aligned stuff.
-
-We use [[https://www.reddit.com/r/emacs/comments/4mhphb/spacemacs_how_to_limit_the_length_of_displayed/][this article]] to try and limit the mode name length.
-
-#+begin_src emacs-lisp
-(setq evil-normal-state-tag
-    (propertize " NORMAL  " 'face '((:background "DarkGoldenrod2" :foreground "black")))
-    evil-emacs-state-tag
-    (propertize " EMACS   " 'face '((:background "SkyBlue2" :foreground "black")))
-    evil-insert-state-tag
-    (propertize " INSERT  " 'face '((:background "chartreuse3" :foreground "black")))
-    evil-replace-state-tag
-    (propertize " REPLACE " 'face '((:background "chocolate" :foreground "black")))
-    evil-motion-state-tag
-    (propertize " MOTION  " 'face '((:background "plum3" :foreground "black")))
-    evil-visual-state-tag
-    (propertize " VISUAL  " 'face '((:background "gray" :foreground "black")))
-    evil-operator-state-tag
-    (propertize " OPERATE " 'face '((:background "sandy brown" :foreground "black"))))
-
-(defun simple-mode-line-render (left right)
-  "Return a string of `window-width' length containing LEFT, and RIGHT
- aligned respectively."
-  (let* ((available-width (- (window-width) (length left) 2)))
-    (format (format " %%s %%%ds " available-width) left right)))
-
-(setq-default mode-line-buffer-identification
-    (list -80 (propertized-buffer-identification "%12b")))
-
-(setq-default mode-line-format
-    '((:eval (simple-mode-line-render
-        ;;Left
-        (concat
-            (propertize (format-mode-line "%b") 'face '((:foreground "maroon")))
-            (format-mode-line " (%m) "))
-        ;;Right
-        (concat
-            (format-mode-line "%5lL%4cC ")
-            evil-mode-line-tag)))))
-#+end_src
-
 * Text
 
 ** Text font
 
+This section configures the base fonts. We select fonts if available (have configurations for good defaults in
+Linux and Windows).
+
+Also setting default fixed-pitch and variable-pitch fonts.
+
 Setting font size to 10. The value to place is font-size * 10
+
+Font size 12 for variable pitch.
 
 The function =font-candidate= is from https://www.gnu.org/software/emacs/manual/html_mono/cl.html.
 
@@ -396,7 +409,7 @@ The function =font-candidate= is from https://www.gnu.org/software/emacs/manual/
     (if variable-font
         (set-face-attribute 'variable-pitch nil :font variable-font)))
 
- (let ((fixed-font (font-candidate "LiberationMono" "Consolas")))
+(let ((fixed-font (font-candidate "LiberationMono" "Consolas")))
     (if fixed-font (progn
         (set-face-attribute 'default nil :font fixed-font)
         (set-face-attribute 'fixed-pitch nil :font fixed-font))))
@@ -415,14 +428,18 @@ The function =font-candidate= is from https://www.gnu.org/software/emacs/manual/
 
 ** Line numbering
 
+We want line numbering, but only in modes where it makes sense.
+
+To do this, a custom minor-mode, =anerenv/global-linum-mode=, is created.
+This mode selectively activates linum-mode if the mode is not one of a selected exempt modes.
+These exempt modes are defined in =display-line-numbers-exempt-modes=.
+
 Taken from [[https://www.emacswiki.org/emacs/LineNumbers][this wiki entry]].
 
 #+begin_src emacs-lisp
-
-;; Getting rid of linum on terminal type buffers
 (use-package display-line-numbers
     :init
-        (defcustom display-line-numbers-exempt-modes
+        (defcustom anerenv/display-line-numbers-exempt-modes
             '(vterm-mode
               eshell-mode
               shell-mode
@@ -432,7 +449,7 @@ Taken from [[https://www.emacswiki.org/emacs/LineNumbers][this wiki entry]].
               magit-diff-mode
               notmuch-hello
               pdf-view-mode)
-            "Major modes on which to disable the linum mode, exempts them from global requirement"
+            "Major modes on which to disable the linum mode, exempts them."
             :group 'display-line-numbers
             :type 'list
             :version "green")
@@ -440,7 +457,8 @@ Taken from [[https://www.emacswiki.org/emacs/LineNumbers][this wiki entry]].
         (define-global-minor-mode anerenv/global-linum-mode
             display-line-numbers-mode
             (lambda () (if (and
-                (not (apply 'derived-mode-p display-line-numbers-exempt-modes))
+                (not (apply 'derived-mode-p
+                            anerenv/display-line-numbers-exempt-modes))
                 (not (minibufferp)))
             (display-line-numbers-mode))))
 
@@ -453,18 +471,20 @@ Taken from [[https://www.emacswiki.org/emacs/LineNumbers][this wiki entry]].
         (set-face-attribute 'line-number nil
             :family (face-attribute 'fixed-pitch :family))
 )
-
 #+end_src
 
 ** Line highlight
 
-Highlighting lines.
+Highlighting line with cursor.
 
 #+begin_src emacs-lisp
+(set-face-attribute 'hl-line nil :background "LightBlue1"))))
 (global-hl-line-mode)
 #+end_src
 
 ** Line wrap
+
+Don't want to have to scroll to see more chars.
 
 #+begin_src emacs-lisp
 (global-visual-line-mode t)
@@ -480,7 +500,7 @@ Highlight matching parenthesis
 
 ** Tabs
 
-Using spaces, default offset is 4.
+Using spaces instead of tabs, default offset is 4.
 
 #+begin_src emacs-lisp
 (setq-default indent-tabs-mode nil
@@ -689,6 +709,7 @@ Broken for the time being
     (pdf-tools-install)
     (add-hook 'pdf-view-mode-hook
         (lambda () (blink-cursor-mode 0)))
+    (add-hook 'pdf-view-mode-hook 'pdf-view-fit-page-to-window)
 
     (evil-collection-pdf-setup)
 )
@@ -881,6 +902,12 @@ into tags, and org mode tags do not support dashes, but they do support underlin
     (kbd "a") 'org-agenda)
 #+end_src
 
+Setting org agenda to open in current window
+
+#+begin_src emacs-lisp
+(setq org-agenda-window-setup 'current-window)
+#+end_src
+
 For good keybindings in org agenda we use evil org. But we'll do it only for org agenda.
 
 #+begin_src emacs-lisp
@@ -889,7 +916,25 @@ For good keybindings in org agenda we use evil org. But we'll do it only for org
   :after org
   :config
   (require 'evil-org-agenda)
-  (evil-org-agenda-set-keys))
+  (evil-org-agenda-set-keys)
+  ;We don't want the M-j M-k definitions
+  (evil-define-key 'motion org-agenda-mode-map
+    (kbd "M-j") nil
+    (kbd "M-k") nil))
+#+end_src
+
+Custom views
+
+#+begin_src emacs-lisp
+(setq org-agenda-custom-commands
+      '(("h" "High priority"
+         ((agenda "")
+            (tags-todo "priority")
+            (tags-todo "general")
+          ))
+        ("o" "Config"
+         ((agenda "")
+          (tags-todo "anerenv")))))
 #+end_src
 
 *** Babel
@@ -918,6 +963,28 @@ Define languages to use
 (add-to-list 'org-babel-tangle-lang-exts '("clojure" . "clj"))
 #+end_src
 
+This section makes code-indentation correction work inside source blocks.
+Taken from: https://github.com/emacs-evil/evil/issues/1288
+
+
+#+begin_src emacs-lisp
+(defun evil-org-insert-state-in-edit-buffer (fun &rest args)
+  "Bind `evil-default-state' to `insert' before calling FUN with ARGS."
+  (let ((evil-default-state 'insert)
+        ;; Force insert state
+        evil-emacs-state-modes
+        evil-normal-state-modes
+        evil-motion-state-modes
+        evil-visual-state-modes
+        evil-operator-state-modes
+        evil-replace-state-modes)
+    (apply fun args)
+    (evil-refresh-cursor)))
+
+(advice-add 'org-babel-do-key-sequence-in-edit-buffer
+            :around #'evil-org-insert-state-in-edit-buffer)
+#+end_src
+
 *** Code blocks
 
 The following displays the contents of code blocks in Org-mode files using
@@ -928,6 +995,13 @@ were used in the appropriate major mode.
 (setq org-src-fontify-natively t
       org-src-tab-acts-natively t
       org-src-preserve-indentation t)
+
+(set-face-attribute 'org-block nil
+    :background "LemonChiffon1")
+(set-face-attribute 'org-block-begin-line nil
+    :background "LightYellow2")
+(set-face-attribute 'org-block-end-line nil
+    :background "LightYellow2")
 #+end_src
 
 *** PDF exporting
@@ -992,6 +1066,15 @@ This should render Hebrew text.
 #+begin_export latex
 \end{hebrew}
 #+end_export
+
+*** Latex previews
+
+We don't want to create ltximg directories all over the place.
+Let's store all ltximg previews in tmp directory.
+
+#+begin_src emacs-lisp
+(setq org-preview-latex-image-directory (concat user-emacs-directory "ltximg/"))
+#+end_src
 
 *** Org block highlighting
 
@@ -1134,7 +1217,30 @@ Snippet for src blocks
 *** Presentation
 
 #+begin_src emacs-lisp
-;(use-package epresent)
+(use-package org-present
+  :config
+    (add-hook 'org-present-mode-hook (lambda ()
+            (evil-emacs-state)
+            (blink-cursor-mode 0)
+            (org-present-big)
+            (org-display-inline-images)
+            (org-present-read-only)
+            (setq-local global-hl-line-mode nil)
+            (org-present-hide-cursor)
+            (olivetti-mode 1)
+            (display-line-numbers-mode 0)))
+
+    (add-hook 'org-present-mode-quit-hook (lambda ()
+            (org-present-small)
+            (blink-cursor-mode 1)
+            (org-remove-inline-images)
+            (org-present-show-cursor)
+            (org-present-read-write)
+            (evil-normal-state)
+            (setq-local global-hl-line-mode 1)
+            (olivetti-mode 0)
+            (display-line-numbers-mode 1)))
+)
 #+end_src
 
 *** Formatter
@@ -1230,6 +1336,8 @@ org-toggle-latex-fragment
 
 ** Mail
 
+*** General instructions
+
 Due to the fact that setting up email in general is complicated, I'll recap the process here.
 
 Before ANYTHING, setup pass.
@@ -1264,6 +1372,8 @@ https://notmuchmail.org/getting-started/
 We then RUN notmuch, and notmuch setup for prompt.
 
 Adding emails can be done with notmuch new
+
+*** Config
 
 #+begin_src emacs-lisp
 (defvar anerenv/lieer-mail-dir-list nil "List of mail dirs for lieer")
@@ -1305,7 +1415,7 @@ Adding emails can be done with notmuch new
         notmuch-hello-sections
             '(notmuch-hello-insert-saved-searches
               notmuch-hello-insert-alltags)
-        notmuch-search-oldest-first nil
+        notmuch-search-oldest-first t
         notmuch-always-prompt-for-sender t
         message-sendmail-envelope-from 'header)
   :config
@@ -1333,6 +1443,9 @@ Adding emails can be done with notmuch new
           "I" 'anerenv/notmuch-toggle-inbox
           "D" 'evil-collection-notmuch-search-toggle-delete
           "A" 'anerenv/notmuch-archive))
+    (evil-collection-define-key 'normal 'notmuch-show-mode-map
+        (kbd "M-j") nil
+        (kbd "M-k") nil)
 
   :bind
     (:map anerenv-global-minor-mode-open-map
@@ -1399,7 +1512,7 @@ https://medium.com/emacs/using-elfeed-to-view-videos-6dfc798e51e6
     :init
         (defun elfeed-v-mpv (url)
             "Watch a video from URL in MPV"
-            (start-process-shell-command "mpv" nil (concat "mpv " url)))
+            (start-process "mpv" nil "mpv" url))
 
         (defun elfeed-view-mpv (&optional use-generic-p)
         "Youtube-feed link"
@@ -1520,7 +1633,13 @@ Need to autoload dired-x for dired-omit
         (kbd "SPC") 'dired-subtree-toggle
         (kbd "TAB") 'dired-subtree-cycle
         )
-  (setq dired-subtree-use-backgrounds nil))
+    (setq dired-subtree-use-backgrounds nil)
+    ;Evil collection binds these keys, we need them for window movement
+    (evil-collection-define-key 'normal 'dired-mode-map
+        (kbd "M-j") nil
+        (kbd "M-k") nil)
+)
+
 #+end_src
 
 ** Magit
@@ -1601,7 +1720,78 @@ Rebinding wanted functionality
 (require 'eaf-video-player)
 #+end_src
 
+** Python
+
+#+begin_src emacs-lisp
+
+(define-key anerenv-global-minor-mode-open-map
+    (kbd "p") 'run-python)
+(setq
+    python-shell-interpreter "ipython"
+    python-shell-completion-native-enable nil)
+
+#+end_src
+
 * UI
+
+** Modeline
+
+Setting colors
+
+#+begin_src emacs-lisp
+(set-face-attribute 'mode-line nil :box nil :background "AliceBlue")
+(set-face-attribute 'mode-line-inactive nil :box nil :background "LightYellow3")
+#+end_src
+
+We use [[https://emacs.stackexchange.com/questions/5529/how-to-right-align-some-items-in-the-modeline][this stackoverflow page]] to make left\right aligned stuff.
+
+We use [[https://www.reddit.com/r/emacs/comments/4mhphb/spacemacs_how_to_limit_the_length_of_displayed/][this article]] to try and limit the mode name length.
+
+#+begin_src emacs-lisp
+(setq evil-normal-state-tag
+    (propertize " NORMAL  " 'face '((:background "DarkGoldenrod2" :foreground "black")))
+    evil-emacs-state-tag
+    (propertize " EMACS   " 'face '((:background "SkyBlue2" :foreground "black")))
+    evil-insert-state-tag
+    (propertize " INSERT  " 'face '((:background "chartreuse3" :foreground "black")))
+    evil-replace-state-tag
+    (propertize " REPLACE " 'face '((:background "chocolate" :foreground "black")))
+    evil-motion-state-tag
+    (propertize " MOTION  " 'face '((:background "plum3" :foreground "black")))
+    evil-visual-state-tag
+    (propertize " VISUAL  " 'face '((:background "gray" :foreground "black")))
+    evil-operator-state-tag
+    (propertize " OPERATE " 'face '((:background "sandy brown" :foreground "black"))))
+
+(defun simple-mode-line-render (left right)
+  "Return a string of `window-width' length containing LEFT, and RIGHT
+ aligned respectively."
+  (let* ((available-width (- (window-width) (length left) 2)))
+    (format (format " %%s %%%ds " available-width) left right)))
+
+(setq-default mode-line-buffer-identification
+    (list -80 (propertized-buffer-identification "%12b")))
+
+(setq-default mode-line-format
+    '((:eval (simple-mode-line-render
+        ;;Left
+        (concat
+            (propertize (format-mode-line "%b") 'face '((:foreground "maroon")))
+            (format-mode-line " (%m) "))
+        ;;Right
+        (concat
+            (format-mode-line "%5lL%4cC ")
+            evil-mode-line-tag)))))
+#+end_src
+
+** Window dividers
+
+#+begin_src emacs-lisp
+(setq window-divider-default-bottom-width 1
+      window-divider-default-places 'bottom-only)
+
+(window-divider-mode 1)
+#+end_src
 
 ** Tab bar
 
@@ -1845,13 +2035,11 @@ Here are a few examples:
 
 (defun anerenv/start-qutebrowser ()
   (interactive)
-  (start-process-shell-command "qutebrowser" nil "qutebrowser")
+  (start-process "qutebrowser" nil "qutebrowser")
 )
 
 (define-key anerenv-global-minor-mode-open-map
     (kbd "q") 'anerenv/start-qutebrowser)
-(define-key anerenv-global-minor-mode-open-map
-    (kbd "p") 'run-python)
 (define-key anerenv-global-minor-mode-map
   (kbd "<print>") 'anerenv/take-screenshot)
 #+end_src
@@ -1890,8 +2078,8 @@ Enabling randr. Automatic mapping of randr screens to workspaces.
 (defun anerenv/update-exwm-randr-workspace-monitor-plist ()
   (interactive)
     (progn
-        (start-process-shell-command
-        "xlayoutdisplay" nil "xlayoutdisplay")
+        (start-process
+            "xlayoutdisplay" nil "xlayoutdisplay")
         (setq exwm-randr-workspace-monitor-plist
                 (anerenv/add-indexes (anerenv/get-monitor-list)))
         (exwm-randr-refresh))
@@ -1921,51 +2109,33 @@ Sending simulated keys to X windows
 *** Dunst
 
 #+begin_src emacs-lisp
-(defvar anerenv/dunst-process nil
-  "Holds the process of the running Dunst instance, if any")
-
-(defun anerenv/kill-dunst ()
-  (interactive)
-  (when anerenv/dunst-process
-    (ignore-errors
-      (kill-process anerenv/dunst-process)))
-  (setq anerenv/dunst-process nil))
-
-(defun anerenv/start-dunst ()
-  (interactive)
-  (progn
-    (anerenv/kill-dunst)
-    (setq anerenv/dunst-process
-        (start-process-shell-command "dunst" "*dunst*" "dunst")))
-    (set-process-query-on-exit-flag anerenv/dunst-process nil))
-
-(anerenv/start-dunst)
+(anerenv/run-service 'dunst "dunst" nil)
 #+end_src
 
 *** Flameshot
 
 #+begin_src emacs-lisp
-(defvar anerenv/flameshot-process nil
-  "Holds the process of the background flameshot service, if any")
-
-(defun anerenv/kill-flameshot-process ()
-  (interactive)
-  (progn
-    (when anerenv/flameshot-process
-        (ignore-errors
-        (kill-process anerenv/flameshot-process)))
-    (setq anerenv/flameshot-process nil)))
-
-(defun anerenv/start-flameshot-process ()
-  (interactive)
-  (progn
-    (anerenv/kill-flameshot-process)
-    (setq anerenv/flameshot-process
-        (start-process-shell-command "flameshot" "*flameshot*" "flameshot"))
-    (set-process-query-on-exit-flag anerenv/flameshot-process nil)))
-
-(anerenv/start-flameshot-process)
+(anerenv/run-service 'flameshot "flameshot" '())
 #+end_src
+
+*** Spotify
+
+First let's run Spotifyd
+
+#+begin_src emacs-lisp
+(anerenv/run-service 'spotifyd "spotifyd" '("--no-daemon"))
+#+end_src
+
+Then we run smudge. We use this to control
+
+#+begin_src emacs-lisp
+(use-package smudge
+  :bind
+    (:map anerenv-global-minor-mode-open-map
+        ("s" . 'smudge-command-map)))
+#+end_src
+
+We have to set =smudge-oauth2-client-id= and =smudge-oauth2-client-secret= in a seperate file.
 
 *** Media keys
 
@@ -1983,19 +2153,19 @@ https://gist.github.com/ajyoon/5323b999a01dce8db2d4456da1740fe3
 (exwm-input-set-key
     (kbd "<XF86AudioRaiseVolume>")
     (lambda ()
-        (interactive) (start-process-shell-command
-        "pactl" nil "pactl set-sink-volume 0 +5%")))
+        (interactive) (start-process
+            "pactl" nil "pactl" "set-sink-volume" "0" "+5%")))
 (exwm-input-set-key
     (kbd "<XF86AudioLowerVolume>")
     (lambda ()
-        (interactive) (start-process-shell-command
-        "pactl" nil "pactl set-sink-volume 0 -5%")))
+        (interactive) (start-process
+            "pactl" nil "pactl" "set-sink-volume" "0" "-5%")))
 
 (exwm-input-set-key
     (kbd "<XF86AudioMute>")
         (lambda ()
-            (interactive) (start-process-shell-command
-            "pactl" nil "pactl set-sink-mute 0 toggle")))
+            (interactive) (start-process
+                "pactl" nil "pactl" "set-sink-mute" "0" "toggle")))
 
 (exwm-input-set-key
     (kbd "<XF86AudioPlay>")
@@ -2020,16 +2190,21 @@ https://gist.github.com/ajyoon/5323b999a01dce8db2d4456da1740fe3
 (exwm-input-set-key
     (kbd "<XF86MonBrightnessUp>")
         (lambda ()
-            (interactive) (start-process-shell-command
-            "xbacklight" nil "xbacklight -inc 5")))
+            (interactive) (start-process
+                "light" nil "light" "-A" "5")))
 
 (exwm-input-set-key
     (kbd "<XF86MonBrightnessDown>")
         (lambda ()
-            (interactive) (start-process-shell-command
-            "xbacklight" nil "xbacklight -dec 5")))
-
+            (interactive) (start-process
+                "light" nil "light" "-U" "5")))
 #+end_src
+
+In the event =xbacklight= doesn't work, the following command can be run:
+
+#+begin_example
+xrandr --output eDP1 --brightness 0.5
+#+end_example
 
 *** Input languages
 
@@ -2060,27 +2235,11 @@ Setting frame transparency to 95% for active and inactive frames.
 Creating the compositor process.
 
 #+begin_src emacs-lisp
-(defvar anerenv/picom-process nil
-  "Holds the process of the running picom instance, if any")
-
-(defun anerenv/kill-picom ()
-  (interactive)
-  (when anerenv/picom-process
-    (ignore-errors
-      (kill-process anerenv/picom-process)))
-  (setq anerenv/picom-process nil))
-
-(defun anerenv/start-picom ()
-  (interactive)
-  (progn
-    (anerenv/kill-picom)
-    (setq anerenv/picom-process
-        (start-process-shell-command "picom"
-                                     "*picom*"
-                                     "picom --config ~/.config/picom/picom.conf")))
-    (set-process-query-on-exit-flag anerenv/picom-process nil))
-
-(anerenv/start-picom)
+(anerenv/run-service
+    'picom
+    "picom"
+    (list "--config" (expand-file-name "~/.config/picom/picom.conf"))
+    t)
 #+end_src
 
 *** Transparency
@@ -2090,26 +2249,11 @@ We do this externally to not deal with function definition problems
 We create processes for feh to display wallpaper
 
 #+begin_src emacs-lisp
-(defvar anerenv/feh-process nil
-  "Holds the process of the running feh instance, if any")
-
-(defun anerenv/kill-feh ()
-  (interactive)
-  (when anerenv/feh-process
-    (ignore-errors
-      (kill-process anerenv/feh-process)))
-  (setq anerenv/feh-process nil))
-
 (defun anerenv/display-background-feh (path)
   "Starts feh to display background from certain path"
   (interactive)
-  (progn
-    (anerenv/kill-feh)
-    (setq anerenv/feh-process
-        (start-process-shell-command "feh" "*feh*"
-            (concat "feh --bg-fill "
-                (concat (file-name-as-directory path) "*"))))
-    (set-process-query-on-exit-flag anerenv/feh-process nil)))
+  (anerenv/run-service 'feh "feh"
+        (list "--bg-fill" (file-name-as-directory (expand-file-name path))) t))
 
 (anerenv/display-background-feh "~/images/wallpapers")
 #+end_src
