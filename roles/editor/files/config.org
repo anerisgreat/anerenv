@@ -434,14 +434,9 @@ To do this, a custom minor-mode, =anerenv/global-linum-mode=, is created.
 This mode selectively activates linum-mode if the mode is not one of a selected exempt modes.
 These exempt modes are defined in =display-line-numbers-exempt-modes=.
 
-To do line-numbering, we create a custom linum mode.
-
-
 Taken from [[https://www.emacswiki.org/emacs/LineNumbers][this wiki entry]].
 
 #+begin_src emacs-lisp
-
-;; Getting rid of linum on terminal type buffers
 (use-package display-line-numbers
     :init
         (defcustom anerenv/display-line-numbers-exempt-modes
@@ -476,18 +471,20 @@ Taken from [[https://www.emacswiki.org/emacs/LineNumbers][this wiki entry]].
         (set-face-attribute 'line-number nil
             :family (face-attribute 'fixed-pitch :family))
 )
-
 #+end_src
 
 ** Line highlight
 
-Highlighting lines.
+Highlighting line with cursor.
 
 #+begin_src emacs-lisp
+(set-face-attribute 'hl-line nil :background "LightBlue1"))))
 (global-hl-line-mode)
 #+end_src
 
 ** Line wrap
+
+Don't want to have to scroll to see more chars.
 
 #+begin_src emacs-lisp
 (global-visual-line-mode t)
@@ -503,7 +500,7 @@ Highlight matching parenthesis
 
 ** Tabs
 
-Using spaces, default offset is 4.
+Using spaces instead of tabs, default offset is 4.
 
 #+begin_src emacs-lisp
 (setq-default indent-tabs-mode nil
@@ -1740,6 +1737,7 @@ Rebinding wanted functionality
 ** Modeline
 
 Setting colors
+
 #+begin_src emacs-lisp
 (set-face-attribute 'mode-line nil :box nil :background "AliceBlue")
 (set-face-attribute 'mode-line-inactive nil :box nil :background "LightYellow3")
