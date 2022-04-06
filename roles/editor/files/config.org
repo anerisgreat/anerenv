@@ -34,8 +34,7 @@ Straight initialization found [[https://www.github.com/raxod502/straight.el][her
 (setq vc-follow-symlinks t)
 #+end_src
 
-Install use-package
-
+Installing use-package
 Installation of usepackage taken from [[https://github.com/KaratasFurkan/.emacs.d/][KaratasFurkan's generously shared emacs config]].
 
 #+begin_src emacs-lisp
@@ -47,6 +46,8 @@ Installation of usepackage taken from [[https://github.com/KaratasFurkan/.emacs.
 
 Taken from [[https://stackoverflow.com/questions/151945/how-do-i-control-how-emacs-makes-backup-files][this post on StackOverflow]]
 
+Backups are moved to a =.cache= directory in order to keep them out of local dirs.
+
 #+begin_src emacs-lisp
 (setq backup-directory-alist `(("." . "~/.cache/emacs-backups/"))
       auto-save-file-name-transforms '((".*" "~/.cache/emacs-backups/" t))
@@ -56,8 +57,6 @@ Taken from [[https://stackoverflow.com/questions/151945/how-do-i-control-how-ema
       kept-old-versions 2
       version-control t)
 #+end_src
-
-Load all the packages that define the work environment.
 
 ** Garbage collection
 
@@ -71,7 +70,9 @@ Setting garbage collection to 100M to make it stop freaking out every time I scr
 
 ** CL
 
-Might as well be here for everyone to use
+CL is a base library that has a bunch of useful stuff, primarily for lists.
+We are using the built-in version, no need to pull from anywhere.
+This just makes sure the code is loaded early on for later use.
 
 #+begin_src emacs-lisp
 (use-package cl
@@ -79,6 +80,10 @@ Might as well be here for everyone to use
 #+end_src
 
 ** Services
+
+This section defines functions and variables primarily used when Emacs is used as the OS
+The aim of this section is to provide functions to run programs that run in the background.
+This way we can run psuedo-services that run while Emacs runs.
 
 The variable =anerenv/service-table= is a hash table mapping between name to process.
 
@@ -88,9 +93,6 @@ This way we can keep one instance of every process we wish to run as a psuedo-se
 (defvar anerenv/service-table (make-hash-table)
   "Table to store psuedo-service processes in")
 #+end_src
-
-=anerenv/run-service= makes sure an entry in the service table exists. If it does,
-and it's a process, kill it. Then run a new process.
 
 =anerenv-kill/service= kills the process and deletes the entry. We use a sleep function
 inside because some processes cannot run concurrently. Killing and immediately starting
@@ -102,7 +104,12 @@ these processes causes some problems with the process lock.
         (let ((proc (gethash servicename anerenv/service-table)))
             (if proc (progn (delete-process proc) (sleep-for 0.1))))
         (remhash servicename anerenv/service-table)))
+#+end_src
 
+=anerenv/run-service= makes sure an entry in the service table exists. If it does,
+and it's a process, kill it. Then run a new process.
+
+#+begin_src emacs-lisp
 (defun anerenv/run-service (servicename command args &optional wbuff)
     (progn
         (anerenv/kill-service servicename)
