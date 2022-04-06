@@ -478,8 +478,8 @@ Taken from [[https://www.emacswiki.org/emacs/LineNumbers][this wiki entry]].
 Highlighting line with cursor.
 
 #+begin_src emacs-lisp
-(set-face-attribute 'hl-line nil :background "LightBlue1"))))
 (global-hl-line-mode)
+(set-face-attribute 'hl-line nil :background "LightBlue1")
 #+end_src
 
 ** Line wrap
