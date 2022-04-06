@@ -266,6 +266,8 @@ Redo taken from https://github.com/syl20bnr/spacemacs/issues/14036
 
 Enabling IVY. Taken from [[https://github.com/abo-abo/swiper][their website]].
 
+Using ivy, hydra, counsel.
+
 #+begin_src emacs-lisp
 (use-package ivy
   :custom
@@ -289,17 +291,20 @@ Enabling IVY. Taken from [[https://github.com/abo-abo/swiper][their website]].
         ("M-b" . counsel-switch-buffer)
         ("C-x C-f" . counsel-find-file))
 )
+#+end_src
 
+Using swiper. Replacing evil search with swiper search.
+
+#+begin_src emacs-lisp
 (use-package swiper
-    :after ivy
+    :after ivy evil
+    :config
+    (setq evil-search-module 'swiper-isearch)
 
     :bind
     (:map anerenv-global-minor-mode-map
         ("C-s" . swiper-isearch))
-    (:map evil-motion-state-map
-        ("/" . swiper-isearch))
 )
-
 #+end_src
 
 *** Keymaps
@@ -309,6 +314,12 @@ Enabling IVY. Taken from [[https://github.com/abo-abo/swiper][their website]].
 #+end_src
 
 ** Projectile
+
+Startup up projectile.
+
+A config line here disables modeline display because I don't want my modeline to be cluttered.
+
+Mapping modeline commands to =M-p= prefix. Also adding a shortcut to add project.
 
 #+begin_src emacs-lisp
 (use-package projectile
@@ -327,6 +338,8 @@ Enabling IVY. Taken from [[https://github.com/abo-abo/swiper][their website]].
 Ivy for projectile:
 Parts taken from [[https://emacs.stackexchange.com/questions/40787/display-corresponding-key-binding-of-command-during-m-x-completion][this post]] and [[https://emacs.stackexchange.com/questions/38841/counsel-m-x-always-shows][this post]] from StackOverflow.
 
+Helps with many functions to use counsel's/ivy's autocomplete with projectile.
+
 #+begin_src emacs-lisp
 (use-package counsel-projectile
   :config
@@ -341,17 +354,18 @@ Parts taken from [[https://emacs.stackexchange.com/questions/40787/display-corre
 
 ** Tramp
 
+Ensuring tramp is loaded, and loading counsel-tramp for easy tramping.
+
 #+begin_src emacs-lisp
 (use-package tramp
-  :straight (:type built-in)
-  :custom
-    (tramp-verbose 6)
-)
+  :straight (:type built-in))
 
 (use-package counsel-tramp)
 #+end_src
 
 ** YASnippet
+
+Loading yasnippet. Useful for snippeting. Mode-specific snippets defined in relevant sections.
 
 #+begin_src emacs-lisp
 (use-package yasnippet
@@ -362,7 +376,7 @@ Parts taken from [[https://emacs.stackexchange.com/questions/40787/display-corre
 
 ** Flycheck
 
-Must set up
+Flycheck is for syntax checking. Mode-specific configs in their relevant sections.
 
 #+begin_src emacs-lisp
 (use-package flycheck
@@ -371,69 +385,18 @@ Must set up
 )
 #+end_src
 
-** Window dividers
-
-#+begin_src emacs-lisp
-(setq window-divider-default-bottom-width 1
-      window-divider-default-places 'bottom-only)
-
-(window-divider-mode 1)
-#+end_src
-
-** Modeline
-
-Setting colors
-#+begin_src emacs-lisp
-(set-face-attribute 'mode-line nil :box nil :background "AliceBlue")
-(set-face-attribute 'mode-line-inactive nil :box nil :background "LightYellow3")
-#+end_src
-
-We use [[https://emacs.stackexchange.com/questions/5529/how-to-right-align-some-items-in-the-modeline][this stackoverflow page]] to make left\right aligned stuff.
-
-We use [[https://www.reddit.com/r/emacs/comments/4mhphb/spacemacs_how_to_limit_the_length_of_displayed/][this article]] to try and limit the mode name length.
-
-#+begin_src emacs-lisp
-(setq evil-normal-state-tag
-    (propertize " NORMAL  " 'face '((:background "DarkGoldenrod2" :foreground "black")))
-    evil-emacs-state-tag
-    (propertize " EMACS   " 'face '((:background "SkyBlue2" :foreground "black")))
-    evil-insert-state-tag
-    (propertize " INSERT  " 'face '((:background "chartreuse3" :foreground "black")))
-    evil-replace-state-tag
-    (propertize " REPLACE " 'face '((:background "chocolate" :foreground "black")))
-    evil-motion-state-tag
-    (propertize " MOTION  " 'face '((:background "plum3" :foreground "black")))
-    evil-visual-state-tag
-    (propertize " VISUAL  " 'face '((:background "gray" :foreground "black")))
-    evil-operator-state-tag
-    (propertize " OPERATE " 'face '((:background "sandy brown" :foreground "black"))))
-
-(defun simple-mode-line-render (left right)
-  "Return a string of `window-width' length containing LEFT, and RIGHT
- aligned respectively."
-  (let* ((available-width (- (window-width) (length left) 2)))
-    (format (format " %%s %%%ds " available-width) left right)))
-
-(setq-default mode-line-buffer-identification
-    (list -80 (propertized-buffer-identification "%12b")))
-
-(setq-default mode-line-format
-    '((:eval (simple-mode-line-render
-        ;;Left
-        (concat
-            (propertize (format-mode-line "%b") 'face '((:foreground "maroon")))
-            (format-mode-line " (%m) "))
-        ;;Right
-        (concat
-            (format-mode-line "%5lL%4cC ")
-            evil-mode-line-tag)))))
-#+end_src
-
 * Text
 
 ** Text font
 
+This section configures the base fonts. We select fonts if available (have configurations for good defaults in
+Linux and Windows).
+
+Also setting default fixed-pitch and variable-pitch fonts.
+
 Setting font size to 10. The value to place is font-size * 10
+
+Font size 12 for variable pitch.
 
 The function =font-candidate= is from https://www.gnu.org/software/emacs/manual/html_mono/cl.html.
 
@@ -446,7 +409,7 @@ The function =font-candidate= is from https://www.gnu.org/software/emacs/manual/
     (if variable-font
         (set-face-attribute 'variable-pitch nil :font variable-font)))
 
- (let ((fixed-font (font-candidate "LiberationMono" "Consolas")))
+(let ((fixed-font (font-candidate "LiberationMono" "Consolas")))
     (if fixed-font (progn
         (set-face-attribute 'default nil :font fixed-font)
         (set-face-attribute 'fixed-pitch nil :font fixed-font))))
@@ -465,6 +428,15 @@ The function =font-candidate= is from https://www.gnu.org/software/emacs/manual/
 
 ** Line numbering
 
+We want line numbering, but only in modes where it makes sense.
+
+To do this, a custom minor-mode, =anerenv/global-linum-mode=, is created.
+This mode selectively activates linum-mode if the mode is not one of a selected exempt modes.
+These exempt modes are defined in =display-line-numbers-exempt-modes=.
+
+To do line-numbering, we create a custom linum mode.
+
+
 Taken from [[https://www.emacswiki.org/emacs/LineNumbers][this wiki entry]].
 
 #+begin_src emacs-lisp
@@ -472,7 +444,7 @@ Taken from [[https://www.emacswiki.org/emacs/LineNumbers][this wiki entry]].
 ;; Getting rid of linum on terminal type buffers
 (use-package display-line-numbers
     :init
-        (defcustom display-line-numbers-exempt-modes
+        (defcustom anerenv/display-line-numbers-exempt-modes
             '(vterm-mode
               eshell-mode
               shell-mode
@@ -482,7 +454,7 @@ Taken from [[https://www.emacswiki.org/emacs/LineNumbers][this wiki entry]].
               magit-diff-mode
               notmuch-hello
               pdf-view-mode)
-            "Major modes on which to disable the linum mode, exempts them from global requirement"
+            "Major modes on which to disable the linum mode, exempts them."
             :group 'display-line-numbers
             :type 'list
             :version "green")
@@ -490,7 +462,8 @@ Taken from [[https://www.emacswiki.org/emacs/LineNumbers][this wiki entry]].
         (define-global-minor-mode anerenv/global-linum-mode
             display-line-numbers-mode
             (lambda () (if (and
-                (not (apply 'derived-mode-p display-line-numbers-exempt-modes))
+                (not (apply 'derived-mode-p
+                            anerenv/display-line-numbers-exempt-modes))
                 (not (minibufferp)))
             (display-line-numbers-mode))))
 
@@ -1763,6 +1736,64 @@ Rebinding wanted functionality
 #+end_src
 
 * UI
+
+** Modeline
+
+Setting colors
+#+begin_src emacs-lisp
+(set-face-attribute 'mode-line nil :box nil :background "AliceBlue")
+(set-face-attribute 'mode-line-inactive nil :box nil :background "LightYellow3")
+#+end_src
+
+We use [[https://emacs.stackexchange.com/questions/5529/how-to-right-align-some-items-in-the-modeline][this stackoverflow page]] to make left\right aligned stuff.
+
+We use [[https://www.reddit.com/r/emacs/comments/4mhphb/spacemacs_how_to_limit_the_length_of_displayed/][this article]] to try and limit the mode name length.
+
+#+begin_src emacs-lisp
+(setq evil-normal-state-tag
+    (propertize " NORMAL  " 'face '((:background "DarkGoldenrod2" :foreground "black")))
+    evil-emacs-state-tag
+    (propertize " EMACS   " 'face '((:background "SkyBlue2" :foreground "black")))
+    evil-insert-state-tag
+    (propertize " INSERT  " 'face '((:background "chartreuse3" :foreground "black")))
+    evil-replace-state-tag
+    (propertize " REPLACE " 'face '((:background "chocolate" :foreground "black")))
+    evil-motion-state-tag
+    (propertize " MOTION  " 'face '((:background "plum3" :foreground "black")))
+    evil-visual-state-tag
+    (propertize " VISUAL  " 'face '((:background "gray" :foreground "black")))
+    evil-operator-state-tag
+    (propertize " OPERATE " 'face '((:background "sandy brown" :foreground "black"))))
+
+(defun simple-mode-line-render (left right)
+  "Return a string of `window-width' length containing LEFT, and RIGHT
+ aligned respectively."
+  (let* ((available-width (- (window-width) (length left) 2)))
+    (format (format " %%s %%%ds " available-width) left right)))
+
+(setq-default mode-line-buffer-identification
+    (list -80 (propertized-buffer-identification "%12b")))
+
+(setq-default mode-line-format
+    '((:eval (simple-mode-line-render
+        ;;Left
+        (concat
+            (propertize (format-mode-line "%b") 'face '((:foreground "maroon")))
+            (format-mode-line " (%m) "))
+        ;;Right
+        (concat
+            (format-mode-line "%5lL%4cC ")
+            evil-mode-line-tag)))))
+#+end_src
+
+** Window dividers
+
+#+begin_src emacs-lisp
+(setq window-divider-default-bottom-width 1
+      window-divider-default-places 'bottom-only)
+
+(window-divider-mode 1)
+#+end_src
 
 ** Tab bar
 
