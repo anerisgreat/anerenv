@@ -385,6 +385,17 @@ Flycheck is for syntax checking. Mode-specific configs in their relevant section
 )
 #+end_src
 
+** Utility functions
+
+Defining a function to copy filename.
+
+#+begin_src emacs-lisp
+(defun anerenv/copy-file-name () (interactive)
+       (let ((fpath buffer-file-name))
+         (if fpath (kill-new fpath) (message "No current file!"))))
+
+#+end_src
+
 * Text
 
 ** Text font
