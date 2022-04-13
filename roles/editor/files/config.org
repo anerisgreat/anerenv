@@ -489,8 +489,8 @@ Taken from [[https://www.emacswiki.org/emacs/LineNumbers][this wiki entry]].
 Highlighting line with cursor.
 
 #+begin_src emacs-lisp
-(set-face-attribute 'hl-line nil :background "LightBlue1"))))
 (global-hl-line-mode)
+(set-face-attribute 'hl-line nil :background "LightBlue1")
 #+end_src
 
 ** Line wrap
@@ -708,6 +708,12 @@ Watch based on https://emacs.stackexchange.com/questions/44389/how-to-watch-and-
         ;; Display the buffer.
         (switch-to-buffer termbuf)))
 
+#+end_src
+
+#+begin_src emacs-lisp
+(use-package conda
+  :config
+  (conda-env-initialize-eshell))
 #+end_src
 
 ** PDF-Tools
@@ -2324,9 +2330,10 @@ Disabling the toolbar, the splash-screen, the menu-bar and the scroll-bar
 
 #+begin_src emacs-lisp
 (add-hook 'minibuffer-setup-hook
-          (lambda ()
-            (make-local-variable 'face-remapping-alist)
-            (add-to-list 'face-remapping-alist '(default (:background "WhiteSmoke")))))
+    (lambda ()
+        (make-local-variable 'face-remapping-alist)
+        (add-to-list 'face-remapping-alist
+                    '(default (:background "WhiteSmoke")))))
 #+end_src
 
 ** Bell
