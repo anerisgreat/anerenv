@@ -560,6 +560,17 @@ pain to see all the time.
 (add-hook 'after-change-major-mode-hook 'anerenv/whitespace-mode-func)
 #+end_src
 
+** Commenter
+
+Quick keybindings to comment out regions.
+
+#+begin_src emacs-lisp
+(use-package evil-nerd-commenter
+  :config
+  (define-key evil-normal-state-map (kbd "C-;")
+    'evilnc-comment-or-uncomment-lines))
+#+end_src
+
 ** Irony-mode
 
 Must work on this. While it does work, can get slow and for weird projects can
