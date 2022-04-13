@@ -1845,7 +1845,8 @@ We also use this section to bind keys.
 (if (version<= "27.1" emacs-version) (progn
     (tab-bar-mode 1)
     (set-face-attribute 'tab-bar nil
-                        :background "LightYellow4")
+                        :background "LightYellow4"
+                        :inherit 'fixed-pitch)
 
     (set-face-attribute 'tab-bar-tab nil
                         :box nil
