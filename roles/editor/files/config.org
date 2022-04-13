@@ -127,6 +127,42 @@ and it's a process, kill it. Then run a new process.
             nil)))
 #+end_src
 
+** Timers
+
+Much like services, we would like to be able to run timer functions periodically
+
+The variable =anerenv/timer-table= is a hash table mapping between name to a timer.
+
+This way we can keep one instance of every timer we wish to run.
+
+#+begin_src emacs-lisp
+(defvar anerenv/timer-table (make-hash-table)
+  "Table to store timers in")
+#+end_src
+
+=anerenv/kill-timer= kills the timer and deletes the entry. We use a sleep function
+inside because some processes cannot run concurrently. Killing and immediately starting
+these functions can sometimes cause hiccups, as with services.
+
+#+begin_src emacs-lisp
+(defun anerenv/kill-timer (timername) "Kills a timer from the table."
+    (progn
+        (let ((timer (gethash timername anerenv/timer-table)))
+            (if timer (progn (cancel-timer timer) (sleep-for 0.1))))
+        (remhash timername anerenv/timer-table)))
+#+end_src
+
+=anerenv/run-timer= makes sure an entry in the timer table exists. If it does,
+and it's a timer, kill it. Then run a new timer.
+
+#+begin_src emacs-lisp
+(defun anerenv/run-timer (timername func period)
+    (progn
+        (anerenv/kill-timer timername)
+        (puthash timername (run-with-timer 0 period func)
+                 anerenv/timer-table)))
+#+end_src
+
 ** Keymap setup
 
 In this section global keybindings are defined using a global minor mode.
@@ -1404,7 +1440,6 @@ Adding emails can be done with notmuch new
 *** Config
 
 #+begin_src emacs-lisp
-(defvar anerenv/mail/sync-timer nil "Timer for syncing mail")
 (defvar anerenv/mail/sync-list nil "List of functions with args to sync mail")
 
 (defun anerenv/mail/lieer-sync-func-str (maildir)
@@ -1437,12 +1472,7 @@ Adding emails can be done with notmuch new
     "Set list of mails and start timer"
     (progn
         (setq anerenv/mail/sync-list sync-list)
-        (if anerenv/mail/sync-list
-            (progn
-                (if anerenv/mail/sync-timer
-                    (cancel-timer anerenv/mail/sync-timer))
-                (setq anerenv/mail/sync-timer (run-with-timer 0 (* 60 10)
-                    'anerenv/mail/sync-n-notify))))))
+        (anerenv/run-timer 'mail-sync 'anerenv/mail/sync-n-notify (* 60 10))))
 
 (defun anerenv/emacs-notmuch-face ()
     (face-remap-add-relative 'default '(:inherit 'variable-pitch)))
@@ -1918,21 +1948,13 @@ From emacs 28.1 there is support for right-aligned text on the tab-bar. We may u
         (mapconcat 'eval (mapcar 'funcall anerenv/tab-bar-right-group) " | "))
     'face '(:background "LightYellow3" :foreground "DarkSlateGrey")))
 
-(defvar anerenv/tab-bar-timer nil "Timer to update the tab-bar")
-
 (defun anerenv/get-tab-bar-time-string () "Get tab bar time string"
        (format-time-string "%a, %b %d %H:%M"))
 
 (defun anerenv/tab-bar-update-func () "Function to update the tab bar"
        (progn
          (anerenv/set-bat-string)
-         (force-mode-line-update)
-         ))
-
-(defun anerenv/run-tab-bar-timer () "Run the tab bar timer" (progn
-       (if anerenv/tab-bar-timer (cancel-timer anerenv/tab-bar-timer))
-       (setq anerenv/tab-bar-timer
-             (run-with-timer 0 5 'anerenv/tab-bar-update-func))))
+         (force-mode-line-update)))
 
 (defun anerenv/tab-bar-spaces () "Return spacing for beginning of tab bar"
        "            ")
@@ -1949,7 +1971,7 @@ From emacs 28.1 there is support for right-aligned text on the tab-bar. We may u
     (define-key anerenv-global-minor-mode-map
         (kbd "M-n") 'tab-switch)
     (if (member system-type '(gnu gnu/linux))
-        (anerenv/run-tab-bar-timer))
+        (anerenv/run-timer 'tab-timer 'anerenv/tab-bar-update-func 5))
 ))
 #+end_src
 
