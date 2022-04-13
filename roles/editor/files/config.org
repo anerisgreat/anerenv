@@ -385,6 +385,17 @@ Flycheck is for syntax checking. Mode-specific configs in their relevant section
 )
 #+end_src
 
+** Utility functions
+
+Defining a function to copy filename.
+
+#+begin_src emacs-lisp
+(defun anerenv/copy-file-name () (interactive)
+       (let ((fpath buffer-file-name))
+         (if fpath (kill-new fpath) (message "No current file!"))))
+
+#+end_src
+
 * Text
 
 ** Text font
@@ -549,6 +560,17 @@ pain to see all the time.
 (add-hook 'after-change-major-mode-hook 'anerenv/whitespace-mode-func)
 #+end_src
 
+** Commenter
+
+Quick keybindings to comment out regions.
+
+#+begin_src emacs-lisp
+(use-package evil-nerd-commenter
+  :config
+  (define-key evil-normal-state-map (kbd "C-;")
+    'evilnc-comment-or-uncomment-lines))
+#+end_src
+
 ** Irony-mode
 
 Must work on this. While it does work, can get slow and for weird projects can
@@ -697,6 +719,12 @@ Watch based on https://emacs.stackexchange.com/questions/44389/how-to-watch-and-
         ;; Display the buffer.
         (switch-to-buffer termbuf)))
 
+#+end_src
+
+#+begin_src emacs-lisp
+(use-package conda
+  :config
+  (conda-env-initialize-eshell))
 #+end_src
 
 ** PDF-Tools
@@ -1828,7 +1856,8 @@ We also use this section to bind keys.
 (if (version<= "27.1" emacs-version) (progn
     (tab-bar-mode 1)
     (set-face-attribute 'tab-bar nil
-                        :background "LightYellow4")
+                        :background "LightYellow4"
+                        :inherit 'fixed-pitch)
 
     (set-face-attribute 'tab-bar-tab nil
                         :box nil
@@ -1919,7 +1948,8 @@ From emacs 28.1 there is support for right-aligned text on the tab-bar. We may u
         anerenv/tab-bar-right-group-func))
     (define-key anerenv-global-minor-mode-map
         (kbd "M-n") 'tab-switch)
-    (anerenv/run-tab-bar-timer)
+    (if (member system-type '('gnu 'gnu/linux))
+        (anerenv/run-tab-bar-timer))
 ))
 #+end_src
 
@@ -2324,9 +2354,10 @@ Disabling the toolbar, the splash-screen, the menu-bar and the scroll-bar
 
 #+begin_src emacs-lisp
 (add-hook 'minibuffer-setup-hook
-          (lambda ()
-            (make-local-variable 'face-remapping-alist)
-            (add-to-list 'face-remapping-alist '(default (:background "WhiteSmoke")))))
+    (lambda ()
+        (make-local-variable 'face-remapping-alist)
+        (add-to-list 'face-remapping-alist
+                    '(default (:background "WhiteSmoke")))))
 #+end_src
 
 ** Bell
