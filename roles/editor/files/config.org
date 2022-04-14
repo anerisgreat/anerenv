@@ -838,7 +838,7 @@ Setting fixed fonts in org-mode so that mixed type works as intended.
         (set-org-mode-fixed-pitch-faces)
         (setq org-src-tab-acts-natively t
               org-adapt-indentation nil
-              org-startup-folded 'folded
+              org-startup-folded t
               org-hide-emphasis-markers t)
         (set-face-attribute 'org-code nil
             :family (face-attribute 'fixed-pitch :family))
