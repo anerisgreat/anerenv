@@ -115,7 +115,7 @@ and it's a process, kill it. Then run a new process.
         (anerenv/kill-service servicename)
         (let ((servicestr (symbol-name servicename)))
             (let ((buffname (if wbuff
-                                (concat "*" servicestr "*")
+                                (concat "*service-" servicestr "*")
                                 nil)))
                 (let ((arglist
                     (append (list 'start-process servicestr buffname command)
@@ -2186,7 +2186,7 @@ Sending simulated keys to X windows
 First let's run Spotifyd
 
 #+begin_src emacs-lisp
-(anerenv/run-service 'spotifyd "spotifyd" '("--no-daemon"))
+(anerenv/run-service 'spotifyd "spotifyd" '("--no-daemon") t)
 #+end_src
 
 Then we run smudge. We use this to control
