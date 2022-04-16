@@ -1612,7 +1612,10 @@ https://medium.com/emacs/using-elfeed-to-view-videos-6dfc798e51e6
 ** Pass
 
 #+begin_src emacs-lisp
-(use-package pass)
+(use-package pass
+  :bind
+    (:map anerenv-global-minor-mode-open-map
+        ("p" . 'password-store-copy)))
 #+end_src
 
 ** Chess
@@ -1792,9 +1795,6 @@ Rebinding wanted functionality
 ** Python
 
 #+begin_src emacs-lisp
-
-(define-key anerenv-global-minor-mode-open-map
-    (kbd "p") 'run-python)
 (setq
     python-shell-interpreter "ipython"
     python-shell-completion-native-enable nil)
