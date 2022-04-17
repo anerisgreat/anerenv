@@ -1759,62 +1759,62 @@ The Emacs application framework!
 For customization see https://github.com/emacs-eaf/emacs-application-framework/wiki/Customization
 
 #+begin_src emacs-lisp
-(add-to-list 'load-path "~/.git-repos/eaf/")
-(require 'eaf)
-(add-to-list 'evil-emacs-state-modes 'eaf-mode)
+;; (add-to-list 'load-path "~/.git-repos/eaf/")
+;; (require 'eaf)
+;; (add-to-list 'evil-emacs-state-modes 'eaf-mode)
 #+end_src
 
 *** EAF - Browser
 
 #+begin_src emacs-lisp
-(require 'eaf-browser)
-(setq eaf-browser-continue-where-left-off t
-      eaf-browser-enable-adblocker t
-      browse-url-browser-function 'eaf-open-browser
-      eaf-browser-download-path "~/downloads")
-(defalias 'browse-web #'eaf-open-browser)
-(define-key anerenv-global-minor-mode-open-map
-    (kbd "w") 'eaf-open-browser)
-(define-key anerenv-global-minor-mode-open-map
-    (kbd "W") 'eaf-open-browser-with-history)
+;; (require 'eaf-browser)
+;; (setq eaf-browser-continue-where-left-off t
+;;       eaf-browser-enable-adblocker t
+;;       browse-url-browser-function 'eaf-open-browser
+;;       eaf-browser-download-path "~/downloads")
+;; (defalias 'browse-web #'eaf-open-browser)
+;; (define-key anerenv-global-minor-mode-open-map
+;;     (kbd "w") 'eaf-open-browser)
+;; (define-key anerenv-global-minor-mode-open-map
+;;     (kbd "W") 'eaf-open-browser-with-history)
 #+end_src
 
 Unbinding unwanted key bindings
 #+begin_src emacs-lisp
-;Unbinding dark mode keymap
-(eaf-bind-key nil "M-d" eaf-browser-keybinding)
-(eaf-bind-key nil "M-o" eaf-browser-keybinding)
+;; ;Unbinding dark mode keymap
+;; (eaf-bind-key nil "M-d" eaf-browser-keybinding)
+;; (eaf-bind-key nil "M-o" eaf-browser-keybinding)
 
-(dolist
-    (k '("M-d" "M-o" "M-b" "n"))
-  (eaf-bind-key nil k eaf-browser-keybinding))
+;; (dolist
+;;     (k '("M-d" "M-o" "M-b" "n"))
+;;   (eaf-bind-key nil k eaf-browser-keybinding))
 #+end_src
 
 Rebinding wanted functionality
 #+begin_src emacs-lisp
-(defun anerenv/eaf-interactive-search-it ()
-  (interactive)
-    (setq current-prefix-arg '(1)) (call-interactively 'eaf-search-it))
+;; (defun anerenv/eaf-interactive-search-it ()
+;;   (interactive)
+;;     (setq current-prefix-arg '(1)) (call-interactively 'eaf-search-it))
 
-(eaf-bind-key edit_url "C-o" eaf-browser-keybinding)
-(eaf-bind-key history_forward "C-f" eaf-browser-keybinding)
-(eaf-bind-key history_backward "C-b" eaf-browser-keybinding)
-(eaf-bind-key open_link "C-v" eaf-browser-keybinding)
-(eaf-bind-key open_link_new_buffer "C-S-v" eaf-browser-keybinding)
-(eaf-bind-key export_text "C-e" eaf-browser-keybinding)
-(eaf-bind-key anerenv/eaf-interactive-search-it "C-f" eaf-browser-keybinding)
+;; (eaf-bind-key edit_url "C-o" eaf-browser-keybinding)
+;; (eaf-bind-key history_forward "C-f" eaf-browser-keybinding)
+;; (eaf-bind-key history_backward "C-b" eaf-browser-keybinding)
+;; (eaf-bind-key open_link "C-v" eaf-browser-keybinding)
+;; (eaf-bind-key open_link_new_buffer "C-S-v" eaf-browser-keybinding)
+;; (eaf-bind-key export_text "C-e" eaf-browser-keybinding)
+;; (eaf-bind-key anerenv/eaf-interactive-search-it "C-f" eaf-browser-keybinding)
 #+end_src
 
 *** EAF - Terminal
 
 #+begin_src emacs-lisp
-(require 'eaf-terminal)
+;; (require 'eaf-terminal)
 #+end_src
 
 *** EAF - Video Player
 
 #+begin_src emacs-lisp
-(require 'eaf-video-player)
+;; (require 'eaf-video-player)
 #+end_src
 
 ** Python
