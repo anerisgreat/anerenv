@@ -3,7 +3,6 @@
 #+property: header-args :results silent
 #+options: toc:2
 #+latex_class: article
-#+startup: fold
 
 * Base Configuration
 
@@ -326,6 +325,8 @@ Using ivy, hydra, counsel.
         ("M-i" . counsel-imenu)
         ("M-b" . counsel-switch-buffer)
         ("C-x C-f" . counsel-find-file))
+    (:map anerenv-global-minor-mode-open-map
+        ("l" . counsel-linux-app))
 )
 #+end_src
 
