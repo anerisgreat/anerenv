@@ -115,7 +115,7 @@ and it's a process, kill it. Then run a new process.
         (anerenv/kill-service servicename)
         (let ((servicestr (symbol-name servicename)))
             (let ((buffname (if wbuff
-                                (concat "*" servicestr "*")
+                                (concat "*service-" servicestr "*")
                                 nil)))
                 (let ((arglist
                     (append (list 'start-process servicestr buffname command)
@@ -1105,6 +1105,8 @@ Creating classes
     fontsize=\\scriptsize,
     linenos=false,
 }
+\\DeclareMathOperator*{\\argmax}{arg\\,max}
+\\DeclareMathOperator*{\\argmin}{arg\\,min}
 \\newfontfamily\\hebrewfont{LiberationSans}[Script=Hebrew]
 \\setotherlanguage{hebrew}
 "
@@ -1137,6 +1139,29 @@ We don't want to create ltximg directories all over the place.
 Let's store all ltximg previews in tmp directory.
 
 #+begin_src emacs-lisp
+(setq org-format-latex-header
+ "\\documentclass{article}
+\\usepackage[usenames]{color}
+[PACKAGES]
+[DEFAULT-PACKAGES]
+\\pagestyle{empty}             % do not remove
+% The settings below are copied from fullpage.sty
+\\setlength{\\textwidth}{\\paperwidth}
+\\addtolength{\\textwidth}{-3cm}
+\\setlength{\\oddsidemargin}{1.5cm}
+\\addtolength{\\oddsidemargin}{-2.54cm}
+\\setlength{\\evensidemargin}{\\oddsidemargin}
+\\setlength{\\textheight}{\\paperheight}
+\\addtolength{\\textheight}{-\\headheight}
+\\addtolength{\\textheight}{-\\headsep}
+\\addtolength{\\textheight}{-\\footskip}
+\\addtolength{\\textheight}{-3cm}
+\\setlength{\\topmargin}{1.5cm}
+\\addtolength{\\topmargin}{-2.54cm}
+\\DeclareMathOperator*{\\argmax}{arg\\,max}
+\\DeclareMathOperator*{\\argmin}{arg\\,min}"
+ )
+
 (setq org-preview-latex-image-directory (concat user-emacs-directory "ltximg/"))
 #+end_src
 
@@ -1612,7 +1637,10 @@ https://medium.com/emacs/using-elfeed-to-view-videos-6dfc798e51e6
 ** Pass
 
 #+begin_src emacs-lisp
-(use-package pass)
+(use-package pass
+  :bind
+    (:map anerenv-global-minor-mode-open-map
+        ("p" . 'password-store-copy)))
 #+end_src
 
 ** Chess
@@ -1731,70 +1759,67 @@ The Emacs application framework!
 For customization see https://github.com/emacs-eaf/emacs-application-framework/wiki/Customization
 
 #+begin_src emacs-lisp
-(add-to-list 'load-path "~/.git-repos/eaf/")
-(require 'eaf)
-(add-to-list 'evil-emacs-state-modes 'eaf-mode)
+;; (add-to-list 'load-path "~/.git-repos/eaf/")
+;; (require 'eaf)
+;; (add-to-list 'evil-emacs-state-modes 'eaf-mode)
 #+end_src
 
 *** EAF - Browser
 
 #+begin_src emacs-lisp
-(require 'eaf-browser)
-(setq eaf-browser-continue-where-left-off t
-      eaf-browser-enable-adblocker t
-      browse-url-browser-function 'eaf-open-browser
-      eaf-browser-download-path "~/downloads")
-(defalias 'browse-web #'eaf-open-browser)
-(define-key anerenv-global-minor-mode-open-map
-    (kbd "w") 'eaf-open-browser)
-(define-key anerenv-global-minor-mode-open-map
-    (kbd "W") 'eaf-open-browser-with-history)
+;; (require 'eaf-browser)
+;; (setq eaf-browser-continue-where-left-off t
+;;       eaf-browser-enable-adblocker t
+;;       browse-url-browser-function 'eaf-open-browser
+;;       eaf-browser-download-path "~/downloads")
+;; (defalias 'browse-web #'eaf-open-browser)
+;; (define-key anerenv-global-minor-mode-open-map
+;;     (kbd "w") 'eaf-open-browser)
+;; (define-key anerenv-global-minor-mode-open-map
+;;     (kbd "W") 'eaf-open-browser-with-history)
 #+end_src
 
 Unbinding unwanted key bindings
 #+begin_src emacs-lisp
-;Unbinding dark mode keymap
-(eaf-bind-key nil "M-d" eaf-browser-keybinding)
-(eaf-bind-key nil "M-o" eaf-browser-keybinding)
+;; ;Unbinding dark mode keymap
+;; (eaf-bind-key nil "M-d" eaf-browser-keybinding)
+;; (eaf-bind-key nil "M-o" eaf-browser-keybinding)
 
-(dolist
-    (k '("M-d" "M-o" "M-b" "n"))
-  (eaf-bind-key nil k eaf-browser-keybinding))
+;; (dolist
+;;     (k '("M-d" "M-o" "M-b" "n"))
+;;   (eaf-bind-key nil k eaf-browser-keybinding))
 #+end_src
 
 Rebinding wanted functionality
 #+begin_src emacs-lisp
-(defun anerenv/eaf-interactive-search-it ()
-  (interactive)
-    (setq current-prefix-arg '(1)) (call-interactively 'eaf-search-it))
+;; (defun anerenv/eaf-interactive-search-it ()
+;;   (interactive)
+;;     (setq current-prefix-arg '(1)) (call-interactively 'eaf-search-it))
 
-(eaf-bind-key edit_url "C-o" eaf-browser-keybinding)
-(eaf-bind-key history_forward "C-f" eaf-browser-keybinding)
-(eaf-bind-key history_backward "C-b" eaf-browser-keybinding)
-(eaf-bind-key open_link "C-v" eaf-browser-keybinding)
-(eaf-bind-key open_link_new_buffer "C-S-v" eaf-browser-keybinding)
-(eaf-bind-key export_text "C-e" eaf-browser-keybinding)
-(eaf-bind-key anerenv/eaf-interactive-search-it "C-f" eaf-browser-keybinding)
+;; (eaf-bind-key edit_url "C-o" eaf-browser-keybinding)
+;; (eaf-bind-key history_forward "C-f" eaf-browser-keybinding)
+;; (eaf-bind-key history_backward "C-b" eaf-browser-keybinding)
+;; (eaf-bind-key open_link "C-v" eaf-browser-keybinding)
+;; (eaf-bind-key open_link_new_buffer "C-S-v" eaf-browser-keybinding)
+;; (eaf-bind-key export_text "C-e" eaf-browser-keybinding)
+;; (eaf-bind-key anerenv/eaf-interactive-search-it "C-f" eaf-browser-keybinding)
 #+end_src
 
 *** EAF - Terminal
 
 #+begin_src emacs-lisp
-(require 'eaf-terminal)
+;; (require 'eaf-terminal)
 #+end_src
 
 *** EAF - Video Player
 
 #+begin_src emacs-lisp
-(require 'eaf-video-player)
+;; (require 'eaf-video-player)
 #+end_src
 
 ** Python
 
 #+begin_src emacs-lisp
-
-(define-key anerenv-global-minor-mode-open-map
-    (kbd "p") 'run-python)
 (setq
     python-shell-interpreter "ipython"
     python-shell-completion-native-enable nil)
@@ -2186,7 +2211,7 @@ Sending simulated keys to X windows
 First let's run Spotifyd
 
 #+begin_src emacs-lisp
-(anerenv/run-service 'spotifyd "spotifyd" '("--no-daemon"))
+(anerenv/run-service 'spotifyd "spotifyd" '("--no-daemon") t)
 #+end_src
 
 Then we run smudge. We use this to control
