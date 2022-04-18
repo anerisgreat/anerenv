@@ -706,8 +706,11 @@ Using Hideshow
 (use-package vterm
   :if  (member system-type '(gnu gnu/linux))
   :config
-  (add-hook 'vterm-mode-hook
+    (add-hook 'vterm-mode-hook
             (lambda () (setq-local global-hl-line-mode nil)))
+
+    (evil-collection-define-key 'normal 'vterm-mode-map
+      (kbd "p") 'vterm-yank)
 )
 
 #+end_src
@@ -2212,16 +2215,16 @@ Sending simulated keys to X windows
 First let's run Spotifyd
 
 #+begin_src emacs-lisp
-(anerenv/run-service 'spotifyd "spotifyd" '("--no-daemon") t)
+;; (anerenv/run-service 'spotifyd "spotifyd" '("--no-daemon") t)
 #+end_src
 
 Then we run smudge. We use this to control
 
 #+begin_src emacs-lisp
-(use-package smudge
-  :bind
-    (:map anerenv-global-minor-mode-open-map
-        ("s" . 'smudge-command-map)))
+;; (use-package smudge
+;;   :bind
+;;     (:map anerenv-global-minor-mode-open-map
+;;         ("s" . 'smudge-command-map)))
 #+end_src
 
 We have to set =smudge-oauth2-client-id= and =smudge-oauth2-client-secret= in a seperate file.
