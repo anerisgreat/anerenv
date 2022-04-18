@@ -472,6 +472,9 @@ The function =font-candidate= is from https://www.gnu.org/software/emacs/manual/
     :height 100
     :weight 'normal
     :width 'normal)
+
+(defun anerenv/default-variable-pitch ()
+    (face-remap-add-relative 'default '(:inherit 'variable-pitch)))
 #+end_src
 
 ** Line numbering
@@ -1399,8 +1402,23 @@ org-toggle-latex-fragment
 
 ** Markdown
 
+Based on [[https://www.reddit.com/r/emacs/comments/u5owr4/how_to_enable_variablepitchmode_for_markdownmode/][this]] post
+detailing variable pitch.
+
+We default to github-flavored markdown and show it as variable pitch.
+
 #+begin_src emacs-lisp
-(use-package markdown-mode)
+(use-package markdown-mode
+  :mode (("\\.md$" . gfm-mode)
+         ("\\.mkd$" . gfm-mode))
+  :hook (gfm-mode . variable-pitch-mode)
+  :diminish markdown-live-preview-mode
+  :config
+  (when (bound-and-true-p lsp-mode)
+    (variable-pitch-mode -1))
+  (set-face-attribute 'markdown-pre-face nil
+    :background "LemonChiffon1" :extend t)
+  )
 #+end_src
 
 ** CMake
@@ -1503,9 +1521,6 @@ Adding emails can be done with notmuch new
         (setq anerenv/mail/sync-list sync-list)
         (anerenv/run-timer 'mail-sync 'anerenv/mail/sync-n-notify (* 60 10))))
 
-(defun anerenv/emacs-notmuch-face ()
-    (face-remap-add-relative 'default '(:inherit 'variable-pitch)))
-
 (use-package notmuch
   :straight (:type built-in)
   :init
@@ -1518,7 +1533,7 @@ Adding emails can be done with notmuch new
         message-sendmail-envelope-from 'header)
   :config
     (evil-collection-notmuch-setup)
-    (add-hook 'notmuch-show-mode 'anerenv/emacs-notmuch-face)
+    (add-hook 'notmuch-show-mode 'anerenv/default-variable-pitch)
     (setq send-mail-function 'sendmail-send-it)
     (defun anerenv/notmuch-archive () "Archive a message" (interactive)
         (progn
