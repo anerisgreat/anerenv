@@ -1737,7 +1737,7 @@ Need to autoload dired-x for dired-omit
 #+begin_src emacs-lisp
 (autoload 'dired-omit-mode "dired-x")
 (setq dired-omit-files "^\\...+$")
-(add-hook 'dired-mode-hook (lambda () (dired-omit-mode)))
+(add-hook 'dired-mode-hook 'dired-omit-mode)
 (add-hook 'dired-mode-hook 'dired-hide-details-mode)
 (evil-collection-dired-setup)
 #+end_src
@@ -1862,19 +1862,26 @@ We use [[https://www.reddit.com/r/emacs/comments/4mhphb/spacemacs_how_to_limit_t
 
 #+begin_src emacs-lisp
 (setq evil-normal-state-tag
-    (propertize " NORMAL  " 'face '((:background "DarkGoldenrod2" :foreground "black")))
+    (propertize " NORMAL  " 'face
+                '((:background "DarkGoldenrod2" :foreground "black")))
     evil-emacs-state-tag
-    (propertize " EMACS   " 'face '((:background "SkyBlue2" :foreground "black")))
+    (propertize " EMACS   " 'face
+                '((:background "SkyBlue2" :foreground "black")))
     evil-insert-state-tag
-    (propertize " INSERT  " 'face '((:background "chartreuse3" :foreground "black")))
+    (propertize " INSERT  " 'face
+                '((:background "chartreuse3" :foreground "black")))
     evil-replace-state-tag
-    (propertize " REPLACE " 'face '((:background "chocolate" :foreground "black")))
+    (propertize " REPLACE " 'face
+                '((:background "chocolate" :foreground "black")))
     evil-motion-state-tag
-    (propertize " MOTION  " 'face '((:background "plum3" :foreground "black")))
+    (propertize " MOTION  " 'face
+                '((:background "plum3" :foreground "black")))
     evil-visual-state-tag
-    (propertize " VISUAL  " 'face '((:background "gray" :foreground "black")))
+    (propertize " VISUAL  " 'face
+                '((:background "gray" :foreground "black")))
     evil-operator-state-tag
-    (propertize " OPERATE " 'face '((:background "sandy brown" :foreground "black"))))
+    (propertize " OPERATE " 'face
+                '((:background "sandy brown" :foreground "black"))))
 
 (defun simple-mode-line-render (left right)
   "Return a string of `window-width' length containing LEFT, and RIGHT
