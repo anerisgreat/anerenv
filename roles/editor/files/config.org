@@ -280,6 +280,18 @@ Loading evil collection. Functions from this package will be referenced many tim
 )
 #+end_src
 
+Setting theme colors
+
+#+begin_src emacs-lisp
+(defvar anerenv/evil-color-normal "LightGoldenrod1")
+(defvar anerenv/evil-color-emacs "LightBlue1")
+(defvar anerenv/evil-color-insert "PaleGreen1")
+(defvar anerenv/evil-color-replace "LightPink")
+(defvar anerenv/evil-color-motion "LightCyan")
+(defvar anerenv/evil-color-visual "LightGray")
+(defvar anerenv/evil-color-operate "sandy brown")
+#+end_src
+
 ** Undo tree
 
 Loading =undo-tree= for undo/redo functionality with evil.
@@ -530,7 +542,74 @@ Highlighting line with cursor.
 
 #+begin_src emacs-lisp
 (global-hl-line-mode)
-(set-face-attribute 'hl-line nil :background "LightBlue1")
+(set-face-attribute 'hl-line nil :background anerenv/evil-color-emacs)
+
+(defface hl-line-normal
+  (list (list t (list :inherit 'hl-line :background  anerenv/evil-color-normal
+                      :extend t)))
+    "Highlight face for evil normal mode."
+    :group 'hl-line)
+
+(defface hl-line-insert
+  (list (list t (list :inherit 'hl-line :background  anerenv/evil-color-insert
+                      :extend t)))
+    "Highlight face for evil insert mode."
+    :group 'hl-line)
+
+(defface hl-line-emacs
+  (list (list t (list :inherit 'hl-line :background  anerenv/evil-color-emacs
+                      :extend t)))
+    "Highlight face for evil insert mode."
+    :group 'hl-line)
+
+(defface hl-line-replace
+  (list (list t (list :inherit 'hl-line :background  anerenv/evil-color-replace
+                      :extend t)))
+    "Highlight face for evil insert mode."
+    :group 'hl-line)
+
+(defface hl-line-motion
+  (list (list t (list :inherit 'hl-line :background  anerenv/evil-color-motion
+                      :extend t)))
+    "Highlight face for evil insert mode."
+    :group 'hl-line)
+
+(defface hl-line-visual
+  (list (list t (list :inherit 'hl-line :background  anerenv/evil-color-visual
+                      :extend t)))
+    "Highlight face for evil insert mode."
+    :group 'hl-line)
+
+(defface hl-line-operate
+  (list (list t (list :inherit 'hl-line :background  anerenv/evil-color-operate
+                      :extend t)))
+    "Highlight face for evil insert mode."
+    :group 'hl-line)
+
+(defun anerenv/hl-line-evil/set-hl-state (state-face)
+  "Refresh hl-line to be state-face"
+  (progn
+    (global-hl-line-unhighlight)
+    (setq-local hl-line-face state-face)
+    (global-hl-line-highlight)))
+
+#+end_src
+
+#+begin_src emacs-lisp
+(add-hook 'evil-insert-state-entry-hook
+          (lambda () (anerenv/hl-line-evil/set-hl-state 'hl-line-insert)))
+(add-hook 'evil-normal-state-entry-hook
+          (lambda () (anerenv/hl-line-evil/set-hl-state 'hl-line-normal)))
+(add-hook 'evil-emacs-state-entry-hook
+          (lambda () (anerenv/hl-line-evil/set-hl-state 'hl-line-emacs)))
+(add-hook 'evil-replace-state-entry-hook
+          (lambda () (anerenv/hl-line-evil/set-hl-state 'hl-line-replace)))
+(add-hook 'evil-motion-state-entry-hook
+          (lambda () (anerenv/hl-line-evil/set-hl-state 'hl-line-motion)))
+(add-hook 'evil-visual-state-entry-hook
+          (lambda () (anerenv/hl-line-evil/set-hl-state 'hl-line-visual)))
+(add-hook 'evil-operate-state-entry-hook
+          (lambda () (anerenv/hl-line-evil/set-hl-state 'hl-line-operate)))
 #+end_src
 
 ** Line wrap
@@ -1863,25 +1942,25 @@ We use [[https://www.reddit.com/r/emacs/comments/4mhphb/spacemacs_how_to_limit_t
 #+begin_src emacs-lisp
 (setq evil-normal-state-tag
     (propertize " NORMAL  " 'face
-                '((:background "DarkGoldenrod2" :foreground "black")))
+                (list :background anerenv/evil-color-normal))
     evil-emacs-state-tag
     (propertize " EMACS   " 'face
-                '((:background "SkyBlue2" :foreground "black")))
+                (list :background anerenv/evil-color-emacs))
     evil-insert-state-tag
     (propertize " INSERT  " 'face
-                '((:background "chartreuse3" :foreground "black")))
+                (list :background anerenv/evil-color-insert))
     evil-replace-state-tag
     (propertize " REPLACE " 'face
-                '((:background "chocolate" :foreground "black")))
+                (list :background anerenv/evil-color-replace))
     evil-motion-state-tag
     (propertize " MOTION  " 'face
-                '((:background "plum3" :foreground "black")))
+                (list :background anerenv/evil-color-motion))
     evil-visual-state-tag
     (propertize " VISUAL  " 'face
-                '((:background "gray" :foreground "black")))
+                (list :background anerenv/evil-color-visual))
     evil-operator-state-tag
     (propertize " OPERATE " 'face
-                '((:background "sandy brown" :foreground "black"))))
+                (list :background anerenv/evil-color-operate)))
 
 (defun simple-mode-line-render (left right)
   "Return a string of `window-width' length containing LEFT, and RIGHT
