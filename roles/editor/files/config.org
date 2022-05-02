@@ -1924,6 +1924,12 @@ Rebinding wanted functionality
 
 #+end_src
 
+** Jupyter
+
+#+begin_src emacs-lisp
+(use-package ein)
+#+end_src
+
 * UI
 
 ** Modeline
