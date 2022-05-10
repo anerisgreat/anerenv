@@ -1036,8 +1036,8 @@ into tags, and org mode tags do not support dashes, but they do support underlin
 "* %U
 :PROPERTIES:
 :CREATED: %U
-:MOOD: %^{General mood?|happy|angry|sad}
-:ENERGY: %^{Energy?|tired|energetic}
+:MOOD: %^{General mood?|happy|angry|sad|neutral}
+:ENERGY: %^{Energy?|tired|energetic|neutral}
 :END:
 %?")
 ))
