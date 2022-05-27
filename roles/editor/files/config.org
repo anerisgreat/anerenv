@@ -780,6 +780,20 @@ Using Hideshow
   (setq olivetti-body-width 86))
 #+end_src
 
+** Pandoc
+
+Pandoc mode lets us export different formats to PDF.
+
+Added for use with markdown.
+
+Binding to startup is 'C-c /'
+
+#+begin_src emacs-lisp
+(use-package pandoc-mode
+  :hook
+  (markdown-mode . pandoc-mode))
+#+end_src
+
 * Major modes
 
 ** VTerm
