@@ -1238,6 +1238,10 @@ This should render Hebrew text.
 We don't want to create ltximg directories all over the place.
 Let's store all ltximg previews in tmp directory.
 
+Latex scaling from
+
+https://karthinks.com/software/scaling-latex-previews-in-emacs/
+
 #+begin_src emacs-lisp
 (setq org-format-latex-header
  "\\documentclass{article}
@@ -1263,6 +1267,10 @@ Let's store all ltximg previews in tmp directory.
  )
 
 (setq org-preview-latex-image-directory (concat user-emacs-directory "ltximg/"))
+
+(setq org-latex-create-formula-image-program 'dvisvgm)
+
+(setq org-format-latex-options (plist-put org-format-latex-options :scale 1.5))
 #+end_src
 
 *** Org block highlighting
