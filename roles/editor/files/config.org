@@ -1500,6 +1500,12 @@ We default to github-flavored markdown and show it as variable pitch.
   )
 #+end_src
 
+Let's add a TOC
+
+#+begin_src emacs-lisp
+(use-package markdown-toc)
+#+end_src
+
 ** CMake
 
 #+begin_src emacs-lisp
