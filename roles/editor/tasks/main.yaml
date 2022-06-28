@@ -14,6 +14,7 @@
       - xapian-core
       - talloc
       - notmuch
+      - jupyter-notebook
 
   become: yes
 

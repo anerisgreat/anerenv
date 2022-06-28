@@ -780,6 +780,20 @@ Using Hideshow
   (setq olivetti-body-width 86))
 #+end_src
 
+** Pandoc
+
+Pandoc mode lets us export different formats to PDF.
+
+Added for use with markdown.
+
+Binding to startup is 'C-c /'
+
+#+begin_src emacs-lisp
+(use-package pandoc-mode
+  :hook
+  (markdown-mode . pandoc-mode))
+#+end_src
+
 * Major modes
 
 ** VTerm
@@ -1036,8 +1050,8 @@ into tags, and org mode tags do not support dashes, but they do support underlin
 "* %U
 :PROPERTIES:
 :CREATED: %U
-:MOOD: %^{General mood?|happy|angry|sad}
-:ENERGY: %^{Energy?|tired|energetic}
+:MOOD: %^{General mood?|happy|angry|sad|neutral}
+:ENERGY: %^{Energy?|tired|energetic|neutral}
 :END:
 %?")
 ))
@@ -1928,6 +1942,12 @@ Rebinding wanted functionality
     python-shell-interpreter "ipython"
     python-shell-completion-native-enable nil)
 
+#+end_src
+
+** Jupyter
+
+#+begin_src emacs-lisp
+(use-package ein)
 #+end_src
 
 * UI
