@@ -961,7 +961,8 @@ into tags, and org mode tags do not support dashes, but they do support underlin
 #+begin_src emacs-lisp
 (setq org-agenda-files (list "~/org/agenda")
       org-default-notes-file "~/org/agenda/notes.org"
-      org-agenda-tags-column -80)
+      org-agenda-tags-column -80
+      org-agenda-start-on-weekday nil)
 
 (define-key anerenv-global-minor-mode-open-map
     (kbd "c") 'counsel-org-capture)
