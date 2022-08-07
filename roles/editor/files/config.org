@@ -1965,6 +1965,19 @@ Rebinding wanted functionality
 (use-package ein)
 #+end_src
 
+** OpenSCAD
+
+#+begin_src emacs-lisp
+(use-package scad-mode)
+
+(use-package scad-preview
+  :straight '(
+              scad-preview
+              :type git
+              :host github
+              :repo "zk-phi/scad-preview"))
+#+end_src
+
 * UI
 
 ** Modeline

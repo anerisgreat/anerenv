@@ -22,6 +22,7 @@
       - xorg-xinit
       - feh
       - aria2
+      - openscad
   become: yes
 
 - name: Clone eaf
@@ -47,6 +48,15 @@
     dest: "{{ config_dir }}/dunst/dunstrc"
     state: link
 
+- name: Install station packages for Debian
+  when: ansible_os_family == "Debian"
+  block:
+    - name: Install openscad-mcad for Debian
+      package:
+        name:
+        - openscad-mcad
+      become: yes
+
 - name: Install editor packages for Arch
   when: ansible_os_family == "Archlinux"
   block:
@@ -55,6 +65,9 @@
 
     - name: Install lieer from YAY
       command: yay -S gmailieer --nocleanmenu --nodiffmenu --noeditmenu --noupgrademenu --noconfirm
+
+    - name: Install openscad-mcad from YAY
+      command: yay -S openscad-mcad-dev-git --nocleanmenu --nodiffmenu --noeditmenu --noupgrademenu --noconfirm
 
 - name: Create downloads directory
   file:
