@@ -23,6 +23,7 @@
       - feh
       - aria2
       - openscad
+      - lmms
   become: yes
 
 - name: Clone eaf
