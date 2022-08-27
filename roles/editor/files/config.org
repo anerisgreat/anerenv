@@ -1726,8 +1726,6 @@ Thanks to Dan of Stackoverflow.
                     (car (member address anerenv/mail/blacklist-addresses)))
                     addresses))
       (mml-secure-message-sign))))
-
-(add-hook 'message-send-hook #'anerenv/mail/secure-sign-maybe)
 #+end_src
 
 ** LEETCODE
