@@ -1692,6 +1692,44 @@ https://wiki.archlinux.org/title/isync
 
 We will do this manually.
 
+*** Signatures
+
+Taken from
+
+https://emacs.stackexchange.com/questions/27759/do-not-automatically-sign-emails-directed-to-mailing-lists-and-such
+
+Thanks to Dan of Stackoverflow.
+
+#+begin_src emacs-lisp
+
+
+(defvar anerenv/mail/blacklist-addresses nil
+  "List of email addresses (as strings) to blacklist for
+  `mml-secure-message-sign'.")
+
+(defun anerenv/mail/secure-sign-maybe ()
+  "Use `mml-secure-message-sign' unless the addressee is in the
+`anerenv/mail/blacklist-addresses'."
+  (let ((addresses (mapcar (lambda (address)
+                             (when (string-match
+                                    "\\(<?\\)\\([^@< ]+@[^@> ]+\\)\\(>?\\)"
+                                    address)
+                               (match-string 2 address)))
+                           ;; (split-string (message-field-value "To")
+                           ;;               "," t "[[:blank:]]+"))))
+                           (split-string (concat (message-field-value "To")
+                                                 ", "
+                                                 (message-field-value "Cc"))
+                                         "," t "[[:blank:]]+"))))
+    ;; skip secure signing when an address is blacklisted
+    (unless (delq nil (mapcar (lambda (address)
+                    (car (member address anerenv/mail/blacklist-addresses)))
+                    addresses))
+      (mml-secure-message-sign))))
+
+(add-hook 'message-send-hook #'anerenv/mail/secure-sign-maybe)
+#+end_src
+
 ** LEETCODE
 
 #+begin_src emacs-lisp
