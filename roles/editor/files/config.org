@@ -1501,6 +1501,13 @@ https://stackoverflow.com/questions/4419576/delete-extra-blank-lines-in-emacs
         (whitespace-cleanup)))))
 #+end_src
 
+*** Imenu quirks
+
+#+begin_src emacs-lisp
+(add-to-list 'org-show-context-detail '(isearch . tree))
+(add-to-list 'org-show-context-detail '(default . tree))
+#+end_src
+
 *** Useful to remember
 
 To preview latex fragment as image embedded in text
