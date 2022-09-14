@@ -7,7 +7,7 @@ config.load_autoconfig(True)
 
 c.tabs.show = 'never'
 c.tabs.tabs_are_windows = True
-c.window.title_format = 'qute: {private}{perc}{current_title}'
+c.window.title_format = 'qute: {private}{perc}{current_title}{title_sep}{host}'
 
 #Search engines from DT
 c.url.searchengines = {
