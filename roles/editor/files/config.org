@@ -2112,15 +2112,20 @@ We also use this section to bind keys.
 
 (if (version<= "27.1" emacs-version) (progn
     (tab-bar-mode 1)
+
     (set-face-attribute 'tab-bar nil
+                        :box t
                         :background "LightYellow4"
                         :inherit 'fixed-pitch)
 
     (set-face-attribute 'tab-bar-tab nil
-                        :box nil
-                        :background "AliceBlue"
+                        :box t
+                        :slant 'italic
+                        :background "LightYellow"
                         :foreground "DarkBlue")
+
     (set-face-attribute 'tab-bar-tab-inactive nil
+                        :box t
                         :background "LightYellow3"
                         :foreground "DarkSlateGrey")
 
@@ -2140,7 +2145,8 @@ We also use this section to bind keys.
         (kbd "M-t c") 'anerenv/new-tab-and-rename)
     (setq tab-bar-close-button-show nil
         tab-bar-new-button-show nil
-        tab-bar-tab-name-function 'anerenv/tab-bar-name-format-space)
+        tab-bar-separator (propertize " " 'face '(:background "LightYellow3"))
+        )
     (add-hook 'emacs-startup-hook (lambda () (tab-bar-rename-tab "home" 1)))
 ))
 #+end_src
@@ -2184,7 +2190,7 @@ From emacs 28.1 there is support for right-aligned text on the tab-bar. We may u
          (force-mode-line-update)))
 
 (defun anerenv/tab-bar-spaces () "Return spacing for beginning of tab bar"
-       "            ")
+       (propertize "            " 'face '(:background "LightYellow3")))
 
 (if (version<= "28.1" emacs-version) (progn
     (setq tab-bar-format
@@ -2510,6 +2516,7 @@ xrandr --output eDP1 --brightness 0.5
 
 #+begin_src emacs-lisp
 (require 'exwm-systemtray)
+(setq exwm-systemtray-background-color "LightYellow3")
 (exwm-systemtray-enable)
 #+end_src
 
