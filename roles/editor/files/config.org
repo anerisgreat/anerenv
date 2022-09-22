@@ -2099,10 +2099,6 @@ We also use this section to bind keys.
 #+begin_src emacs-lisp
 ;; If version greater than 27.1
 
-(defun anerenv/tab-bar-name-format-space ()
-  "Normal tab name format but with spacing"
-  (format " %s " (tab-bar-tab-name-current)))
-
 (defun anerenv/new-tab-and-rename ()
     "Created for back compatibility with emacs 27"
     (interactive)
@@ -2119,13 +2115,15 @@ We also use this section to bind keys.
                         :inherit 'fixed-pitch)
 
     (set-face-attribute 'tab-bar-tab nil
-                        :box t
-                        :slant 'italic
-                        :background "LightYellow"
-                        :foreground "DarkBlue")
+                        :box '(:color "DarkSlateGrey" :line-width -2)
+                        :slant 'normal
+                        :weight 'bold
+                        :background "LightYellow3"
+                        :foreground "DarkSlateGrey")
 
     (set-face-attribute 'tab-bar-tab-inactive nil
                         :box t
+                        :weight 'normal
                         :background "LightYellow3"
                         :foreground "DarkSlateGrey")
 
@@ -2145,7 +2143,10 @@ We also use this section to bind keys.
         (kbd "M-t c") 'anerenv/new-tab-and-rename)
     (setq tab-bar-close-button-show nil
         tab-bar-new-button-show nil
-        tab-bar-separator (propertize " " 'face '(:background "LightYellow3"))
+        tab-bar-separator (propertize " ● " 'face (list :box '(:color "DarkSlateGray")
+                                                  :background "LightYellow3"
+                                                  :weight 'normal
+                                                  :foreground "LightYellow1"))
         )
     (add-hook 'emacs-startup-hook (lambda () (tab-bar-rename-tab "home" 1)))
 ))
