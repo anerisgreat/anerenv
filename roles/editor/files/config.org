@@ -2112,7 +2112,8 @@ We also use this section to bind keys.
     (set-face-attribute 'tab-bar nil
                         :box t
                         :background "LightYellow4"
-                        :inherit 'fixed-pitch)
+                        :inherit 'fixed-pitch
+                        :height 100)
 
     (set-face-attribute 'tab-bar-tab nil
                         :box '(:color "DarkSlateGrey" :line-width -2)
@@ -2195,8 +2196,7 @@ From emacs 28.1 there is support for right-aligned text on the tab-bar. We may u
 
 (if (version<= "28.1" emacs-version) (progn
     (setq tab-bar-format
-        '(anerenv/tab-bar-spaces
-        tab-bar-format-history
+        '(tab-bar-format-history
         tab-bar-format-tabs
         tab-bar-separator
         tab-bar-format-add-tab
@@ -2255,6 +2255,14 @@ We execute the following code only if started with EXWM argument
 (setq exwm-workspace-number 4)
 (setq exwm-layout-show-all-buffers t)
 (setq exwm-workspace-show-all-buffers t)
+#+end_src
+
+*** System tray
+
+#+begin_src emacs-lisp
+(require 'exwm-systemtray)
+(setq exwm-systemtray-background-color "LightYellow3")
+(exwm-systemtray-enable)
 #+end_src
 
 *** Smart buffer naming
@@ -2513,31 +2521,23 @@ xrandr --output eDP1 --brightness 0.5
 (anerenv/enable-heb)
 #+end_src
 
-*** System tray
-
-#+begin_src emacs-lisp
-(require 'exwm-systemtray)
-(setq exwm-systemtray-background-color "LightYellow3")
-(exwm-systemtray-enable)
-#+end_src
-
 *** Compositor
 
 Setting frame transparency to 95% for active and inactive frames.
 
 #+begin_src emacs-lisp
-(set-frame-parameter (selected-frame) 'alpha '(95 . 95))
-(add-to-list 'default-frame-alist '(alpha . (95 . 95)))
+;; (set-frame-parameter (selected-frame) 'alpha '(95 . 95))
+;; (add-to-list 'default-frame-alist '(alpha . (95 . 95)))
 #+end_src
 
 Creating the compositor process.
 
 #+begin_src emacs-lisp
-(anerenv/run-service
-    'picom
-    "picom"
-    (list "--config" (expand-file-name "~/.config/picom/picom.conf"))
-    t)
+;; (anerenv/run-service
+;;     'picom
+;;     "picom"
+;;     (list "--config" (expand-file-name "~/.config/picom/picom.conf"))
+;;     t)
 #+end_src
 
 *** Transparency
@@ -2553,7 +2553,7 @@ We create processes for feh to display wallpaper
   (anerenv/run-service 'feh "feh"
         (list "--bg-fill" (file-name-as-directory (expand-file-name path))) t))
 
-(anerenv/display-background-feh "~/images/wallpapers")
+;; (anerenv/display-background-feh "~/images/wallpapers")
 #+end_src
 
 *** Enabling exwm
