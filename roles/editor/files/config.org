@@ -461,22 +461,24 @@ Font size 12 for variable pitch.
 The function =font-candidate= is from https://www.gnu.org/software/emacs/manual/html_mono/cl.html.
 
 #+begin_src emacs-lisp
-(defun font-candidate (&rest fonts)
+(defun anerenv/font-candidate (&rest fonts)
     "Return existing font which first match."
     (find-if (lambda (f) (find-font (font-spec :name f))) fonts))
 
-(let ((variable-font (font-candidate "Liberation Sans" "Microsoft Sans Serif")))
+(let ((variable-font (anerenv/font-candidate
+                      "Liberation Serif" "Microsoft Sans Serif")))
     (if variable-font
         (set-face-attribute 'variable-pitch nil :font variable-font)))
 
-(let ((fixed-font (font-candidate "LiberationMono" "Consolas")))
+(let ((fixed-font (anerenv/font-candidate
+                   "Iosevka" "LiberationMono" "Consolas")))
     (if fixed-font (progn
         (set-face-attribute 'default nil :font fixed-font)
         (set-face-attribute 'fixed-pitch nil :font fixed-font))))
 
 (set-face-attribute 'default nil :height 100)
 (set-face-attribute 'variable-pitch nil
-    :height 120
+    :height 130
     :weight 'normal
     :width 'normal)
 
@@ -2112,8 +2114,8 @@ We also use this section to bind keys.
     (set-face-attribute 'tab-bar nil
                         :box t
                         :background "LightYellow4"
-                        :inherit 'fixed-pitch
-                        :height 100)
+                        :font (anerenv/font-candidate "LiberationMono" "Consolas")
+                        :height 90)
 
     (set-face-attribute 'tab-bar-tab nil
                         :box '(:color "DarkSlateGrey" :line-width -2)
@@ -2180,7 +2182,7 @@ From emacs 28.1 there is support for right-aligned text on the tab-bar. We may u
 (defun anerenv/tab-bar-right-group-func ()
   "Function that returns a string to be displayed on right of tab-bar"
   (propertize (concat " "
-        (mapconcat 'eval (mapcar 'funcall anerenv/tab-bar-right-group) " | "))
+        (mapconcat 'eval (mapcar 'funcall anerenv/tab-bar-right-group) tab-bar-separator))
     'face '(:background "LightYellow3" :foreground "DarkSlateGrey")))
 
 (defun anerenv/get-tab-bar-time-string () "Get tab bar time string"
@@ -2196,7 +2198,8 @@ From emacs 28.1 there is support for right-aligned text on the tab-bar. We may u
 
 (if (version<= "28.1" emacs-version) (progn
     (setq tab-bar-format
-        '(tab-bar-format-history
+        '(
+        tab-bar-format-history
         tab-bar-format-tabs
         tab-bar-separator
         tab-bar-format-add-tab

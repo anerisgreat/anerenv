@@ -46,6 +46,7 @@
         - texlive-most
         - texlive-lang
         - ttf-liberation
+        - ttc-iosevka
         - python-pygments
       become: yes
 
