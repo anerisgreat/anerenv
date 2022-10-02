@@ -779,7 +779,7 @@ Using Hideshow
 #+begin_src emacs-lisp
 (use-package olivetti
   :init
-  (setq olivetti-body-width 86))
+  (setq olivetti-body-width 96))
 #+end_src
 
 ** Pandoc
