@@ -1288,6 +1288,12 @@ https://karthinks.com/software/scaling-latex-previews-in-emacs/
 (use-package color)
 #+end_src
 
+*** Fonts
+
+#+begin_src emacs-lisp
+(set-face-attribute 'org-document-title nil :height 200 :underline t)
+#+end_src
+
 *** Python version
 
 #+begin_src emacs-lisp
