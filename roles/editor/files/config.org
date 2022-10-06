@@ -910,7 +910,11 @@ All things org!
 Setting fixed fonts in org-mode so that mixed type works as intended.
 
 #+begin_src emacs-lisp
-(defun set-org-mode-fixed-pitch-faces ()
+(defvar anerenv/org-base-dir
+    (concat (getenv "HOME") "/org/")
+    "Base directory for org files.")
+
+(defun anerenv/set-org-mode-fixed-pitch-faces ()
     (mapc (lambda (face) (set-face-attribute face nil
                 :font (face-attribute 'fixed-pitch :font)
                 :height (face-attribute 'fixed-pitch :height)))
@@ -937,7 +941,7 @@ Setting fixed fonts in org-mode so that mixed type works as intended.
             (setq-local whitespace-style '(face tabs trailing tab-mark
             indentation))))
     :config
-        (set-org-mode-fixed-pitch-faces)
+        (anerenv/set-org-mode-fixed-pitch-faces)
         (setq org-src-tab-acts-natively t
               org-adapt-indentation nil
               org-startup-folded t
@@ -961,8 +965,8 @@ the project name's dashes with underlines. This is because we would like to make
 into tags, and org mode tags do not support dashes, but they do support underlines.
 
 #+begin_src emacs-lisp
-(setq org-agenda-files (list "~/org/agenda")
-      org-default-notes-file "~/org/agenda/notes.org"
+(setq org-agenda-files (list (concat anerenv/org-base-dir "agenda"))
+      org-default-notes-file (concat anerenv/org-base-dir "agenda/notes.org")
       org-agenda-tags-column -80
       org-agenda-start-on-weekday nil)
 
@@ -1060,6 +1064,27 @@ into tags, and org mode tags do not support dashes, but they do support underlin
 ))
 
 (add-hook 'org-capture-prepare-finalize-hook 'org-align-all-tags)
+#+end_src
+
+*** Roam
+
+#+begin_src emacs-lisp
+(use-package org-roam
+    :after org
+    :init (setq org-roam-v2-ack t) ;; Acknowledge V2 upgrade
+    :custom
+    (org-roam-directory (file-truename (concat anerenv/org-base-dir "roam")))
+    :config
+    (org-roam-setup)
+
+    :bind (("C-c n f" . org-roam-node-find)
+           ("C-c n r" . org-roam-node-random)
+           (:map org-mode-map
+                 (("C-c n i" . org-roam-node-insert)
+                  ("C-c n o" . org-id-get-create)
+                  ("C-c n t" . org-roam-tag-add)
+                  ("C-c n a" . org-roam-alias-add)
+                  ("C-c n l" . org-roam-buffer-toggle)))))
 #+end_src
 
 *** Agenda

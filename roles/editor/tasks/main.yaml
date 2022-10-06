@@ -189,3 +189,9 @@
   file:
     path: "{{ journal_dir }}"
     state: directory
+
+- name: Create directory for roam
+  file:
+    path: "{{ roam_dir }}"
+    state: directory
+
