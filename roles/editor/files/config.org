@@ -2185,24 +2185,6 @@ We also use this section to bind keys.
 
 *** Right Group Display
 
-**** Base
-
-#+begin_src emacs-lisp
-(defvar anerenv/tab-bar-right-group '(anerenv/get-tab-bar-time-string
-                                      (lambda () anerenv/bat-string))
-    "A list of items to be displayed on the right of the tab-bar")
-
-(defun anerenv/tab-bar-right-group-func ()
-  "Function that returns a string to be displayed on right of tab-bar"
-  (concat
-    tab-bar-separator
-    (mapconcat 'eval
-              (mapcar 'funcall anerenv/tab-bar-right-group)
-              tab-bar-separator)
-    tab-bar-separator))
-
-#+end_src
-
 **** Battery
 
 #+begin_src emacs-lisp
@@ -2260,16 +2242,62 @@ The following is just some reference code I don't want to get rid of.
 (defun anerenv/get-tab-bar-time-string () "Get tab bar time string"
        (propertize (format-time-string "%a, %b %d %H:%M")
         'face '(:background "LightYellow3" :foreground "DarkSlateGrey")))
+#+end_src
 
-(defun anerenv/tab-bar-update-func () "Function to update the tab bar"
-       (progn
-         (anerenv/set-bat-string)
-         (force-mode-line-update)))
+**** Network
+
+Code to check for internet connection:
+
+https://emacs.stackexchange.com/questions/7653/elisp-code-to-check-for-internet-connection
+
+#+begin_src emacs-lisp
+(defvar anerenv/network-status-string nil "Holds network status string")
+
+(defun anerenv/internet-up-p (&optional host)
+    (= 0 (call-process "ping" nil nil nil "-c" "1" "-W" "1"
+                       (if host host "8.8.8.8"))))
+
+(defun anerenv/set-network-string () "Sets the network string"
+       (setq anerenv/network-status-string
+             (concat
+                 (propertize "Internet " 'face
+                             '(:background "LightYellow3"
+                               :foreground "DarkSlateGrey"))
+                 (if (anerenv/internet-up-p)
+                     (propertize "✓" 'face
+                                 (list :foreground "green3"
+                                       :background "LightYellow3"
+                                       :box (list :color "DarkSlateGrey")))
+                      (propertize "X" 'face
+                                  (list :foreground "red3"
+                                        :background "LightYellow3"
+                                        :box (list :color "DarkSlateGrey")))))))
 #+end_src
 
 **** Finalization
 
 #+begin_src emacs-lisp
+(defvar anerenv/tab-bar-right-group '(anerenv/get-tab-bar-time-string
+                                      (lambda () anerenv/bat-string)
+                                      (lambda () anerenv/network-status-string)
+                                      )
+    "A list of items to be displayed on the right of the tab-bar")
+
+(defun anerenv/tab-bar-right-group-func ()
+  "Function that returns a string to be displayed on right of tab-bar"
+  (concat
+    tab-bar-separator
+    (mapconcat 'eval
+              (mapcar 'funcall anerenv/tab-bar-right-group)
+              tab-bar-separator)
+    tab-bar-separator))
+
+(defun anerenv/tab-bar-update-func () "Function to update the tab bar"
+       (progn
+         (anerenv/set-bat-string)
+         (anerenv/set-network-string)
+         (force-mode-line-update)))
+
 (defun anerenv/tab-bar-spaces () "Return spacing for beginning of tab bar"
        (propertize "            " 'face '(:background "LightYellow3")))
 
@@ -2288,7 +2316,6 @@ The following is just some reference code I don't want to get rid of.
         (anerenv/run-timer 'tab-timer 'anerenv/tab-bar-update-func 5))
 ))
 #+end_src
-
 
 ** EXWM
 
