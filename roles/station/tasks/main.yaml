@@ -70,6 +70,9 @@
     - name: Install openscad-mcad from YAY
       command: yay -S openscad-mcad-dev-git --nocleanmenu --nodiffmenu --noeditmenu --noupgrademenu --noconfirm
 
+    - name: Install icaclient from YAY
+      command: yay -S icaclient --nocleanmenu --nodiffmenu --noeditmenu --noupgrademenu --noconfirm
+
 - name: Create downloads directory
   file:
     path: "{{ download_dir }}"

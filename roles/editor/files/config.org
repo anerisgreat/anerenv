@@ -1304,7 +1304,7 @@ https://karthinks.com/software/scaling-latex-previews-in-emacs/
 
 (setq org-latex-create-formula-image-program 'dvisvgm)
 
-(setq org-format-latex-options (plist-put org-format-latex-options :scale 1.5))
+(setq org-format-latex-options (plist-put org-format-latex-options :scale 1))
 #+end_src
 
 *** Org block highlighting
