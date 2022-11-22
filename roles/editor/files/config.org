@@ -2253,25 +2253,27 @@ https://emacs.stackexchange.com/questions/7653/elisp-code-to-check-for-internet-
 #+begin_src emacs-lisp
 (defvar anerenv/network-status-string nil "Holds network status string")
 
-(defun anerenv/internet-up-p (&optional host)
-    (= 0 (call-process "ping" nil nil nil "-c" "1" "-W" "1"
-                       (if host host "8.8.8.8"))))
+(defun anerenv/set-network-string-sentinel (process event)
+    "Sets the network string based on proc run"
+    (setq anerenv/network-status-string
+            (concat
+                (propertize "Internet " 'face
+                            '(:background "LightYellow3"
+                            :foreground "DarkSlateGrey"))
+                (if (= 0 (process-exit-status process))
+                    (propertize "✓" 'face
+                                (list :foreground "green3"
+                                    :background "LightYellow3"
+                                    :box (list :color "DarkSlateGrey")))
+                    (propertize "X" 'face
+                                (list :foreground "red3"
+                                    :background "LightYellow3"
+                                    :box (list :color "DarkSlateGrey")))))))
 
-(defun anerenv/set-network-string () "Sets the network string"
-       (setq anerenv/network-status-string
-             (concat
-                 (propertize "Internet " 'face
-                             '(:background "LightYellow3"
-                               :foreground "DarkSlateGrey"))
-                 (if (anerenv/internet-up-p)
-                     (propertize "✓" 'face
-                                 (list :foreground "green3"
-                                       :background "LightYellow3"
-                                       :box (list :color "DarkSlateGrey")))
-                      (propertize "X" 'face
-                                  (list :foreground "red3"
-                                        :background "LightYellow3"
-                                        :box (list :color "DarkSlateGrey")))))))
+(defun anerenv/start-network-test-proc () "Tests whether internet"
+    (set-process-sentinel
+        (start-process "wget" "wget" "wget" "--spider" "--timeout=1"
+                       "www.google.com") 'anerenv/set-network-string-sentinel))
 #+end_src
 
 **** Finalization
@@ -2295,7 +2297,7 @@ https://emacs.stackexchange.com/questions/7653/elisp-code-to-check-for-internet-
 (defun anerenv/tab-bar-update-func () "Function to update the tab bar"
        (progn
          (anerenv/set-bat-string)
-         (anerenv/set-network-string)
+         (anerenv/start-network-test-proc)
          (force-mode-line-update)))
 
 (defun anerenv/tab-bar-spaces () "Return spacing for beginning of tab bar"
@@ -2719,3 +2721,4 @@ Disabling the toolbar, the splash-screen, the menu-bar and the scroll-bar
 (use-package load-dir
   :config (setq load-dirs (concat user-emacs-directory "extra/")))
 #+end_src
+
