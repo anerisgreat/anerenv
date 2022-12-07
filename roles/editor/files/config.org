@@ -1867,8 +1867,12 @@ https://medium.com/emacs/using-elfeed-to-view-videos-6dfc798e51e6
   (add-to-list 'evil-emacs-state-modes 'chess-display-mode)
   ;Disable hl-line-mode
   (advice-add 'chess-display-mode
-    :before '(lambda () (setq-local global-hl-line-mode nil)))
+  :before '(lambda () (setq-local global-hl-line-mode nil)))
 )
+
+;Added for config purposes
+(require 'chess)
+(require 'chess-ics)
 #+end_src
 
 ** Ibuffer
