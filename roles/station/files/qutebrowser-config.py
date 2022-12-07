@@ -2,12 +2,13 @@
 
 config.load_autoconfig(True)
 
-#Using a lot from DTs config https://gitlab.com/dwt1/dotfiles/-/blob/master/.config/qutebrowser/config.py
+#Using a lot from DTs config
+#https://gitlab.com/dwt1/dotfiles/-/blob/master/.config/qutebrowser/config.py
 #Also using this https://github.com/miseran/tabs_are_windows/blob/main/config.py
 
 c.tabs.show = 'never'
 c.tabs.tabs_are_windows = True
-c.window.title_format = 'qute: {private}{perc}{current_title}{title_sep}{host}'
+c.window.title_format = 'qute: {private}{host}{perc}{title_sep}{current_title}'
 
 #Search engines from DT
 c.url.searchengines = {
@@ -22,9 +23,14 @@ c.url.searchengines = {
     'wa' : 'https://www.wolframalpha.com/input/?i={}' #Wolfram alpha
 }
 
-#Youtube stuff from DT. Added media-title to MPV and youtube-dl with exwm process so can track progress.
+#Youtube stuff from DT.
+#Added media-title to MPV and youtube-dl with exwm process to track progress.
 config.bind('M', 'hint links spawn mpv --title=\'${media-title}\' {hint-url}')
-config.bind('Z', 'hint links spawn emacsclient -e "(start-process \\"youtube-dl {hint-url}\\" \\"youtube-dl {hint-url}\\" \\"youtube-dl\\" \\"-o\\" \\"~/downloads/%(title)s.%(ext)s\\" \\"{hint-url}\\" \\"--newline\\")"')
+config.bind('Z',
+            'hint links spawn emacsclient -e "(start-process '\
+            '\\"youtube-dl {hint-url}\\" \\"youtube-dl {hint-url}\\" '\
+            '\\"youtube-dl\\" \\"-o\\" \\"~/downloads/%(title)s.%(ext)s\\" '\
+            '\\"{hint-url}\\" \\"--newline\\")"')
 
 config.bind('xb', 'config-cycle statusbar.show always in-mode')
 c.statusbar.show = 'in-mode'
