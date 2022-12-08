@@ -73,6 +73,9 @@
     - name: Install icaclient from YAY
       command: yay -S icaclient --nocleanmenu --nodiffmenu --noeditmenu --noupgrademenu --noconfirm
 
+    - name: Install stockfish from YAY
+      command: yay -S icaclient --nocleanmenu --nodiffmenu --noeditmenu --noupgrademenu --noconfirm
+
 - name: Create downloads directory
   file:
     path: "{{ download_dir }}"

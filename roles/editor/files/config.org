@@ -1875,6 +1875,32 @@ https://medium.com/emacs/using-elfeed-to-view-videos-6dfc798e51e6
 (require 'chess-ics)
 #+end_src
 
+#+begin_src emacs-lisp
+(use-package pygn-mode)
+#+end_src
+
+#+begin_src emacs-lisp
+(defvar anerenv/chess/pgn-default-dir (getenv "HOME")
+  "Default dir for pgn")
+
+(defun anerenv/chess/curr-game-pgn-string () "Get current game as PGN"
+       (chess-game-to-pgn chess-module-game 1 0))
+
+(defun anerenv/chess/yank-pgn-string () "Get current game as PGN"
+       (interactive)
+       (kill-new (anerenv/chess/curr-game-pgn-string)))
+
+(defun anerenv/chess/save-pgn () "Save current game to PGN"
+       (interactive)
+       (let ((pgn-str (anerenv/chess/curr-game-pgn-string)))
+           (with-temp-file
+               (read-file-name "Save PGN of game to:"
+                    anerenv/chess/pgn-default-dir
+                    nil nil
+                    (format-time-string "game--%Y-%m-%d--%H-%M-%S.pgn"))
+             (insert pgn-str))))
+#+end_src
+
 ** Ibuffer
 
 #+begin_src emacs-lisp

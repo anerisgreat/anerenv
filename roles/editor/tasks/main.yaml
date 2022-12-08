@@ -195,3 +195,17 @@
     path: "{{ roam_dir }}"
     state: directory
 
+- name: Create directory for projects
+  file:
+    path: "{{ projects_dir }}"
+    state: directory
+
+- name: Create directory for chess
+  file:
+    path: "{{ chess_dir }}"
+    state: directory
+
+- name: Create directory for chess games
+  file:
+    path: "{{ chess_dir }}/mygames"
+    state: directory
