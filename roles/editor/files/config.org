@@ -2060,9 +2060,19 @@ Rebinding wanted functionality
 
 #+begin_src emacs-lisp
 (setq
-    python-shell-interpreter "ipython"
+    ;; python-shell-interpreter "python3"
     python-shell-completion-native-enable nil)
 
+(defun anerenv/python/set-fringes () "Sets fringes for python"
+       (setq left-fringe-width 10 right-fringe-width 0))
+
+(add-hook 'python-mode-hook 'anerenv/python/set-fringes)
+
+(use-package elpy
+  :ensure t
+  :defer t
+  :init
+  (elpy-enable))
 #+end_src
 
 ** Jupyter
@@ -2721,6 +2731,14 @@ Disabling the toolbar, the splash-screen, the menu-bar and the scroll-bar
 
 #+begin_src emacs-lisp
 (add-to-list 'default-frame-alist '(background-color . "LightYellow"))
+#+end_src
+
+** Fringe color
+
+While we don't actually want fringes (almost at all), some frames use them.
+
+#+begin_src emacs-lisp
+(set-face-attribute 'fringe nil :background "LemonChiffon1")
 #+end_src
 
 ** Easy Prompt
