@@ -15,6 +15,7 @@
       - talloc
       - notmuch
       - jupyter-notebook
+      - pychess
 
   become: yes
 

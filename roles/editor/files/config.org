@@ -1218,8 +1218,7 @@ Creating classes
 
 #+begin_src emacs-lisp
 (setq org-latex-classes
-     '(
-        ("article"
+     '(("article"
 "\\documentclass{article}
 [DEFAULT-PACKAGES]
 \\usepackage{polyglossia}
@@ -1244,14 +1243,11 @@ Creating classes
 \\newfontfamily\\hebrewfont{LiberationSans}[Script=Hebrew]
 \\setotherlanguage{hebrew}
 "
-            ("\\section{%s}" . "\\section*{%s}")
-            ("\\subsection{%s}" . "\\subsection*{%s}")
-            ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-            ("\\paragraph{%s}" . "\\paragraph*{%s}")
-            ("\\subparagraph{%s}" . "\\subparagraph*{%s}")
-        )
-      )
-    )
+        ("\\section{%s}" . "\\section*{%s}")
+        ("\\subsection{%s}" . "\\subsection*{%s}")
+        ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+        ("\\paragraph{%s}" . "\\paragraph*{%s}")
+        ("\\subparagraph{%s}" . "\\subparagraph*{%s}"))))
 
 (setq org-export-with-toc nil
       org-export-with-section-numbers nil)
@@ -1876,7 +1872,12 @@ https://medium.com/emacs/using-elfeed-to-view-videos-6dfc798e51e6
 #+end_src
 
 #+begin_src emacs-lisp
-(use-package pygn-mode)
+(use-package pygn-mode
+  :bind
+  (:map pygn-mode-map
+    ("C-<right>" . 'pygn-mode-next-move-follow-board)
+    ("C-<left>" . 'pygn-mode-previous-move-follow-board)
+    ("C-c C-c" . 'pygn-mode-display-gui-board-at-pos)))
 #+end_src
 
 #+begin_src emacs-lisp
@@ -1893,12 +1894,16 @@ https://medium.com/emacs/using-elfeed-to-view-videos-6dfc798e51e6
 (defun anerenv/chess/save-pgn () "Save current game to PGN"
        (interactive)
        (let ((pgn-str (anerenv/chess/curr-game-pgn-string)))
-           (with-temp-file
-               (read-file-name "Save PGN of game to:"
-                    anerenv/chess/pgn-default-dir
-                    nil nil
-                    (format-time-string "game--%Y-%m-%d--%H-%M-%S.pgn"))
-             (insert pgn-str))))
+         (with-temp-file
+             (read-file-name "Save PGN of game to:"
+                             anerenv/chess/pgn-default-dir
+                             nil nil
+                             (format-time-string "game--%Y-%m-%d--%H-%M-%S.pgn"))
+           (insert pgn-str))))
+#+end_src
+
+#+begin_src emacs-lisp
+(setq chess-default-display '(chess-images chess-ics1 chess-plain))
 #+end_src
 
 ** Ibuffer
@@ -1920,28 +1925,27 @@ https://medium.com/emacs/using-elfeed-to-view-videos-6dfc798e51e6
 #+begin_src emacs-lisp
 (setq inhibit-startup-screen t)
 (use-package dashboard
-    :config
-    (add-hook 'after-init-hook
-        (lambda () (dashboard-insert-startupify-lists)))
-    (add-hook 'emacs-startup-hook (lambda ()
-        (switch-to-buffer dashboard-buffer-name)
-        (goto-char (point-min))
-        (redisplay)
-        (run-hooks 'dashboard-after-initialize-hook)))
-    (add-to-list 'evil-emacs-state-modes 'dashboard-mode)
-    (setq dashboard-items '((recents  . 5)
-                        (bookmarks . 5)
-                        (projects . 5))
-          dashboard-center-content t
-          dashboard-set-init-info nil
-          dashboard-set-footer nil
-          dashboard-startup-banner nil)
-    ;; (defun anerenv/stupid-func () (message "Cheese whiz!"))
-    ;; (defun dashboard-insert-custom (list-size)
-    ;;     (insert "Custom text"))
-    ;; (add-to-list 'dashboard-item-generators  '(anerenv/stupid-func . dashboard-insert-custom))
-    ;; (add-to-list 'dashboard-items '(anerenv/stupid-func) t)
-
+  :config
+  (add-hook 'after-init-hook
+            (lambda () (dashboard-insert-startupify-lists)))
+  (add-hook 'emacs-startup-hook (lambda ()
+                                  (switch-to-buffer dashboard-buffer-name)
+                                  (goto-char (point-min))
+                                  (redisplay)
+                                  (run-hooks 'dashboard-after-initialize-hook)))
+  (add-to-list 'evil-emacs-state-modes 'dashboard-mode)
+  (setq dashboard-items '((recents  . 5)
+                          (bookmarks . 5)
+                          (projects . 5))
+        dashboard-center-content t
+        dashboard-set-init-info nil
+        dashboard-set-footer nil
+        dashboard-startup-banner nil)
+  ;; (defun anerenv/stupid-func () (message "Cheese whiz!"))
+  ;; (defun dashboard-insert-custom (list-size)
+  ;;     (insert "Custom text"))
+  ;; (add-to-list 'dashboard-item-generators  '(anerenv/stupid-func . dashboard-insert-custom))
+  ;; (add-to-list 'dashboard-items '(anerenv/stupid-func) t)
 )
 #+end_src
 
@@ -2073,6 +2077,9 @@ Rebinding wanted functionality
   :defer t
   :init
   (elpy-enable))
+
+(define-key anerenv-global-minor-mode-open-map
+  (kbd "r p") 'run-python)
 #+end_src
 
 ** Jupyter
@@ -2092,6 +2099,28 @@ Rebinding wanted functionality
               :type git
               :host github
               :repo "zk-phi/scad-preview"))
+#+end_src
+
+** Weather (WTTR)
+
+#+begin_src emacs-lisp
+(use-package wttrin)
+#+end_src
+
+** EPUB
+
+#+begin_src emacs-lisp
+(use-package nov
+  :config
+  (evil-collection-nov-setup)
+  (add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode))
+  )
+#+end_src
+
+** Github
+
+#+begin_src emacs-lisp
+(use-package gh)
 #+end_src
 
 * UI
@@ -2314,6 +2343,22 @@ https://emacs.stackexchange.com/questions/7653/elisp-code-to-check-for-internet-
     (set-process-sentinel
         (start-process "wget" "wget" "wget" "--spider" "--timeout=1"
                        "www.google.com") 'anerenv/set-network-string-sentinel))
+#+end_src
+
+**** Pomodoro
+
+#+begin_src emacs-lisp
+(defvar anerenv/pomodoro/current-task nil "The current Pomodoro task")
+
+(defvar anerenv/pomodoro/work-time (* 60 25)
+  "Work time for Pomodoro in seconds")
+
+(defvar anerenv/pomodoro/rest-time (* 60 5)
+  "Rest time for Pomodoro in seconds")
+
+(defun anerenv/pomodoro/get-tab-bar-str ()
+  "Get string for pomodoro tab bar display")
+
 #+end_src
 
 **** Finalization
