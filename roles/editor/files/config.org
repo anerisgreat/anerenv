@@ -1356,12 +1356,12 @@ input. This is done to toggle back to the original language once done with the
 function toggle-input-method.
 
 #+begin_src emacs-lisp
-
 (defun dumb-toggle-input-method ()
     (if current-input-method (toggle-input-method))
 )
 ;Inline
-(yas-define-snippets 'org-mode (list (list
+(add-hook 'org-mode-hook (lambda () (progn
+    (yas-define-snippets 'org-mode (list (list
                                       nil
                                       "\$$1\$$0"
                                       "ORG_LATEX_INLINE_SNIPPET_ENG"
@@ -1374,7 +1374,7 @@ function toggle-input-method.
                                       nil
                                       )))
 
-(yas-define-snippets 'org-mode (list (list
+    (yas-define-snippets 'org-mode (list (list
                                       nil
                                       "\$$1\$$0"
                                       "ORG_LATEX_INLINE_SNIPPET_OTHER_LANG"
@@ -1388,8 +1388,8 @@ function toggle-input-method.
                                       nil
                                       )))
 
-;Not inline
-(yas-define-snippets 'org-mode (list (list
+    ;Not inline
+    (yas-define-snippets 'org-mode (list (list
                                       nil
                                       "\$\$$1\$\$$0"
                                       "ORG_LATEX_OUTLINE_SNIPPET_ENG"
@@ -1401,7 +1401,7 @@ function toggle-input-method.
                                       nil
                                       nil
                                       )))
-(yas-define-snippets 'org-mode (list (list
+    (yas-define-snippets 'org-mode (list (list
                                       nil
                                       "\$\$$1\$\$$0"
                                       "ORG_LATEX_OUTLINE_SNIPPET_OTHER_LANG"
@@ -1413,13 +1413,15 @@ function toggle-input-method.
                                       "C-S-l"
                                       nil
                                       nil
-)))
+                                      )))
+    )))
 #+end_src
 
 Snippet for src blocks
 
 #+begin_src emacs-lisp
-(yas-define-snippets 'org-mode (list (list
+(add-hook 'org-mode-hook (lambda () (progn
+    (yas-define-snippets 'org-mode (list (list
                                       nil
                                       "#+begin_src $1\n$0\n\n#+end_src"
                                       "ORG_SRC_BLOCK"
@@ -1430,11 +1432,20 @@ Snippet for src blocks
                                       "C-c i b"
                                       nil
                                       nil
-)))
+                                      )))
 
-(yas-define-snippets 'org-mode (list (list
+    (yas-define-snippets 'org-mode (list (list
                                       nil
-                                      "#+begin_export latex\n\\begin{english}\n#+end_export\n#+begin_src $1\n$0\n\n#+end_src\n#+begin_export latex\n\\end{english}\n#+end_export"
+                                      (concat
+                                        "#+begin_export latex\n"
+                                        "\\begin{english}\n"
+                                        "#+end_export\n"
+                                        "#+begin_src $1\n"
+                                        "$0\n"
+                                        "\n#+end_src\n"
+                                        "#+begin_export latex\n"
+                                        "\\end{english}\n"
+                                        "#+end_export")
                                       "ORG_SRC_ENGLISH_BLOCK"
                                       nil
                                       nil
@@ -1443,8 +1454,8 @@ Snippet for src blocks
                                       "C-c i B"
                                       nil
                                       nil
+                                      )))
 )))
-
 #+end_src
 
 *** Presentation
