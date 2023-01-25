@@ -162,6 +162,16 @@ and it's a timer, kill it. Then run a new timer.
                  anerenv/timer-table)))
 #+end_src
 
+Also add ability to run one time task.
+
+#+begin_src emacs-lisp
+(defun anerenv/run-one-time-task (timername func delay)
+    (progn
+        (anerenv/kill-timer timername)
+        (puthash timername (run-with-timer delay nil func)
+                 anerenv/timer-table)))
+#+end_src
+
 ** Keymap setup
 
 In this section global keybindings are defined using a global minor mode.
@@ -442,6 +452,13 @@ Defining a function to copy filename.
 (defun anerenv/copy-file-name () (interactive)
        (let ((fpath buffer-file-name))
          (if fpath (kill-new fpath) (message "No current file!"))))
+#+end_src
+
+** Notifications
+
+#+begin_src emacs-lisp
+(use-package notifications
+  :straight (:type built-in))
 #+end_src
 
 * Text
@@ -2128,6 +2145,144 @@ Rebinding wanted functionality
 (use-package gh)
 #+end_src
 
+** Pomodoro
+
+#+begin_src emacs-lisp
+(defvar anerenv/pomodoro/work-time (* 60 25)
+  "Work time for Pomodoro in seconds")
+
+(defvar anerenv/pomodoro/rest-time (* 60 5)
+  "Rest time for Pomodoro in seconds")
+
+(defvar anerenv/pomodoro/current-task nil "The current Pomodoro task")
+
+(defvar anerenv/pomodoro/current-work-time nil
+  "Work time for current Pomodoro in seconds")
+
+(defvar anerenv/pomodoro/current-rest-time nil
+  "Rest time for current Pomodoro in seconds")
+
+(defvar anerenv/pomodoro/current-start-time nil
+  "Start time for Pomodoro in seconds")
+
+(defvar anerenv/pomodoro/journal-file "journal/pomodoro-journal.org"
+  "Pomodoro journal file")
+
+(defvar anerenv/pomodoro/start-again-on-stop t
+  "Whether to start a new timer when previous finishes")
+
+(defvar anerenv/pomodoro/is-paused nil
+  "Whether Pomodoro timer is paused")
+
+(add-to-list 'org-capture-templates
+             (list "ptje" "Pomodoro log" 'entry
+                   (list 'file+datetree anerenv/pomodoro/journal-file)
+                   "* %U-%((lambda () anerenv/pomodoro/current-task))"
+                   :immediate-finish t))
+
+(add-to-list 'org-capture-templates
+             (list "ptjc" "Pomodoro log early stop" 'entry
+                   (list 'file+datetree anerenv/pomodoro/journal-file)
+                   "* %U-%((lambda () anerenv/pomodoro/current-task)) :cancelled"
+                   :immediate-finish t))
+
+(defun anerenv/pomodoro/pause () "Pauses pomodoro" (interactive)
+       (if anerenv/pomodoro/current-task
+            (if (not anerenv/pomodoro/is-paused)
+                (progn
+                    (notifications-notify
+                        :title "Pomodoro"
+                        :body "Pausing timer!!"
+                        :urgency 'low)
+                    (anerenv/kill-timer 'pomodoro/rest)
+                    (anerenv/kill-timer 'pomodoro/stop)
+                    (setq anerenv/pomodoro/current-work-time
+                            (time-to-seconds (time-subtract (current-time)
+                                    anerenv/pomodoro/current-start-time))
+                            anerenv/pomodoro/current-start-time nil
+                            anerenv/pomodoro/is-paused t)
+                    ))
+         (progn (message "No Pomodoro task!")
+                (anerenv/kill-timer 'pomodoro/stop))))
+
+(defun anerenv/pomodoro/resume () (interactive)
+       "Resume the pomodoro timer"
+         (if (and anerenv/pomodoro/current-task anerenv/pomodoro/is-paused)
+             (progn
+                (setq anerenv/pomodoro/is-paused nil)
+                (notifications-notify
+                    :title "Pomodoro"
+                    :body "Unpaused timer!!"
+                    :urgency 'low)
+                (anerenv/run-one-time-task
+                    'pomodoro/rest 'anerenv/pomodoro/rest
+                    (+ anerenv/pomodoro/current-work-time))
+                (anerenv/run-one-time-task
+                    'pomodoro/stop 'anerenv/pomodoro/stop
+                    (+ anerenv/pomodoro/current-work-time
+                        anerenv/pomodoro/current-rest-time)))
+            (message "Pomodoro timer either doesn't exist or is not paused!")))
+
+(defun anerenv/pomodoro/stop () "Stops pomodoro"
+    (progn
+        (notifications-notify
+            :title "Pomodoro"
+            :body "Finished resting!"
+            :urgency 'low)
+        (setq anerenv/pomodoro/is-paused nil
+              anerenv/pomodoro/current-work-time nil
+              anerenv/pomodoro/current-rest-time nil
+              anerenv/pomodoro/current-task nil
+              anerenv/pomodoro/current-start-time nil)
+        (if anerenv/pomodoro/start-again-on-stop
+            (anerenv/pomodoro/start))))
+
+(defun anerenv/pomodoro/cancel () "Cancels pomodoro"
+       (interactive)
+       (progn
+         (if anerenv/pomodoro/current-task
+             (org-capture nil "ptje"))
+         (setq anerenv/pomodoro/is-paused nil
+               anerenv/pomodoro/current-work-time nil
+               anerenv/pomodoro/current-rest-time nil
+               anerenv/pomodoro/current-task nil
+               anerenv/pomodoro/current-start-time nil)))
+
+(defun anerenv/pomodoro/rest () "Rest pomodoro"
+       (progn
+         (org-capture nil "ptje")
+         (setq anerenv/pomodoro/current-work-time nil
+               anerenv/pomodoro/current-task nil)
+         (notifications-notify
+          :title "Pomodoro"
+          :body "Rest time started"
+          :urgency 'low)))
+
+(defun anerenv/pomodoro/start ()
+       "Start the pomodoro timer"
+       (interactive)
+        (if (or (not anerenv/pomodoro/current-task) (y-or-n-p
+                                            "A task already exists. Cancel?"))
+            (let ((currtask (read-string "Enter task: ")))
+                (if currtask (progn
+                    (if anerenv/pomodoro/current-task
+                        (anerenv/pomodoro/cancel))
+                    (setq anerenv/pomodoro/current-start-time (current-time))
+                    (setq anerenv/pomodoro/current-task currtask)
+                    (setq anerenv/pomodoro/current-work-time
+                        anerenv/pomodoro/work-time)
+                    (setq anerenv/pomodoro/current-rest-time
+                        anerenv/pomodoro/rest-time)
+                    (anerenv/run-one-time-task
+                        'pomodoro/rest 'anerenv/pomodoro/rest
+                        (+ anerenv/pomodoro/work-time))
+                    (anerenv/run-one-time-task
+                        'pomodoro/stop 'anerenv/pomodoro/stop
+                        (+ anerenv/pomodoro/current-work-time
+                            anerenv/pomodoro/current-rest-time))
+                    )))))
+#+end_src
+
 * UI
 
 ** Modeline
@@ -2396,16 +2551,9 @@ https://emacs.stackexchange.com/questions/7653/elisp-code-to-check-for-internet-
 **** Pomodoro
 
 #+begin_src emacs-lisp
-(defvar anerenv/pomodoro/current-task nil "The current Pomodoro task")
-
-(defvar anerenv/pomodoro/work-time (* 60 25)
-  "Work time for Pomodoro in seconds")
-
-(defvar anerenv/pomodoro/rest-time (* 60 5)
-  "Rest time for Pomodoro in seconds")
-
 (defun anerenv/pomodoro/get-tab-bar-str ()
-  "Get string for pomodoro tab bar display")
+  "Get string for pomodoro tab bar display"
+  nil)
 #+end_src
 
 **** Finalization
