@@ -2352,7 +2352,7 @@ https://emacs.stackexchange.com/questions/7653/elisp-code-to-check-for-internet-
 
 (defun anerenv/start-network-test-proc () "Tests whether internet"
     (set-process-sentinel
-        (start-process "wget" "wget" "wget" "--spider" "--timeout=1"
+        (start-process "wget" nil "wget" "--spider" "--timeout=1"
                        "www.google.com") 'anerenv/set-network-string-sentinel))
 #+end_src
 
