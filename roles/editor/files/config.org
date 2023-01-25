@@ -442,7 +442,6 @@ Defining a function to copy filename.
 (defun anerenv/copy-file-name () (interactive)
        (let ((fpath buffer-file-name))
          (if fpath (kill-new fpath) (message "No current file!"))))
-
 #+end_src
 
 * Text
@@ -594,7 +593,6 @@ Highlighting line with cursor.
     (global-hl-line-unhighlight)
     (setq-local hl-line-face state-face)
     (global-hl-line-highlight)))
-
 #+end_src
 
 #+begin_src emacs-lisp
@@ -717,7 +715,6 @@ show errors.
   (add-hook 'irony-mode-hook 'my-irony-mode-hook)
   (add-hook 'irony-mode-hook 'irony-cdb-autosetup-compile-options)
   )
-
 #+end_src
 
 ** Company mode
@@ -810,7 +807,6 @@ Binding to startup is 'C-c /'
     (evil-collection-define-key 'normal 'vterm-mode-map
       (kbd "p") 'vterm-yank)
 )
-
 #+end_src
 
 ** Eshell
@@ -856,7 +852,6 @@ Watch based on https://emacs.stackexchange.com/questions/44389/how-to-watch-and-
                     (kill-buffer (process-buffer process)))))
         ;; Display the buffer.
         (switch-to-buffer termbuf)))
-
 #+end_src
 
 #+begin_src emacs-lisp
@@ -879,7 +874,6 @@ Broken for the time being
 
     (evil-collection-pdf-setup)
 )
-
 #+end_src
 
 *** Stop the blinking on PDF-View-Mode
@@ -2412,7 +2406,6 @@ https://emacs.stackexchange.com/questions/7653/elisp-code-to-check-for-internet-
 
 (defun anerenv/pomodoro/get-tab-bar-str ()
   "Get string for pomodoro tab bar display")
-
 #+end_src
 
 **** Finalization
@@ -2862,4 +2855,3 @@ While we don't actually want fringes (almost at all), some frames use them.
 (use-package load-dir
   :config (setq load-dirs (concat user-emacs-directory "extra/")))
 #+end_src
-
