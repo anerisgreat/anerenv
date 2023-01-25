@@ -783,7 +783,8 @@ Using Hideshow
 
 #+begin_src emacs-lisp
 (use-package emojify
-  :hook (after-init . global-emojify-mode))
+  :hook (after-init . global-emojify-mode)
+  :config (setq use-default-font-for-symbols nil))
 #+end_src
 
 :smile:
@@ -2165,6 +2166,12 @@ Rebinding wanted functionality
 (defvar anerenv/pomodoro/current-start-time nil
   "Start time for Pomodoro in seconds")
 
+(defvar anerenv/pomodoro/current-work-end-time nil
+  "End time for Pomodoro work")
+
+(defvar anerenv/pomodoro/current-rest-end-time nil
+  "End time for Pomodoro rest")
+
 (defvar anerenv/pomodoro/journal-file "journal/pomodoro-journal.org"
   "Pomodoro journal file")
 
@@ -2172,7 +2179,7 @@ Rebinding wanted functionality
   "Whether to start a new timer when previous finishes")
 
 (defvar anerenv/pomodoro/is-paused nil
-  "Whether Pomodoro timer is paused")
+  "Whether Pomodoro timer is paused")   ;
 
 (add-to-list 'org-capture-templates
              (list "ptje" "Pomodoro log" 'entry
@@ -2200,6 +2207,8 @@ Rebinding wanted functionality
                             (time-to-seconds (time-subtract (current-time)
                                     anerenv/pomodoro/current-start-time))
                             anerenv/pomodoro/current-start-time nil
+                            anerenv/pomodoro/current-work-end-time nil
+                            anerenv/pomodoro/current-rest-end-time nil
                             anerenv/pomodoro/is-paused t)
                     ))
          (progn (message "No Pomodoro task!")
@@ -2209,7 +2218,15 @@ Rebinding wanted functionality
        "Resume the pomodoro timer"
          (if (and anerenv/pomodoro/current-task anerenv/pomodoro/is-paused)
              (progn
-                (setq anerenv/pomodoro/is-paused nil)
+               (let ((currtime (current-time)))
+                (setq
+                 anerenv/pomodoro/is-paused nil
+                 anerenv/pomodoro/current-work-end-time
+                     (time-add currtime anerenv/pomodoro/current-work-time)
+                 anerenv/pomodoro/current-rest-end-time
+                     (time-add anerenv/pomodoro/current-work-end-time
+                               anerenv/pomodoro/current-work-time)
+                 anerenv/pomodoro/current-rest-end-time nil)
                 (notifications-notify
                     :title "Pomodoro"
                     :body "Unpaused timer!!"
@@ -2220,7 +2237,7 @@ Rebinding wanted functionality
                 (anerenv/run-one-time-task
                     'pomodoro/stop 'anerenv/pomodoro/stop
                     (+ anerenv/pomodoro/current-work-time
-                        anerenv/pomodoro/current-rest-time)))
+                        anerenv/pomodoro/current-rest-time))))
             (message "Pomodoro timer either doesn't exist or is not paused!")))
 
 (defun anerenv/pomodoro/stop () "Stops pomodoro"
@@ -2233,6 +2250,8 @@ Rebinding wanted functionality
               anerenv/pomodoro/current-work-time nil
               anerenv/pomodoro/current-rest-time nil
               anerenv/pomodoro/current-task nil
+              anerenv/pomodoro/current-work-end-time nil
+              anerenv/pomodoro/current-rest-end-time nil
               anerenv/pomodoro/current-start-time nil)
         (if anerenv/pomodoro/start-again-on-stop
             (anerenv/pomodoro/start))))
@@ -2245,6 +2264,8 @@ Rebinding wanted functionality
          (setq anerenv/pomodoro/is-paused nil
                anerenv/pomodoro/current-work-time nil
                anerenv/pomodoro/current-rest-time nil
+               anerenv/pomodoro/current-work-end-time nil
+               anerenv/pomodoro/current-rest-end-time nil
                anerenv/pomodoro/current-task nil
                anerenv/pomodoro/current-start-time nil)))
 
@@ -2252,7 +2273,9 @@ Rebinding wanted functionality
        (progn
          (org-capture nil "ptje")
          (setq anerenv/pomodoro/current-work-time nil
-               anerenv/pomodoro/current-task nil)
+               anerenv/pomodoro/current-task nil
+               anerenv/pomodoro/current-work-end-time nil
+               )
          (notifications-notify
           :title "Pomodoro"
           :body "Rest time started"
@@ -2263,16 +2286,23 @@ Rebinding wanted functionality
        (interactive)
         (if (or (not anerenv/pomodoro/current-task) (y-or-n-p
                                             "A task already exists. Cancel?"))
-            (let ((currtask (read-string "Enter task: ")))
+            (let ((currtask (read-string "Enter task: "))
+                  (currtime (current-time)))
                 (if currtask (progn
                     (if anerenv/pomodoro/current-task
                         (anerenv/pomodoro/cancel))
-                    (setq anerenv/pomodoro/current-start-time (current-time))
-                    (setq anerenv/pomodoro/current-task currtask)
-                    (setq anerenv/pomodoro/current-work-time
-                        anerenv/pomodoro/work-time)
-                    (setq anerenv/pomodoro/current-rest-time
-                        anerenv/pomodoro/rest-time)
+                    (setq anerenv/pomodoro/current-start-time (current-time)
+                          anerenv/pomodoro/current-task currtask
+                          anerenv/pomodoro/current-work-time
+                                anerenv/pomodoro/work-time
+                          anerenv/pomodoro/current-rest-time
+                                anerenv/pomodoro/rest-time
+                          anerenv/pomodoro/current-work-end-time
+                                (time-add currtime
+                                          anerenv/pomodoro/current-work-time)
+                          anerenv/pomodoro/current-rest-end-time
+                                (time-add anerenv/pomodoro/current-work-end-time
+                                    anerenv/pomodoro/current-work-time))
                     (anerenv/run-one-time-task
                         'pomodoro/rest 'anerenv/pomodoro/rest
                         (+ anerenv/pomodoro/work-time))
@@ -2375,8 +2405,9 @@ We also use this section to bind keys.
                         :box t
                         :background "LightYellow3"
                         :foreground "DarkSlateGrey"
+                        :width 'ultra-expanded
                         :font (anerenv/font-candidate
-                               "LiberationMono" "Consolas")
+                               "Iosevka Term" "Consolas")
                         :height 90)
 
     (set-face-attribute 'tab-bar-tab nil
@@ -2443,14 +2474,12 @@ We also use this section to bind keys.
              (bat-color (if (<= bat-percentage-number 10) "red3"
                           (if (<= bat-percentage-number 20) "DarkOrange"
                             "DarkSlateGrey")))
-            (bat-weight (if (<= bat-percentage-number 20) 'bold 'normal)))
-
+             (bat-weight (if (<= bat-percentage-number 20) 'bold 'normal)))
           (setq anerenv/bat-string
              (concat
-                "BAT: "
+                "⚡ "
                 (propertize (format "%2d" bat-percentage-number)
                              'face (list :foreground bat-color
-                                         :weight bat-weight
                                          :box (list :color "DarkSlateGrey")
                                          ))))))
 
@@ -2520,9 +2549,7 @@ https://emacs.stackexchange.com/questions/7653/elisp-code-to-check-for-internet-
     "Sets the network string based on proc run"
     (setq anerenv/network-status-string
             (concat
-                (propertize "Internet " 'face
-                            '(:background "LightYellow3"
-                            :foreground "DarkSlateGrey"))
+                "↹ "
                 (if (= 0 (process-exit-status process))
                     (propertize "✓" 'face
                                 (list :foreground "green3"
@@ -2534,6 +2561,7 @@ https://emacs.stackexchange.com/questions/7653/elisp-code-to-check-for-internet-
                                     :box (list :color "DarkSlateGrey")))))))
 
 (defun anerenv/start-network-test-proc () "Tests whether internet"
+       (interactive)
     (set-process-sentinel
         (start-process "wget" nil "wget" "--spider" "--timeout=1"
                        "www.google.com") 'anerenv/set-network-string-sentinel))
@@ -2553,7 +2581,24 @@ https://emacs.stackexchange.com/questions/7653/elisp-code-to-check-for-internet-
 #+begin_src emacs-lisp
 (defun anerenv/pomodoro/get-tab-bar-str ()
   "Get string for pomodoro tab bar display"
-  nil)
+  (concat "⧖ "
+          (let ((currtime (current-time)))
+          (if anerenv/pomodoro/current-task
+            (concat "✎ " (format-time-string "%M"
+                          (time-subtract
+                           anerenv/pomodoro/current-work-end-time currtime)))
+            (if anerenv/pomodoro/current-rest-end-time
+                (concat "⏾ " (format-time-string "%M" (time-subtract
+                                anerenv/pomodoro/current-rest-end-time currtime
+                                )))
+                    (concat "✖ 00"))))))
+
+(defun anerenv/enable-pomodoro-tab-right-group ()
+  "Enables clock display in tab bar"
+         (cl-pushnew 'anerenv/pomodoro/get-tab-bar-str
+                     anerenv/tab-bar-right-group))
+
+(anerenv/enable-pomodoro-tab-right-group)
 #+end_src
 
 **** Finalization
