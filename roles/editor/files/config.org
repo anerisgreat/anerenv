@@ -2265,6 +2265,16 @@ We also use this section to bind keys.
 
 *** Right Group Display
 
+**** Base
+
+#+begin_src emacs-lisp
+(defvar anerenv/tab-bar-update-group '()
+  "Functions needed to run to update tab bar")
+
+(defvar anerenv/tab-bar-right-group '()
+    "A list of items to be displayed on the right of the tab-bar")
+#+end_src
+
 **** Battery
 
 #+begin_src emacs-lisp
@@ -2294,6 +2304,16 @@ We also use this section to bind keys.
                                          :weight bat-weight
                                          :box (list :color "DarkSlateGrey")
                                          ))))))
+
+(defun anerenv/get-bat-string () "Get battery string"
+       (if anerenv/bat-string anerenv/bat-string ""))
+
+(defun anerenv/enable-bat-tab-right-group ()
+  "Enables battery display in tab bar"
+       (progn
+         (cl-pushnew 'anerenv/get-bat-string anerenv/tab-bar-right-group)
+         (cl-pushnew 'anerenv/set-bat-string anerenv/tab-bar-update-group)
+         ))
 #+end_src
 
 The following is just some reference code I don't want to get rid of.
@@ -2322,6 +2342,17 @@ The following is just some reference code I don't want to get rid of.
 (defun anerenv/get-tab-bar-time-string () "Get tab bar time string"
        (propertize (format-time-string "%a, %b %d %H:%M")
         'face '(:background "LightYellow3" :foreground "DarkSlateGrey")))
+
+(defun anerenv/enable-clock-tab-right-group ()
+  "Enables clock display in tab bar"
+         (cl-pushnew 'anerenv/get-tab-bar-time-string
+                     anerenv/tab-bar-right-group))
+#+end_src
+
+By default let's enable the clock display
+
+#+begin_src emacs-lisp
+(anerenv/enable-clock-tab-right-group)
 #+end_src
 
 **** Network
@@ -2332,6 +2363,9 @@ https://emacs.stackexchange.com/questions/7653/elisp-code-to-check-for-internet-
 
 #+begin_src emacs-lisp
 (defvar anerenv/network-status-string nil "Holds network status string")
+
+(defun anerenv/get-network-status-string () "Gets the network status string"
+       (if anerenv/network-status-string anerenv/network-status-string ""))
 
 (defun anerenv/set-network-string-sentinel (process event)
     "Sets the network string based on proc run"
@@ -2354,6 +2388,15 @@ https://emacs.stackexchange.com/questions/7653/elisp-code-to-check-for-internet-
     (set-process-sentinel
         (start-process "wget" nil "wget" "--spider" "--timeout=1"
                        "www.google.com") 'anerenv/set-network-string-sentinel))
+
+(defun anerenv/enable-network-tab-right-group ()
+  "Enables network display in tab bar"
+       (progn
+         (cl-pushnew 'anerenv/get-network-status-string
+                     anerenv/tab-bar-right-group)
+         (cl-pushnew 'anerenv/start-network-test-proc
+                     anerenv/tab-bar-update-group)
+         ))
 #+end_src
 
 **** Pomodoro
@@ -2375,25 +2418,19 @@ https://emacs.stackexchange.com/questions/7653/elisp-code-to-check-for-internet-
 **** Finalization
 
 #+begin_src emacs-lisp
-(defvar anerenv/tab-bar-right-group '(anerenv/get-tab-bar-time-string
-                                      (lambda () anerenv/bat-string)
-                                      (lambda () anerenv/network-status-string)
-                                      )
-    "A list of items to be displayed on the right of the tab-bar")
-
 (defun anerenv/tab-bar-right-group-func ()
   "Function that returns a string to be displayed on right of tab-bar"
   (concat
     tab-bar-separator
     (mapconcat 'eval
-              (mapcar 'funcall anerenv/tab-bar-right-group)
+              (remove ""
+                      (mapcar 'funcall anerenv/tab-bar-right-group))
               tab-bar-separator)
     tab-bar-separator))
 
 (defun anerenv/tab-bar-update-func () "Function to update the tab bar"
        (progn
-         (anerenv/set-bat-string)
-         (anerenv/start-network-test-proc)
+         (mapc 'funcall anerenv/tab-bar-update-group)
          (force-mode-line-update)))
 
 (defun anerenv/tab-bar-spaces () "Return spacing for beginning of tab bar"
