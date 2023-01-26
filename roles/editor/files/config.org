@@ -74,7 +74,7 @@ We are using the built-in version, no need to pull from anywhere.
 This just makes sure the code is loaded early on for later use.
 
 #+begin_src emacs-lisp
-(use-package cl
+(use-package cl-lib
   :straight (:type built-in))
 #+end_src
 
@@ -479,7 +479,7 @@ The function =font-candidate= is from https://www.gnu.org/software/emacs/manual/
 #+begin_src emacs-lisp
 (defun anerenv/font-candidate (&rest fonts)
     "Return existing font which first match."
-    (find-if (lambda (f) (find-font (font-spec :name f))) fonts))
+    (cl-find-if (lambda (f) (find-font (font-spec :name f))) fonts))
 
 (let ((variable-font (anerenv/font-candidate
                       "Liberation Serif" "Microsoft Sans Serif")))
