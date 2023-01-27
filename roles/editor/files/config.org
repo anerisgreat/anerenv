@@ -461,6 +461,137 @@ Defining a function to copy filename.
   :straight (:type built-in))
 #+end_src
 
+** Font until
+
+Need to define this here so that other parts of code have access to it
+
+#+begin_src emacs-lisp
+(defun anerenv/font-candidate (&rest fonts)
+    "Return existing font which first match."
+    (cl-find-if (lambda (f) (find-font (font-spec :name f))) fonts))
+#+end_src
+
+** Tab bar
+
+*** Base
+
+Prettification of tab bar. We only use tab-bar if the version is greater than 27.1.
+We also use this section to bind keys.
+
+#+begin_src emacs-lisp
+;; If version greater than 27.1
+
+(defun anerenv/new-tab-and-rename ()
+    "Created for back compatibility with emacs 27"
+    (interactive)
+    (progn
+        (tab-bar-new-tab)
+        (call-interactively 'tab-bar-rename-tab)))
+
+(if (version<= "27.1" emacs-version) (progn
+    (tab-bar-mode 1)
+
+    (set-face-attribute 'tab-bar nil
+                        :box t
+                        :background "LightYellow3"
+                        :foreground "DarkSlateGrey"
+                        :width 'ultra-expanded
+                        :font (anerenv/font-candidate
+                               "Iosevka Term" "Consolas")
+                        :height 90)
+
+    (set-face-attribute 'tab-bar-tab nil
+                        :box '(:color "DarkSlateGrey" :line-width -2)
+                        :background "LightYellow3"
+                        :weight 'bold)
+
+    (set-face-attribute 'tab-bar-tab-inactive nil
+                        :background "LightYellow3"
+                        :inherit 'tab-bar)
+
+    (define-key anerenv-global-minor-mode-map
+        (kbd "M-<tab>") 'tab-next)
+    (define-key anerenv-global-minor-mode-map
+        (kbd "M-'") 'tab-previous)
+    (define-key anerenv-global-minor-mode-map
+        (kbd "M-t r") 'tab-bar-rename-tab)
+    (define-key anerenv-global-minor-mode-map
+        (kbd "M-t n") 'tab-next)
+    (define-key anerenv-global-minor-mode-map
+        (kbd "M-t p") 'tab-previous)
+    (define-key anerenv-global-minor-mode-map
+        (kbd "M-t x") 'tab-bar-close-tab)
+    (define-key anerenv-global-minor-mode-map
+        (kbd "M-t c") 'anerenv/new-tab-and-rename)
+    (setq tab-bar-close-button-show nil
+        tab-bar-new-button-show nil
+        tab-bar-separator (propertize " ● " 'face
+                                      (list :foreground "LightYellow1"
+                                            :box '(:color "DarkSlateGrey")))
+        )
+    (add-hook 'emacs-startup-hook (lambda () (tab-bar-rename-tab "home" 1)))
+))
+#+end_src
+
+*** Right Group Display
+
+#+begin_src emacs-lisp
+(defvar anerenv/tab-bar/right-update-group '()
+  "Functions needed to run to update tab bar")
+
+(defvar anerenv/tab-bar/right-group '()
+    "A list of items to be displayed on the right of the tab-bar")
+
+(defun anerenv/tab-bar/right-group-func ()
+  "Function that returns a string to be displayed on right of tab-bar"
+  (concat
+    tab-bar-separator
+    (mapconcat 'eval
+              (remove ""
+                      (mapcar 'funcall anerenv/tab-bar/right-group))
+              tab-bar-separator)
+    tab-bar-separator))
+
+(defun anerenv/tab-bar/update-func () "Function to update the tab bar"
+       (progn
+         (mapc 'funcall anerenv/tab-bar/right-update-group)
+         (force-mode-line-update)))
+
+(if (version<= "28.1" emacs-version) (progn
+    (setq tab-bar-format
+        '(
+        tab-bar-format-history
+        tab-bar-format-tabs
+        tab-bar-separator
+        tab-bar-format-add-tab
+        tab-bar-format-align-right
+        anerenv/tab-bar/right-group-func))
+    (define-key anerenv-global-minor-mode-map
+        (kbd "M-n") 'tab-switch)
+    (if (member system-type '(gnu gnu/linux))
+        (anerenv/run-timer 'tab-timer 'anerenv/tab-bar/update-func 5))
+))
+#+end_src
+
+Let's define a clock for the tab bar
+
+#+begin_src emacs-lisp
+(defun anerenv/tab-bar/get-clock-string () "Get tab bar time string"
+       (propertize (format-time-string "%a, %b %d %H:%M")
+        'face '(:background "LightYellow3" :foreground "DarkSlateGrey")))
+
+(defun anerenv/tab-bar/enable-clock-display ()
+  "Enables clock display in tab bar"
+         (cl-pushnew 'anerenv/tab-bar/get-clock-string
+                     anerenv/tab-bar/right-group))
+#+end_src
+
+By default let's enable the clock display
+
+#+begin_src emacs-lisp
+(anerenv/tab-bar/enable-clock-display)
+#+end_src
+
 * Text
 
 ** Text font
@@ -477,10 +608,6 @@ Font size 12 for variable pitch.
 The function =font-candidate= is from https://www.gnu.org/software/emacs/manual/html_mono/cl.html.
 
 #+begin_src emacs-lisp
-(defun anerenv/font-candidate (&rest fonts)
-    "Return existing font which first match."
-    (cl-find-if (lambda (f) (find-font (font-spec :name f))) fonts))
-
 (let ((variable-font (anerenv/font-candidate
                       "Liberation Serif" "Microsoft Sans Serif")))
     (if variable-font
@@ -2313,6 +2440,31 @@ Rebinding wanted functionality
                     )))))
 #+end_src
 
+Enabling display in tab bar
+
+#+begin_src emacs-lisp
+(defun anerenv/pomodoro/get-tab-bar-str ()
+  "Get string for pomodoro tab bar display"
+  (concat "⧖ "
+          (let ((currtime (current-time)))
+          (if anerenv/pomodoro/current-task
+            (concat "✎ " (format-time-string "%M"
+                          (time-subtract
+                           anerenv/pomodoro/current-work-end-time currtime)))
+            (if anerenv/pomodoro/current-rest-end-time
+                (concat "⏾ " (format-time-string "%M" (time-subtract
+                                anerenv/pomodoro/current-rest-end-time currtime
+                                )))
+                    (concat "✖ 00"))))))
+
+(defun anerenv/pomodoro/enable-tab-display ()
+  "Enables clock display in tab bar"
+         (cl-pushnew 'anerenv/pomodoro/get-tab-bar-str
+                     anerenv/tab-bar/right-group))
+
+(anerenv/pomodoro/enable-tab-display)
+#+end_src
+
 * UI
 
 ** Modeline
@@ -2379,252 +2531,6 @@ We use [[https://www.reddit.com/r/emacs/comments/4mhphb/spacemacs_how_to_limit_t
       window-divider-default-places 'bottom-only)
 
 (window-divider-mode 1)
-#+end_src
-
-** Tab bar
-
-*** Base
-
-Prettification of tab bar. We only use tab-bar if the version is greater than 27.1.
-We also use this section to bind keys.
-
-#+begin_src emacs-lisp
-;; If version greater than 27.1
-
-(defun anerenv/new-tab-and-rename ()
-    "Created for back compatibility with emacs 27"
-    (interactive)
-    (progn
-        (tab-bar-new-tab)
-        (call-interactively 'tab-bar-rename-tab)))
-
-(if (version<= "27.1" emacs-version) (progn
-    (tab-bar-mode 1)
-
-    (set-face-attribute 'tab-bar nil
-                        :box t
-                        :background "LightYellow3"
-                        :foreground "DarkSlateGrey"
-                        :width 'ultra-expanded
-                        :font (anerenv/font-candidate
-                               "Iosevka Term" "Consolas")
-                        :height 90)
-
-    (set-face-attribute 'tab-bar-tab nil
-                        :box '(:color "DarkSlateGrey" :line-width -2)
-                        :background "LightYellow3"
-                        :weight 'bold)
-
-    (set-face-attribute 'tab-bar-tab-inactive nil
-                        :background "LightYellow3"
-                        :inherit 'tab-bar)
-
-    (define-key anerenv-global-minor-mode-map
-        (kbd "M-<tab>") 'tab-next)
-    (define-key anerenv-global-minor-mode-map
-        (kbd "M-'") 'tab-previous)
-    (define-key anerenv-global-minor-mode-map
-        (kbd "M-t r") 'tab-bar-rename-tab)
-    (define-key anerenv-global-minor-mode-map
-        (kbd "M-t n") 'tab-next)
-    (define-key anerenv-global-minor-mode-map
-        (kbd "M-t p") 'tab-previous)
-    (define-key anerenv-global-minor-mode-map
-        (kbd "M-t x") 'tab-bar-close-tab)
-    (define-key anerenv-global-minor-mode-map
-        (kbd "M-t c") 'anerenv/new-tab-and-rename)
-    (setq tab-bar-close-button-show nil
-        tab-bar-new-button-show nil
-        tab-bar-separator (propertize " ● " 'face
-                                      (list :foreground "LightYellow1"
-                                            :box '(:color "DarkSlateGrey")))
-        )
-    (add-hook 'emacs-startup-hook (lambda () (tab-bar-rename-tab "home" 1)))
-))
-#+end_src
-
-*** Right Group Display
-
-**** Base
-
-#+begin_src emacs-lisp
-(defvar anerenv/tab-bar-update-group '()
-  "Functions needed to run to update tab bar")
-
-(defvar anerenv/tab-bar-right-group '()
-    "A list of items to be displayed on the right of the tab-bar")
-#+end_src
-
-**** Battery
-
-#+begin_src emacs-lisp
-(defun anerenv/get-bat-stats () "Gets battery statistics. First value returned
-is battery percentage, second one is t if charging"
-    (let* ((commandout (string-clean-whitespace (shell-command-to-string
-        "upower -i /org/freedesktop/UPower/devices/DisplayDevice"))))
-        (list
-        (string-to-number (progn
-            (string-match "\\(?:percentage\\:\s+\\)\\([0-9]+\\)" commandout)
-            (match-string 1 commandout)))
-        (progn
-                    (string-match "\\(?:state\\:\s+\\)\\([^\s]+\\)" commandout)
-                    (match-string 1 commandout)))
-            ))
-
-(defvar anerenv/bat-string nil "Holds battery string")
-
-(defun anerenv/set-bat-string () "Sets battery-string"
-       (let* ((bat-stats (anerenv/get-bat-stats))
-              (bat-charge-state (nth 1 bat-stats))
-              (bat-percentage-number
-                (if (string= bat-charge-state "fully-charged") 100
-                    (nth 0 bat-stats)))
-              (bat-color (if (<= bat-percentage-number 10) "red3"
-                          (if (<= bat-percentage-number 20) "DarkOrange"
-                            "DarkSlateGrey")))
-              (bat-weight (if (<= bat-percentage-number 20) 'bold 'normal))
-              (bat-charge-symbol (if (string= bat-charge-state "charging") "↑"
-                    (if (string= bat-charge-state "fully-charged") "◼" "↓"))))
-          (setq anerenv/bat-string
-             (concat
-                "⚡" bat-charge-symbol " "
-                (propertize (format "%3d" bat-percentage-number)
-                             'face (list :foreground bat-color
-                                    :box (list :color "DarkSlateGrey")))))))
-
-(defun anerenv/get-bat-string () "Get battery string"
-       (if anerenv/bat-string anerenv/bat-string ""))
-
-(defun anerenv/enable-bat-tab-right-group ()
-  "Enables battery display in tab bar"
-       (progn
-         (cl-pushnew 'anerenv/get-bat-string anerenv/tab-bar-right-group)
-         (cl-pushnew 'anerenv/set-bat-string anerenv/tab-bar-update-group)
-         ))
-#+end_src
-
-**** Clock
-
-#+begin_src emacs-lisp
-(defun anerenv/get-tab-bar-time-string () "Get tab bar time string"
-       (propertize (format-time-string "%a, %b %d %H:%M")
-        'face '(:background "LightYellow3" :foreground "DarkSlateGrey")))
-
-(defun anerenv/enable-clock-tab-right-group ()
-  "Enables clock display in tab bar"
-         (cl-pushnew 'anerenv/get-tab-bar-time-string
-                     anerenv/tab-bar-right-group))
-#+end_src
-
-By default let's enable the clock display
-
-#+begin_src emacs-lisp
-(anerenv/enable-clock-tab-right-group)
-#+end_src
-
-**** Network
-
-Code to check for internet connection:
-
-https://emacs.stackexchange.com/questions/7653/elisp-code-to-check-for-internet-connection
-
-#+begin_src emacs-lisp
-(defvar anerenv/network-status-string nil "Holds network status string")
-
-(defun anerenv/get-network-status-string () "Gets the network status string"
-       (if anerenv/network-status-string anerenv/network-status-string ""))
-
-(defun anerenv/set-network-string-sentinel (process event)
-    "Sets the network string based on proc run"
-    (setq anerenv/network-status-string
-            (concat
-                "↹ "
-                (if (= 0 (process-exit-status process))
-                    (propertize "✓" 'face
-                                (list :foreground "green3"
-                                    :background "LightYellow3"
-                                    :box (list :color "DarkSlateGrey")))
-                    (propertize "X" 'face
-                                (list :foreground "red3"
-                                    :background "LightYellow3"
-                                    :box (list :color "DarkSlateGrey")))))))
-
-(defun anerenv/start-network-test-proc () "Tests whether internet"
-       (interactive)
-    (set-process-sentinel
-        (start-process "wget" nil "wget" "--spider" "--timeout=1"
-                       "www.google.com") 'anerenv/set-network-string-sentinel))
-
-(defun anerenv/enable-network-tab-right-group ()
-  "Enables network display in tab bar"
-       (progn
-         (cl-pushnew 'anerenv/get-network-status-string
-                     anerenv/tab-bar-right-group)
-         (cl-pushnew 'anerenv/start-network-test-proc
-                     anerenv/tab-bar-update-group)
-         ))
-#+end_src
-
-**** Pomodoro
-
-#+begin_src emacs-lisp
-(defun anerenv/pomodoro/get-tab-bar-str ()
-  "Get string for pomodoro tab bar display"
-  (concat "⧖ "
-          (let ((currtime (current-time)))
-          (if anerenv/pomodoro/current-task
-            (concat "✎ " (format-time-string "%M"
-                          (time-subtract
-                           anerenv/pomodoro/current-work-end-time currtime)))
-            (if anerenv/pomodoro/current-rest-end-time
-                (concat "⏾ " (format-time-string "%M" (time-subtract
-                                anerenv/pomodoro/current-rest-end-time currtime
-                                )))
-                    (concat "✖ 00"))))))
-
-(defun anerenv/enable-pomodoro-tab-right-group ()
-  "Enables clock display in tab bar"
-         (cl-pushnew 'anerenv/pomodoro/get-tab-bar-str
-                     anerenv/tab-bar-right-group))
-
-(anerenv/enable-pomodoro-tab-right-group)
-#+end_src
-
-**** Finalization
-
-#+begin_src emacs-lisp
-(defun anerenv/tab-bar-right-group-func ()
-  "Function that returns a string to be displayed on right of tab-bar"
-  (concat
-    tab-bar-separator
-    (mapconcat 'eval
-              (remove ""
-                      (mapcar 'funcall anerenv/tab-bar-right-group))
-              tab-bar-separator)
-    tab-bar-separator))
-
-(defun anerenv/tab-bar-update-func () "Function to update the tab bar"
-       (progn
-         (mapc 'funcall anerenv/tab-bar-update-group)
-         (force-mode-line-update)))
-
-(defun anerenv/tab-bar-spaces () "Return spacing for beginning of tab bar"
-       (propertize "            " 'face '(:background "LightYellow3")))
-
-(if (version<= "28.1" emacs-version) (progn
-    (setq tab-bar-format
-        '(
-        tab-bar-format-history
-        tab-bar-format-tabs
-        tab-bar-separator
-        tab-bar-format-add-tab
-        tab-bar-format-align-right
-        anerenv/tab-bar-right-group-func))
-    (define-key anerenv-global-minor-mode-map
-        (kbd "M-n") 'tab-switch)
-    (if (member system-type '(gnu gnu/linux))
-        (anerenv/run-timer 'tab-timer 'anerenv/tab-bar-update-func 5))
-))
 #+end_src
 
 ** EXWM
@@ -2971,6 +2877,98 @@ Close parens, then add to command switch.
 )) ;Closing off progn for EXWM
 
 (add-to-list 'command-switch-alist '("--start-exwm" . anerenv-load-exwm))
+#+end_src
+
+** Tab bar addons
+*** Battery status in tab bar
+
+#+begin_src emacs-lisp
+(defun anerenv/bat/get-stats () "Gets battery statistics. First value returned
+is battery percentage, second one is t if charging"
+    (let* ((commandout (string-clean-whitespace (shell-command-to-string
+        "upower -i /org/freedesktop/UPower/devices/DisplayDevice"))))
+        (list
+        (string-to-number (progn
+            (string-match "\\(?:percentage\\:\s+\\)\\([0-9]+\\)" commandout)
+            (match-string 1 commandout)))
+        (progn
+                    (string-match "\\(?:state\\:\s+\\)\\([^\s]+\\)" commandout)
+                    (match-string 1 commandout)))
+            ))
+
+(defvar anerenv/bat/status-string nil "Holds battery string")
+
+(defun anerenv/bat/set-status-string () "Sets battery-string"
+       (let* ((bat-stats (anerenv/bat/get-stats))
+              (bat-charge-state (nth 1 bat-stats))
+              (bat-percentage-number
+                (if (string= bat-charge-state "fully-charged") 100
+                    (nth 0 bat-stats)))
+              (bat-color (if (<= bat-percentage-number 10) "red3"
+                          (if (<= bat-percentage-number 20) "DarkOrange"
+                            "DarkSlateGrey")))
+              (bat-weight (if (<= bat-percentage-number 20) 'bold 'normal))
+              (bat-charge-symbol (if (string= bat-charge-state "charging") "↑"
+                    (if (string= bat-charge-state "fully-charged") "◼" "↓"))))
+          (setq anerenv/bat/status-string
+             (concat
+                "⚡" bat-charge-symbol " "
+                (propertize (format "%3d" bat-percentage-number)
+                             'face (list :foreground bat-color
+                                    :box (list :color "DarkSlateGrey")))))))
+
+(defun anerenv/bat/get-status-string () "Get battery string"
+       (if anerenv/bat/status-string anerenv/bat/status-string ""))
+
+(defun anerenv/bat/enable-tab-display ()
+  "Enables battery display in tab bar"
+    (progn
+        (cl-pushnew 'anerenv/bat/get-status-string anerenv/tab-bar/right-group)
+        (cl-pushnew 'anerenv/bat/set-status-string anerenv/tab-bar/right-update-group)
+    ))
+#+end_src
+
+*** Network status in tab bar
+
+Code to check for internet connection:
+
+https://emacs.stackexchange.com/questions/7653/elisp-code-to-check-for-internet-connection
+
+#+begin_src emacs-lisp
+(defvar anerenv/network/status-string nil "Holds network status string")
+
+(defun anerenv/network/get-status-string () "Gets the network status string"
+       (if anerenv/network/status-string anerenv/network-status-string ""))
+
+(defun anerenv/network/set-status-string-sentinel (process event)
+    "Sets the network string based on proc run"
+    (setq anerenv/network/status-string
+            (concat
+                "↹ "
+                (if (= 0 (process-exit-status process))
+                    (propertize "✓" 'face
+                                (list :foreground "green3"
+                                    :background "LightYellow3"
+                                    :box (list :color "DarkSlateGrey")))
+                    (propertize "X" 'face
+                                (list :foreground "red3"
+                                    :background "LightYellow3"
+                                    :box (list :color "DarkSlateGrey")))))))
+
+(defun anerenv/network/start-test-proc () "Tests whether internet"
+       (interactive)
+    (set-process-sentinel
+        (start-process "wget" nil "wget" "--spider" "--timeout=1"
+                       "www.google.com") 'anerenv/network/set-status-string-sentinel))
+
+(defun anerenv/network/enable-tab-display ()
+  "Enables network display in tab bar"
+       (progn
+         (cl-pushnew 'anerenv/network/get-status-string
+                     anerenv/tab-bar/right-group)
+         (cl-pushnew 'anerenv/network/start-test-proc
+                     anerenv/tab-bar/right-update-group)
+         ))
 #+end_src
 
 ** Clean UI
