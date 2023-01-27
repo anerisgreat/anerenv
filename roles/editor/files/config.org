@@ -2458,30 +2458,39 @@ We also use this section to bind keys.
 **** Battery
 
 #+begin_src emacs-lisp
-(defun anerenv/get-bat-percentage-number () "Gets battery percentage as number"
-    (string-to-number
-     (let
-         ((commandout (string-clean-whitespace (shell-command-to-string (concat
-            "upower -i /org/freedesktop/UPower/devices/DisplayDevice "
-            "| grep percentage | awk '{print $2}'")))))
-            (match-string (string-match "^[0-9]+" commandout)
-        commandout))))
+(defun anerenv/get-bat-stats () "Gets battery statistics. First value returned
+is battery percentage, second one is t if charging"
+    (let* ((commandout (string-clean-whitespace (shell-command-to-string
+        "upower -i /org/freedesktop/UPower/devices/DisplayDevice"))))
+        (list
+        (string-to-number (progn
+            (string-match "\\(?:percentage\\:\s+\\)\\([0-9]+\\)" commandout)
+            (match-string 1 commandout)))
+        (progn
+                    (string-match "\\(?:state\\:\s+\\)\\([^\s]+\\)" commandout)
+                    (match-string 1 commandout)))
+            ))
 
 (defvar anerenv/bat-string nil "Holds battery string")
 
 (defun anerenv/set-bat-string () "Sets battery-string"
-       (let* ((bat-percentage-number (anerenv/get-bat-percentage-number))
-             (bat-color (if (<= bat-percentage-number 10) "red3"
+       (let* ((bat-stats (anerenv/get-bat-stats))
+              (bat-charge-state (nth 1 bat-stats))
+              (bat-percentage-number
+                (if (string= bat-charge-state "fully-charged") 100
+                    (nth 0 bat-stats)))
+              (bat-color (if (<= bat-percentage-number 10) "red3"
                           (if (<= bat-percentage-number 20) "DarkOrange"
                             "DarkSlateGrey")))
-             (bat-weight (if (<= bat-percentage-number 20) 'bold 'normal)))
+              (bat-weight (if (<= bat-percentage-number 20) 'bold 'normal))
+              (bat-charge-symbol (if (string= bat-charge-state "charging") "↑"
+                    (if (string= bat-charge-state "fully-charged") "◼" "↓"))))
           (setq anerenv/bat-string
              (concat
-                "⚡ "
-                (propertize (format "%2d" bat-percentage-number)
+                "⚡" bat-charge-symbol " "
+                (propertize (format "%3d" bat-percentage-number)
                              'face (list :foreground bat-color
-                                         :box (list :color "DarkSlateGrey")
-                                         ))))))
+                                    :box (list :color "DarkSlateGrey")))))))
 
 (defun anerenv/get-bat-string () "Get battery string"
        (if anerenv/bat-string anerenv/bat-string ""))
