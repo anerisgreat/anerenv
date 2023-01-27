@@ -2938,7 +2938,7 @@ https://emacs.stackexchange.com/questions/7653/elisp-code-to-check-for-internet-
 (defvar anerenv/network/status-string nil "Holds network status string")
 
 (defun anerenv/network/get-status-string () "Gets the network status string"
-       (if anerenv/network/status-string anerenv/network-status-string ""))
+       (if anerenv/network/status-string anerenv/network/status-string ""))
 
 (defun anerenv/network/set-status-string-sentinel (process event)
     "Sets the network string based on proc run"
