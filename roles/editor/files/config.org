@@ -2503,26 +2503,6 @@ is battery percentage, second one is t if charging"
          ))
 #+end_src
 
-The following is just some reference code I don't want to get rid of.
-
-#+begin_example
-(setq remaining-time
-                (format "%d:%02d" hours (% minutes 60)))))))
-(list (cons ?v (or driver-version "N/A"))
-    (cons ?V (or bios-version "N/A"))
-    (cons ?I (or bios-interface "N/A"))
-    (cons ?L (or line-status "N/A"))
-    (cons ?B (or battery-status "N/A"))
-    (cons ?b (or battery-status-symbol ""))
-    (cons ?p (or load-percentage "N/A"))
-        (cons ?s (if seconds (number-to-string seconds) "N/A"))
-        (cons ?m (if minutes (number-to-string minutes) "N/A"))
-        (cons ?h (if hours (number-to-string hours) "N/A"))
-    (cons ?t (or remaining-time "N/A")))))
-
-(cdr (assq ?L (funcall battery-status-function)))
-#+end_example
-
 **** Clock
 
 #+begin_src emacs-lisp
