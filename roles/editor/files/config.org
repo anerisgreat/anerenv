@@ -1833,7 +1833,8 @@ Adding emails can be done with notmuch new
   :config
     (evil-collection-notmuch-setup)
     (add-hook 'notmuch-show-mode 'anerenv/default-variable-pitch)
-    (setq send-mail-function 'sendmail-send-it)
+    (setq-default send-mail-function 'sendmail-send-it
+          notmuch-search-oldest-first nil)
     (defun anerenv/notmuch-archive () "Archive a message" (interactive)
         (progn
             (evil-collection-notmuch-toggle-tag "arx" "search" 'ignore)
