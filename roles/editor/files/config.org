@@ -1828,7 +1828,6 @@ Adding emails can be done with notmuch new
         notmuch-hello-sections
             '(notmuch-hello-insert-saved-searches
               notmuch-hello-insert-alltags)
-        notmuch-search-oldest-first t
         notmuch-always-prompt-for-sender t
         message-sendmail-envelope-from 'header)
   :config
