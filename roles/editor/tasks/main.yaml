@@ -35,7 +35,6 @@
         name:
         - texlive-full
         - fonts-liberation2
-        - polybar
       become: yes
 
 - name: Install editor packages for Arch
@@ -61,17 +60,6 @@
     - name: Install tllocalmgr-installer from YAY
       when: check_tllocalmgr_reg.rc != 0
       command: yay -S tllocalmgr-git --nocleanmenu --nodiffmenu --noeditmenu --noupgrademenu --noconfirm
-
-    - name: Check if polybar is installed
-      command: polybar --version
-      register: check_polybar_reg
-      ignore_errors: true
-      changed_when: check_polybar_reg.rc == 1
-      failed_when: false
-
-    - name: Install polybar from YAY
-      when: check_polybar_reg.rc != 0
-      command: yay -S polybar --nocleanmenu --nodiffmenu --noeditmenu --noupgrademenu --noconfirm
 
 - name: Install pylint
   pip:
@@ -157,6 +145,29 @@
     dest: "{{ lazymacs_dir }}/config.org"
     state: link
 
+- name: Create directory for emacs templates
+  file:
+    path: "{{ emacs_templates_dir }}"
+    state: directory
+
+- name: Link base notebook directory
+  file:
+    src: "{{ anerenv_home }}/roles/editor/files/base-notebook.org"
+    dest: "{{ emacs_templates_dir }}/base-notebook.org"
+    state: link
+
+- name: Link notebook template
+  file:
+    src: "{{ anerenv_home }}/roles/editor/files/notebook-template.org"
+    dest: "{{ emacs_templates_dir }}/notebook-template.org"
+    state: link
+
+- name: Link presentation template
+  file:
+    src: "{{ anerenv_home }}/roles/editor/files/presentation-template.org"
+    dest: "{{ emacs_templates_dir }}/presentation-template.org"
+    state: link
+
 - name: Create custom.el if it doesn't exist
   copy:
     content: ""
@@ -201,12 +212,12 @@
     path: "{{ projects_dir }}"
     state: directory
 
-- name: Create directory for chess
-  file:
-    path: "{{ chess_dir }}"
-    state: directory
+# - name: Create directory for chess
+#   file:
+#     path: "{{ chess_dir }}"
+#     state: directory
 
-- name: Create directory for chess games
-  file:
-    path: "{{ chess_dir }}/mygames"
-    state: directory
+# - name: Create directory for chess games
+#   file:
+#     path: "{{ chess_dir }}/mygames"
+#     state: directory

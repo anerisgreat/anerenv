@@ -104,12 +104,6 @@
     mode: a+x
     state: link
 
-- name: Link polybar-config
-  file:
-    src: "{{ anerenv_home }}/roles/station/files/polybar-config"
-    dest: "{{ lazymacs_dir }}/polybar-config"
-    state: link
-
 - name: Create directory for mail
   file:
     path: "{{ anerenv_user_home }}/.mail"

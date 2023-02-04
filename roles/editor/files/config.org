@@ -1346,7 +1346,7 @@ were used in the appropriate major mode.
 #+begin_src emacs-lisp
 (setq org-latex-listings 'minted)
 (setq org-latex-pdf-process
-      '("xelatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
+      '("latexmk -xelatex -shell-escape -interaction=nonstopmode -output-directory=%o %f"))
 
 (require 'ox-latex)
 (unless (boundp 'org-latex-classes)
@@ -1356,40 +1356,60 @@ were used in the appropriate major mode.
 Creating classes
 
 #+begin_src emacs-lisp
-(setq org-latex-classes
-     '(("article"
-"\\documentclass{article}
-[DEFAULT-PACKAGES]
+(defvar anerenv/latex-class-common-header
+  "[DEFAULT-PACKAGES]
 \\usepackage{polyglossia}
 \\usepackage[cache=false]{minted}
 \\usepackage{xcolor}
 \\usepackage{indentfirst}
 \\usepackage{amsfonts}
+\\usepackage{transparent}
 \\usepackage{amsmath}
 \\definecolor{codebg}{rgb}{0.95,0.95,0.95}
 \\setdefaultlanguage{english}
 \\setlength{\\parindent}{0in}
 
-\\setminted{
+
+\\DeclareMathOperator*{\\argmax}{arg\\,max}
+\\DeclareMathOperator*{\\argmin}{arg\\,min}
+\\newfontfamily\\hebrewfont{LiberationSans}[Script=Hebrew]
+\\setotherlanguage{hebrew}
+" "Default common class header")
+
+(setq org-latex-classes
+     (list (list "article"
+(concat "\\documentclass{article}
+" anerenv/latex-class-common-header
+"\\setminted{
     bgcolor=codebg,
     breaklines=true,
     mathescape,
     fontsize=\\scriptsize,
     linenos=false,
 }
-\\DeclareMathOperator*{\\argmax}{arg\\,max}
-\\DeclareMathOperator*{\\argmin}{arg\\,min}
-\\newfontfamily\\hebrewfont{LiberationSans}[Script=Hebrew]
-\\setotherlanguage{hebrew}
-"
-        ("\\section{%s}" . "\\section*{%s}")
-        ("\\subsection{%s}" . "\\subsection*{%s}")
-        ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-        ("\\paragraph{%s}" . "\\paragraph*{%s}")
-        ("\\subparagraph{%s}" . "\\subparagraph*{%s}"))))
-
-(setq org-export-with-toc nil
-      org-export-with-section-numbers nil)
+")
+        '("\\section{%s}" . "\\section*{%s}")
+        '("\\subsection{%s}" . "\\subsection*{%s}")
+        '("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+        '("\\paragraph{%s}" . "\\paragraph*{%s}")
+        '("\\subparagraph{%s}" . "\\subparagraph*{%s}"))
+    (list "beamer"
+(concat "\\documentclass{beamer}
+" anerenv/latex-class-common-header
+"\\setminted{
+    bgcolor={},
+    breaklines=true,
+    mathescape,
+    fontsize=\\scriptsize,
+    linenos=false,
+}
+")
+        '("\\section{%s}" . "\\section*{%s}")
+        '("\\subsection{%s}" . "\\subsection*{%s}")
+        '("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+        '("\\paragraph{%s}" . "\\paragraph*{%s}")
+        '("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+     )
 #+end_src
 
 This should render Hebrew text.
@@ -1562,7 +1582,7 @@ Snippet for src blocks
 (add-hook 'org-mode-hook (lambda () (progn
     (yas-define-snippets 'org-mode (list (list
                                       nil
-                                      "#+begin_src $1\n$0\n\n#+end_src"
+                                      "#+begin_src $1\n$0\n#+end_src"
                                       "ORG_SRC_BLOCK"
                                       nil
                                       nil
@@ -1580,8 +1600,7 @@ Snippet for src blocks
                                         "\\begin{english}\n"
                                         "#+end_export\n"
                                         "#+begin_src $1\n"
-                                        "$0\n"
-                                        "\n#+end_src\n"
+                                        "$0\n#+end_src\n"
                                         "#+begin_export latex\n"
                                         "\\end{english}\n"
                                         "#+end_export")
@@ -1685,6 +1704,29 @@ https://stackoverflow.com/questions/4419576/delete-extra-blank-lines-in-emacs
 #+begin_src emacs-lisp
 (add-to-list 'org-show-context-detail '(isearch . tree))
 (add-to-list 'org-show-context-detail '(default . tree))
+#+end_src
+
+*** Templates
+
+File to string from https://gnu.support/gnu-emacs/emacs-lisp/gnu-emacs-lisp-how-to-read-file-into-string.html
+
+#+begin_src emacs-lisp
+(defvar anerenv/template-dir
+  (file-name-as-directory (locate-user-emacs-file "templates"))
+  "Templates directory")
+
+(use-package autoinsert
+  :ensure t
+  :init
+  (setq auto-insert-query nil
+        auto-insert-directory (locate-user-emacs-file "templates"))
+  (add-hook 'find-file-hook 'auto-insert)
+  (auto-insert-mode 1)
+
+  :config
+  (define-auto-insert "notebook.org$" "notebook-template.org")
+  (define-auto-insert "pres.org$" "presentation-template.org")
+  )
 #+end_src
 
 *** Useful to remember

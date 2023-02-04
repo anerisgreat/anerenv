@@ -1,0 +1,9 @@
+#+title: Org-Mode Beamer Example
+#+author: Aner Zakobar
+#+email: aner@zakobar.com
+
+#+options:   num:t toc:t ::t |:t ^:{} -:t f:t *:t <:t
+#+options:   tex:t d:nil todo:t pri:nil tags:nil
+#+options:   timestamp:t
+#+options: H:2
+#+beamer_theme: Berkeley

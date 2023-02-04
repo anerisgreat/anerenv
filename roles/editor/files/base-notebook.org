@@ -1,0 +1,62 @@
+#+Title: Base Notebook
+#+property: header-args:python :noweb yes :exports none :results none
+
+Define imports
+
+#+name: notebook/imports
+#+begin_src python
+import numpy as np
+import scipy
+import sympy
+from sympy import symbols
+import matplotlib.pyplot as plt
+import seaborn as sns
+from os.path import join as pathjoin
+import sys
+from pathlib import Path
+import pandas as pd
+#+end_src
+
+Path helpers
+
+#+name: notebook/pathhelper
+#+begin_src python
+IMAGES_DIR = 'images'
+RESULTS_DIR = 'results'
+
+def notebook_makesubdir(pname):
+    subdirname = pathjoin('./', pname)
+    Path(subdirname).mkdir(parents=True, exist_ok = True)
+    return subdirname
+
+def notebook_get_fname(fname, basedir = None):
+    fullname = pathjoin(
+        basedir if basedir else './',
+        fname)
+    dirname = os.path.dirname(fullname)
+    notebook_makesubdir(dirname)
+    return fullname
+
+notebook_get_fname_images = lambda fname: \
+    notebook_get_fname(fname, basedir=IMAGES_DIR)
+
+notebook_get_fname_results = lambda fname: \
+    notebook_get_fname(fname, basedir=RESULTS_DIR)
+#+end_src
+
+Assigning variables if don't exist
+
+#+name: notebook/var-assign
+#+begin_src python
+def assign_if_doesnt_exist(varname, varfunc):
+    if not varname in globals() or globals()[varname] is None:
+        globals()[varname] = varfunc()
+#+end_src
+
+#+name: notebook/all
+#+begin_src python
+<<notebook/imports>>
+<<notebook/pathhelper>>
+<<notebook/var-assign>>
+#+end_src
+
