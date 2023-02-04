@@ -2380,8 +2380,14 @@ Rebinding wanted functionality
                             anerenv/pomodoro/current-rest-end-time nil
                             anerenv/pomodoro/is-paused t)
                     ))
-         (progn (message "No Pomodoro task!")
-                (anerenv/kill-timer 'pomodoro/stop))))
+
+        (progn
+            (if anerenv/pomodoro/current-rest-end-time
+                (notifications-notify
+                    :title "Pomodoro"
+                    :body "Pausing rested timer - cancelling rest!"
+                    :urgency 'low))
+                (anerenv/pomodoro/reset))))
 
 (defun anerenv/pomodoro/resume () (interactive)
        "Resume the pomodoro timer"
@@ -2409,19 +2415,25 @@ Rebinding wanted functionality
                         anerenv/pomodoro/current-rest-time))))
             (message "Pomodoro timer either doesn't exist or is not paused!")))
 
+(defun anerenv/pomodoro/reset () "Resets pomodoro"
+       (progn
+         (anerenv/kill-timer 'pomodoro/rest)
+         (anerenv/kill-timer 'pomodoro/stop)
+         (setq anerenv/pomodoro/is-paused nil
+               anerenv/pomodoro/current-work-time nil
+               anerenv/pomodoro/current-rest-time nil
+               anerenv/pomodoro/current-work-end-time nil
+               anerenv/pomodoro/current-rest-end-time nil
+               anerenv/pomodoro/current-task nil
+               anerenv/pomodoro/current-start-time nil)))
+
 (defun anerenv/pomodoro/stop () "Stops pomodoro"
     (progn
         (notifications-notify
             :title "Pomodoro"
             :body "Finished resting!"
             :urgency 'low)
-        (setq anerenv/pomodoro/is-paused nil
-              anerenv/pomodoro/current-work-time nil
-              anerenv/pomodoro/current-rest-time nil
-              anerenv/pomodoro/current-task nil
-              anerenv/pomodoro/current-work-end-time nil
-              anerenv/pomodoro/current-rest-end-time nil
-              anerenv/pomodoro/current-start-time nil)
+        (anerenv/pomodoro/reset)
         (if anerenv/pomodoro/start-again-on-stop
             (anerenv/pomodoro/start))))
 
@@ -2430,13 +2442,7 @@ Rebinding wanted functionality
        (progn
          (if anerenv/pomodoro/current-task
              (org-capture nil "ptje"))
-         (setq anerenv/pomodoro/is-paused nil
-               anerenv/pomodoro/current-work-time nil
-               anerenv/pomodoro/current-rest-time nil
-               anerenv/pomodoro/current-work-end-time nil
-               anerenv/pomodoro/current-rest-end-time nil
-               anerenv/pomodoro/current-task nil
-               anerenv/pomodoro/current-start-time nil)))
+         (anerenv/pomodoro/reset)))
 
 (defun anerenv/pomodoro/rest () "Rest pomodoro"
        (progn
@@ -2471,7 +2477,7 @@ Rebinding wanted functionality
                                           anerenv/pomodoro/current-work-time)
                           anerenv/pomodoro/current-rest-end-time
                                 (time-add anerenv/pomodoro/current-work-end-time
-                                    anerenv/pomodoro/current-work-time))
+                                    anerenv/pomodoro/current-rest-time))
                     (anerenv/run-one-time-task
                         'pomodoro/rest 'anerenv/pomodoro/rest
                         (+ anerenv/pomodoro/work-time))
@@ -2490,14 +2496,17 @@ Enabling display in tab bar
   (concat "⧖ "
           (let ((currtime (current-time)))
           (if anerenv/pomodoro/current-task
-            (concat "✎ " (format-time-string "%M"
+                (if anerenv/pomodoro/is-paused
+                    (concat "P " (format "%2d" (ffloor
+                        anerenv/pomodoro/current-work-time)))
+                    (concat "✎ " (format-time-string "%M"
                           (time-subtract
-                           anerenv/pomodoro/current-work-end-time currtime)))
+                           anerenv/pomodoro/current-work-end-time currtime))))
             (if anerenv/pomodoro/current-rest-end-time
                 (concat "⏾ " (format-time-string "%M" (time-subtract
                                 anerenv/pomodoro/current-rest-end-time currtime
-                                )))
-                    (concat "✖ 00"))))))
+)))
+                  "✖  0")))))
 
 (defun anerenv/pomodoro/enable-tab-display ()
   "Enables clock display in tab bar"
