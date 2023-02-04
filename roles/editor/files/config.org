@@ -19,13 +19,14 @@ Straight initialization found [[https://www.github.com/raxod502/straight.el][her
 
 (defvar bootstrap-version)
 (let ((bootstrap-file
-    (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+    (expand-file-name "straight/repos/straight.el/bootstrap.el"
+                      user-emacs-directory))
     (bootstrap-version 5))
     (unless (file-exists-p bootstrap-file)
 (with-current-buffer
     (url-retrieve-synchronously
-        "https://raw.githubusercontent.com/raxod502/straight.el/master/install.el"
-        'silent 'inhibit-cookies)
+      "https://raw.githubusercontent.com/raxod502/straight.el/master/install.el"
+      'silent 'inhibit-cookies)
     (goto-char (point-max))
     (eval-print-last-sexp)))
     (load bootstrap-file nil 'nomessage))
@@ -399,6 +400,7 @@ Helps with many functions to use counsel's/ivy's autocomplete with projectile.
 
 #+begin_src emacs-lisp
 (use-package counsel-projectile
+  :after counsel projectile
   :config
     (counsel-projectile-mode +1)
     (setq projectile-completion-system 'ivy)
@@ -420,29 +422,7 @@ Ensuring tramp is loaded, and loading counsel-tramp for easy tramping.
 (use-package counsel-tramp)
 #+end_src
 
-** YASnippet
-
-Loading yasnippet. Useful for snippeting. Mode-specific snippets defined in relevant sections.
-
-#+begin_src emacs-lisp
-(use-package yasnippet
-  :config
-    (yas-global-mode 1)
-)
-#+end_src
-
-** Flycheck
-
-Flycheck is for syntax checking. Mode-specific configs in their relevant sections.
-
-#+begin_src emacs-lisp
-(use-package flycheck
-  :config
-    (global-flycheck-mode 1)
-)
-#+end_src
-
-** Utility functions
+** Assorted utility functions
 
 Defining a function to copy filename.
 
@@ -452,15 +432,6 @@ Defining a function to copy filename.
          (if fpath (kill-new fpath) (message "No current file!"))))
 #+end_src
 
-** Notifications
-
-#+begin_src emacs-lisp
-(use-package notifications
-  :straight (:type built-in))
-#+end_src
-
-** Font until
-
 Need to define this here so that other parts of code have access to it
 
 #+begin_src emacs-lisp
@@ -469,8 +440,28 @@ Need to define this here so that other parts of code have access to it
     (cl-find-if (lambda (f) (find-font (font-spec :name f))) fonts))
 #+end_src
 
-** Tab bar
+#+begin_src emacs-lisp
+(defun anerenv/re-seq (regexp string)
+  "Get a list of all regexp matches in a string"
+  (save-match-data
+    (let ((pos 0)
+          matches)
+      (while (string-match regexp string pos)
+        (push (match-string 0 string) matches)
+        (setq pos (match-end 0)))
+      matches)))
+#+end_src
 
+* UI
+
+** Notifications
+
+#+begin_src emacs-lisp
+(use-package notifications
+  :straight (:type built-in))
+#+end_src
+
+** Tab bar
 *** Base
 
 Prettification of tab bar. We only use tab-bar if the version is greater than 27.1.
@@ -590,7 +581,195 @@ By default let's enable the clock display
 (anerenv/tab-bar/enable-clock-display)
 #+end_src
 
+*** Tab bar addons
+**** Battery status in tab bar
+
+#+begin_src emacs-lisp
+(defun anerenv/bat/get-stats () "Gets battery statistics. First value returned
+is battery percentage, second one is t if charging"
+    (let* ((commandout (string-clean-whitespace (shell-command-to-string
+        "upower -i /org/freedesktop/UPower/devices/DisplayDevice"))))
+        (list
+        (string-to-number (progn
+            (string-match "\\(?:percentage\\:\s+\\)\\([0-9]+\\)" commandout)
+            (match-string 1 commandout)))
+        (progn
+                    (string-match "\\(?:state\\:\s+\\)\\([^\s]+\\)" commandout)
+                    (match-string 1 commandout)))
+            ))
+
+(defvar anerenv/bat/status-string nil "Holds battery string")
+
+(defun anerenv/bat/set-status-string () "Sets battery-string"
+       (let* ((bat-stats (anerenv/bat/get-stats))
+              (bat-charge-state (nth 1 bat-stats))
+              (bat-percentage-number
+                (if (string= bat-charge-state "fully-charged") 100
+                    (nth 0 bat-stats)))
+              (bat-color (if (<= bat-percentage-number 10) "red3"
+                          (if (<= bat-percentage-number 20) "DarkOrange"
+                            "DarkSlateGrey")))
+              (bat-weight (if (<= bat-percentage-number 20) 'bold 'normal))
+              (bat-charge-symbol (if (string= bat-charge-state "charging") "↑"
+                    (if (string= bat-charge-state "fully-charged") "◼" "↓"))))
+          (setq anerenv/bat/status-string
+             (concat
+                "⚡" bat-charge-symbol " "
+                (propertize (format "%3d" bat-percentage-number)
+                             'face (list :foreground bat-color
+                                    :box (list :color "DarkSlateGrey")))))))
+
+(defun anerenv/bat/get-status-string () "Get battery string"
+       (if anerenv/bat/status-string anerenv/bat/status-string ""))
+
+(defun anerenv/bat/enable-tab-display ()
+  "Enables battery display in tab bar"
+    (progn
+        (cl-pushnew 'anerenv/bat/get-status-string anerenv/tab-bar/right-group)
+        (cl-pushnew 'anerenv/bat/set-status-string anerenv/tab-bar/right-update-group)
+    ))
+#+end_src
+
+**** Network status in tab bar
+
+Code to check for internet connection:
+
+https://emacs.stackexchange.com/questions/7653/elisp-code-to-check-for-internet-connection
+
+#+begin_src emacs-lisp
+(defvar anerenv/network/status-string nil "Holds network status string")
+
+(defun anerenv/network/get-status-string () "Gets the network status string"
+       (if anerenv/network/status-string anerenv/network/status-string ""))
+
+(defun anerenv/network/set-status-string-sentinel (process event)
+    "Sets the network string based on proc run"
+    (setq anerenv/network/status-string
+            (concat
+                "↹ "
+                (if (= 0 (process-exit-status process))
+                    (propertize "✓" 'face
+                                (list :foreground "green3"
+                                    :background "LightYellow3"
+                                    :box (list :color "DarkSlateGrey")))
+                    (propertize "X" 'face
+                                (list :foreground "red3"
+                                    :background "LightYellow3"
+                                    :box (list :color "DarkSlateGrey")))))))
+
+(defun anerenv/network/start-test-proc () "Tests whether internet"
+       (interactive)
+    (set-process-sentinel
+        (start-process "wget" nil "wget" "--spider" "--timeout=1"
+                       "www.google.com") 'anerenv/network/set-status-string-sentinel))
+
+(defun anerenv/network/enable-tab-display ()
+  "Enables network display in tab bar"
+       (progn
+         (cl-pushnew 'anerenv/network/get-status-string
+                     anerenv/tab-bar/right-group)
+         (cl-pushnew 'anerenv/network/start-test-proc
+                     anerenv/tab-bar/right-update-group)
+         ))
+#+end_src
+
+** Window dividers
+
+#+begin_src emacs-lisp
+(setq window-divider-default-bottom-width 1
+      window-divider-default-places 'bottom-only)
+
+(window-divider-mode 1)
+#+end_src
+
+** Clean UI
+
+Disabling the toolbar, the splash-screen, the menu-bar and the scroll-bar
+
+#+begin_src emacs-lisp
+(menu-bar-mode -1)   ; no menu bar
+(when (display-graphic-p)
+    (tool-bar-mode -1)   ; no tool bar with icons
+    (scroll-bar-mode -1) ; no scroll bars
+    (set-fringe-mode 0))
+#+end_src
+
+** Which-Key
+
+#+begin_src emacs-lisp
+(use-package which-key
+  :config
+    (which-key-mode)
+)
+#+end_src
+
+** Background color
+
+#+begin_src emacs-lisp
+(add-to-list 'default-frame-alist '(background-color . "LightYellow"))
+#+end_src
+
+** Fringe color
+
+While we don't actually want fringes (almost at all), some frames use them.
+
+#+begin_src emacs-lisp
+(set-face-attribute 'fringe nil :background "LemonChiffon1")
+#+end_src
+
+** Easy Prompt
+
+#+begin_src emacs-lisp
+(defalias 'yes-or-no-p 'y-or-n-p)
+#+end_src
+
+** Minibuff
+
+#+begin_src emacs-lisp
+(add-hook 'minibuffer-setup-hook
+    (lambda ()
+        (make-local-variable 'face-remapping-alist)
+        (add-to-list 'face-remapping-alist
+                    '(default (:background "WhiteSmoke")))))
+#+end_src
+
+** Bell
+
+#+begin_src emacs-lisp
+(setq ring-bell-function (lambda () ()))
+#+end_src
+
+** Olivetti
+
+#+begin_src emacs-lisp
+(use-package olivetti
+  :init
+  (setq olivetti-body-width 96))
+#+end_src
+
 * Text
+
+** YASnippet
+
+Loading yasnippet. Useful for snippeting. Mode-specific snippets defined in relevant sections.
+
+#+begin_src emacs-lisp
+(use-package yasnippet
+  :config
+    (yas-global-mode 1)
+)
+#+end_src
+
+** Flycheck
+
+Flycheck is for syntax checking. Mode-specific configs in their relevant sections.
+
+#+begin_src emacs-lisp
+(use-package flycheck
+  :config
+    (global-flycheck-mode 1)
+)
+#+end_src
 
 ** Text font
 
@@ -859,6 +1038,17 @@ show errors.
   )
 #+end_src
 
+Integration with flycheck
+
+#+begin_src emacs-lisp
+(use-package flycheck-irony
+  :after flycheck irony
+  :config
+    (add-hook 'flycheck-mode-hook #'flycheck-irony-setup)
+    (add-hook 'c++-mode-hook (lambda () (setq flycheck-checker 'irony)))
+)
+#+end_src
+
 ** Company mode
 
 #+begin_src emacs-lisp
@@ -877,17 +1067,6 @@ show errors.
   :bind ("C-;" . company-complete-common)
   :hook (irony-mode . company-mode)
   )
-#+end_src
-
-** Flycheck
-
-#+begin_src emacs-lisp
-(use-package flycheck-irony
-  :after flycheck
-  :config
-    (add-hook 'flycheck-mode-hook #'flycheck-irony-setup)
-    (add-hook 'c++-mode-hook (lambda () (setq flycheck-checker 'irony)))
-)
 #+end_src
 
 ** HTMLize
@@ -913,14 +1092,6 @@ Using Hideshow
 #+end_src
 
 :smile:
-
-** Olivetti
-
-#+begin_src emacs-lisp
-(use-package olivetti
-  :init
-  (setq olivetti-body-width 96))
-#+end_src
 
 ** Pandoc
 
@@ -2514,79 +2685,11 @@ Enabling display in tab bar
 (anerenv/pomodoro/enable-tab-display)
 #+end_src
 
-* UI
-
-** Modeline
-
-Setting colors
-
-#+begin_src emacs-lisp
-(set-face-attribute 'mode-line nil :box nil :background "AliceBlue")
-(set-face-attribute 'mode-line-inactive nil :box nil :background "LightYellow3")
-#+end_src
-
-We use [[https://emacs.stackexchange.com/questions/5529/how-to-right-align-some-items-in-the-modeline][this stackoverflow page]] to make left\right aligned stuff.
-
-We use [[https://www.reddit.com/r/emacs/comments/4mhphb/spacemacs_how_to_limit_the_length_of_displayed/][this article]] to try and limit the mode name length.
-
-#+begin_src emacs-lisp
-(setq evil-normal-state-tag
-    (propertize " NORMAL  " 'face
-                (list :background anerenv/evil-color-normal))
-    evil-emacs-state-tag
-    (propertize " EMACS   " 'face
-                (list :background anerenv/evil-color-emacs))
-    evil-insert-state-tag
-    (propertize " INSERT  " 'face
-                (list :background anerenv/evil-color-insert))
-    evil-replace-state-tag
-    (propertize " REPLACE " 'face
-                (list :background anerenv/evil-color-replace))
-    evil-motion-state-tag
-    (propertize " MOTION  " 'face
-                (list :background anerenv/evil-color-motion))
-    evil-visual-state-tag
-    (propertize " VISUAL  " 'face
-                (list :background anerenv/evil-color-visual))
-    evil-operator-state-tag
-    (propertize " OPERATE " 'face
-                (list :background anerenv/evil-color-operate)))
-
-(defun simple-mode-line-render (left right)
-  "Return a string of `window-width' length containing LEFT, and RIGHT
- aligned respectively."
-  (let* ((available-width (- (window-width) (length left) 2)))
-    (format (format " %%s %%%ds " available-width) left right)))
-
-(setq-default mode-line-buffer-identification
-    (list -80 (propertized-buffer-identification "%12b")))
-
-(setq-default mode-line-format
-    '((:eval (simple-mode-line-render
-        ;;Left
-        (concat
-            (propertize (format-mode-line "%b") 'face '((:foreground "maroon")))
-            (format-mode-line " (%m) "))
-        ;;Right
-        (concat
-            (format-mode-line "%5lL%4cC ")
-            evil-mode-line-tag)))))
-#+end_src
-
-** Window dividers
-
-#+begin_src emacs-lisp
-(setq window-divider-default-bottom-width 1
-      window-divider-default-places 'bottom-only)
-
-(window-divider-mode 1)
-#+end_src
-
-** EXWM
+* EXWM
 
 We execute the following code only if started with EXWM argument
 
-*** Setup
+** EXWM Setup
 
 #+begin_src emacs-lisp
 (defvar anerenv/exwm/load-hook nil "Load EXWM hook")
@@ -2616,7 +2719,7 @@ We execute the following code only if started with EXWM argument
     ))
 #+end_src
 
-*** Smart buffer naming
+** Smart buffer naming
 
 #+begin_src emacs-lisp
 (add-hook 'anerenv/exwm/load-hook (lambda () (progn
@@ -2645,7 +2748,7 @@ We execute the following code only if started with EXWM argument
 )))
 #+end_src
 
-*** Basic keybindings
+** Basic keybindings
 
 Global keybindings can be defined with `exwm-input-global-keys'.
 Here are a few examples:
@@ -2693,21 +2796,11 @@ Here are a few examples:
         (kbd "<print>") 'anerenv/take-screenshot))))
 #+end_src
 
-*** RANDR screen settings
+** RANDR screen settings
 
 Enabling randr. Automatic mapping of randr screens to workspaces.
 
 #+begin_src emacs-lisp
-(defun anerenv/re-seq (regexp string)
-  "Get a list of all regexp matches in a string"
-  (save-match-data
-    (let ((pos 0)
-          matches)
-      (while (string-match regexp string pos)
-        (push (match-string 0 string) matches)
-        (setq pos (match-end 0)))
-      matches)))
-
 (defun anerenv/exwm/get-monitor-list ()
     (mapcar (lambda (x) (match-string (string-match "^[A-Za-z]+-*[0-9]+" x) x))
         (anerenv/re-seq "^[A-Za-z]+-*[0-9]+ connected"
@@ -2740,7 +2833,7 @@ Enabling randr. Automatic mapping of randr screens to workspaces.
         (kbd "s-x") 'anerenv/exwm/update-randr-monitor-plist))))
 #+end_src
 
-*** Prefix keys
+** Prefix keys
 
 Sending simulated keys to X windows
 #+begin_src emacs-lisp
@@ -2750,27 +2843,27 @@ Sending simulated keys to X windows
             ?\s-m ?\s-r ?\s-s ?\s-q ?\H-l ?\C-w)))))
 #+end_src
 
-*** Desktop environment
+** Desktop environment
 
 #+begin_src emacs-lisp
 (use-package desktop-environment :after exwm)
 #+end_src
 
-*** Dunst
+** Dunst
 
 #+begin_src emacs-lisp
 (add-hook 'anerenv/exwm/load-hook (lambda ()
     (eval-after-load "exwm" (anerenv/run-service 'dunst "dunst" nil))))
 #+end_src
 
-*** Flameshot
+** Flameshot
 
 #+begin_src emacs-lisp
 (add-hook 'anerenv/exwm/load-hook (lambda ()
     (eval-after-load "exwm" (anerenv/run-service 'flameshot "flameshot" '()))))
 #+end_src
 
-*** Spotify
+** Spotify
 
 First let's run Spotifyd
 
@@ -2789,7 +2882,7 @@ Then we run smudge. We use this to control
 
 We have to set =smudge-oauth2-client-id= and =smudge-oauth2-client-secret= in a seperate file.
 
-*** Media keys
+** Media keys
 
 https://gist.github.com/ajyoon/5323b999a01dce8db2d4456da1740fe3
 
@@ -2859,18 +2952,18 @@ In the event =xbacklight= doesn't work, the following command can be run:
 xrandr --output eDP1 --brightness 0.5
 #+end_example
 
-*** Input languages
+** Input languages
 
 #+begin_src emacs-lisp
 (defun anerenv/exwm/enable-heb ()
-(interactive)
-(start-process-shell-command "heb" nil
-    "setxkbmap -layout us,il && setxkbmap -option 'grp:alt_shift_toggle'"))
-())
+    (interactive)
+    (start-process-shell-command "heb" nil
+        "setxkbmap -layout us,il && setxkbmap -option 'grp:alt_shift_toggle'"))
+    ())
 (add-hook 'anerenv/exwm/load-hook 'anerenv/exwm/enable-heb)
 #+end_src
 
-*** Compositor
+** Compositor
 
 Setting frame transparency to 95% for active and inactive frames.
 
@@ -2889,7 +2982,7 @@ Creating the compositor process.
 ;;     t)
 #+end_src
 
-*** Transparency
+** Transparency
 
 We do this externally to not deal with function definition problems
 
@@ -2905,163 +2998,12 @@ We create processes for feh to display wallpaper
 ;; (anerenv/display-background-feh "~/images/wallpapers")
 #+end_src
 
-*** Ending
+** EXWM Ending
 
 End the execute only if EXWM block.
-Close parens, then add to command switch.
 
 #+begin_src emacs-lisp
 (add-to-list 'command-switch-alist '("--start-exwm" . anerenv/load-exwm))
-#+end_src
-
-** Tab bar addons
-*** Battery status in tab bar
-
-#+begin_src emacs-lisp
-(defun anerenv/bat/get-stats () "Gets battery statistics. First value returned
-is battery percentage, second one is t if charging"
-    (let* ((commandout (string-clean-whitespace (shell-command-to-string
-        "upower -i /org/freedesktop/UPower/devices/DisplayDevice"))))
-        (list
-        (string-to-number (progn
-            (string-match "\\(?:percentage\\:\s+\\)\\([0-9]+\\)" commandout)
-            (match-string 1 commandout)))
-        (progn
-                    (string-match "\\(?:state\\:\s+\\)\\([^\s]+\\)" commandout)
-                    (match-string 1 commandout)))
-            ))
-
-(defvar anerenv/bat/status-string nil "Holds battery string")
-
-(defun anerenv/bat/set-status-string () "Sets battery-string"
-       (let* ((bat-stats (anerenv/bat/get-stats))
-              (bat-charge-state (nth 1 bat-stats))
-              (bat-percentage-number
-                (if (string= bat-charge-state "fully-charged") 100
-                    (nth 0 bat-stats)))
-              (bat-color (if (<= bat-percentage-number 10) "red3"
-                          (if (<= bat-percentage-number 20) "DarkOrange"
-                            "DarkSlateGrey")))
-              (bat-weight (if (<= bat-percentage-number 20) 'bold 'normal))
-              (bat-charge-symbol (if (string= bat-charge-state "charging") "↑"
-                    (if (string= bat-charge-state "fully-charged") "◼" "↓"))))
-          (setq anerenv/bat/status-string
-             (concat
-                "⚡" bat-charge-symbol " "
-                (propertize (format "%3d" bat-percentage-number)
-                             'face (list :foreground bat-color
-                                    :box (list :color "DarkSlateGrey")))))))
-
-(defun anerenv/bat/get-status-string () "Get battery string"
-       (if anerenv/bat/status-string anerenv/bat/status-string ""))
-
-(defun anerenv/bat/enable-tab-display ()
-  "Enables battery display in tab bar"
-    (progn
-        (cl-pushnew 'anerenv/bat/get-status-string anerenv/tab-bar/right-group)
-        (cl-pushnew 'anerenv/bat/set-status-string anerenv/tab-bar/right-update-group)
-    ))
-#+end_src
-
-*** Network status in tab bar
-
-Code to check for internet connection:
-
-https://emacs.stackexchange.com/questions/7653/elisp-code-to-check-for-internet-connection
-
-#+begin_src emacs-lisp
-(defvar anerenv/network/status-string nil "Holds network status string")
-
-(defun anerenv/network/get-status-string () "Gets the network status string"
-       (if anerenv/network/status-string anerenv/network/status-string ""))
-
-(defun anerenv/network/set-status-string-sentinel (process event)
-    "Sets the network string based on proc run"
-    (setq anerenv/network/status-string
-            (concat
-                "↹ "
-                (if (= 0 (process-exit-status process))
-                    (propertize "✓" 'face
-                                (list :foreground "green3"
-                                    :background "LightYellow3"
-                                    :box (list :color "DarkSlateGrey")))
-                    (propertize "X" 'face
-                                (list :foreground "red3"
-                                    :background "LightYellow3"
-                                    :box (list :color "DarkSlateGrey")))))))
-
-(defun anerenv/network/start-test-proc () "Tests whether internet"
-       (interactive)
-    (set-process-sentinel
-        (start-process "wget" nil "wget" "--spider" "--timeout=1"
-                       "www.google.com") 'anerenv/network/set-status-string-sentinel))
-
-(defun anerenv/network/enable-tab-display ()
-  "Enables network display in tab bar"
-       (progn
-         (cl-pushnew 'anerenv/network/get-status-string
-                     anerenv/tab-bar/right-group)
-         (cl-pushnew 'anerenv/network/start-test-proc
-                     anerenv/tab-bar/right-update-group)
-         ))
-#+end_src
-
-** Clean UI
-
-Disabling the toolbar, the splash-screen, the menu-bar and the scroll-bar
-#+begin_src emacs-lisp
-
-(menu-bar-mode -1)   ; no menu bar
-(when (display-graphic-p)
-    (tool-bar-mode -1)   ; no tool bar with icons
-    (scroll-bar-mode -1) ; no scroll bars
-    (set-fringe-mode 0))
-
-#+end_src
-
-** Which-Key
-
-#+begin_src emacs-lisp
-(use-package which-key
-  :config
-    (which-key-mode)
-)
-#+end_src
-
-** Background color
-
-#+begin_src emacs-lisp
-(add-to-list 'default-frame-alist '(background-color . "LightYellow"))
-#+end_src
-
-** Fringe color
-
-While we don't actually want fringes (almost at all), some frames use them.
-
-#+begin_src emacs-lisp
-(set-face-attribute 'fringe nil :background "LemonChiffon1")
-#+end_src
-
-** Easy Prompt
-
-#+begin_src emacs-lisp
-(defalias 'yes-or-no-p 'y-or-n-p)
-#+end_src
-
-** Minibuff
-
-#+begin_src emacs-lisp
-(add-hook 'minibuffer-setup-hook
-    (lambda ()
-        (make-local-variable 'face-remapping-alist)
-        (add-to-list 'face-remapping-alist
-                    '(default (:background "WhiteSmoke")))))
-#+end_src
-
-** Bell
-
-#+begin_src emacs-lisp
-(setq ring-bell-function (lambda () ()))
 #+end_src
 
 * Extras
