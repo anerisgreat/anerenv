@@ -12,6 +12,7 @@ from sympy import symbols
 import matplotlib.pyplot as plt
 import seaborn as sns
 from os.path import join as pathjoin
+import os
 import sys
 from pathlib import Path
 import pandas as pd
@@ -53,10 +54,21 @@ def assign_if_doesnt_exist(varname, varfunc):
         globals()[varname] = varfunc()
 #+end_src
 
+#+name: notebook/sns-helpers
+#+begin_src python
+def sns_to_png(sns_figure, fname):
+    fig = sns_figure.get_figure()
+    full_fname = notebook_get_fname_images(fname)
+    fig.savefig(full_fname)
+    plt.clf()
+    return full_fname
+#+end_src
+
 #+name: notebook/all
 #+begin_src python
 <<notebook/imports>>
 <<notebook/pathhelper>>
+<<notebook/sns-helpers>>
 <<notebook/var-assign>>
 #+end_src
 
