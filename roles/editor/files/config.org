@@ -62,9 +62,7 @@ Backups are moved to a =.cache= directory in order to keep them out of local dir
 Setting garbage collection to 100M to make it stop freaking out every time I scroll through text.
 
 #+begin_src emacs-lisp
-
 (setq gc-cons-threshold 100000000)
-
 #+end_src
 
 ** CL
@@ -2591,40 +2589,38 @@ We execute the following code only if started with EXWM argument
 *** Setup
 
 #+begin_src emacs-lisp
-(defun anerenv-load-exwm(switch)
-(progn
-#+end_src
+(defvar anerenv/exwm/load-hook nil "Load EXWM hook")
 
-#+begin_src emacs-lisp
-(use-package exwm)
-#+end_src
+(defun anerenv/load-exwm (switch) "Loads EXWM"
+    (use-package exwm
+    :ensure t
+    :config
+        (require 'exwm)
+        (require 'exwm-randr)
+        ;Workspaces
+        (setq exwm-workspace-number 4
+            exwm-layout-show-all-buffers t
+            exwm-workspace-show-all-buffers t)
+        ;System tray
+        (require 'exwm-systemtray)
+        (setq exwm-systemtray-background-color "LightYellow3")
+        (exwm-systemtray-enable)
 
-*** Defaults
+        ;In EXWM mode, no evil
+        (add-to-list 'evil-emacs-state-modes 'exwm-mode)
+        (run-hooks 'anerenv/exwm/load-hook)
 
-#+begin_src emacs-lisp
-(server-start)
-(require 'exwm)
-#+end_src
-
-*** Workspaces
-
-#+begin_src emacs-lisp
-(setq exwm-workspace-number 4)
-(setq exwm-layout-show-all-buffers t)
-(setq exwm-workspace-show-all-buffers t)
-#+end_src
-
-*** System tray
-
-#+begin_src emacs-lisp
-(require 'exwm-systemtray)
-(setq exwm-systemtray-background-color "LightYellow3")
-(exwm-systemtray-enable)
+        ;Enable
+        (exwm-randr-enable)
+        (exwm-enable)
+    ))
 #+end_src
 
 *** Smart buffer naming
 
 #+begin_src emacs-lisp
+(add-hook 'anerenv/exwm/load-hook (lambda () (progn
+
 (add-hook 'exwm-update-class-hook
           (lambda ()
             (unless (or (string-prefix-p "sun-awt-X11-" exwm-instance-name)
@@ -2640,24 +2636,13 @@ We execute the following code only if started with EXWM argument
                       (string= "gimp" exwm-instance-name))
               (exwm-workspace-rename-buffer exwm-title))))
 
-(add-hook 'exwm-update-title-hook
-        (lambda ()
-            (when (or (not exwm-instance-name)
-                    (string-prefix-p "mpv" exwm-class-name))
-            (exwm-workspace-rename-buffer (concat "mpv | " exwm-title)))))
-
 (add-hook 'exwm-update-class-hook
         (lambda ()
             (when (or (not exwm-instance-name)
                     (string-prefix-p "mpv" exwm-class-name))
             (exwm-workspace-rename-buffer (concat "mpv | " exwm-title)))))
 
-#+end_src
-
-*** Turn off evil
-
-#+begin_src emacs-lisp
-(add-to-list 'evil-emacs-state-modes 'exwm-mode)
+)))
 #+end_src
 
 *** Basic keybindings
@@ -2665,7 +2650,8 @@ We execute the following code only if started with EXWM argument
 Global keybindings can be defined with `exwm-input-global-keys'.
 Here are a few examples:
 #+begin_src emacs-lisp
-(setq exwm-input-global-keys
+(add-hook 'anerenv/exwm/load-hook (lambda ()
+    (setq exwm-input-global-keys
       `(
         ;; Bind "s-<f2>" to "slock", a simple X display locker.
         ([s-f2] . (lambda ()
@@ -2688,7 +2674,7 @@ Here are a few examples:
         ([?\s-&] . (lambda (command)
              (interactive (list (read-shell-command "$ ")))
              (start-process-shell-command command nil command)))
-        ))
+        ))))
 
 (defun anerenv/take-screenshot ()
   (interactive)
@@ -2700,10 +2686,11 @@ Here are a few examples:
   (start-process "qutebrowser" nil "qutebrowser")
 )
 
-(define-key anerenv-global-minor-mode-open-map
-    (kbd "q") 'anerenv/start-qutebrowser)
-(define-key anerenv-global-minor-mode-map
-  (kbd "<print>") 'anerenv/take-screenshot)
+(add-hook 'anerenv/exwm/load-hook (lambda () (progn
+    (define-key anerenv-global-minor-mode-open-map
+        (kbd "q") 'anerenv/start-qutebrowser)
+    (define-key anerenv-global-minor-mode-map
+        (kbd "<print>") 'anerenv/take-screenshot))))
 #+end_src
 
 *** RANDR screen settings
@@ -2711,8 +2698,6 @@ Here are a few examples:
 Enabling randr. Automatic mapping of randr screens to workspaces.
 
 #+begin_src emacs-lisp
-(require 'exwm-randr)
-
 (defun anerenv/re-seq (regexp string)
   "Get a list of all regexp matches in a string"
   (save-match-data
@@ -2723,61 +2708,66 @@ Enabling randr. Automatic mapping of randr screens to workspaces.
         (setq pos (match-end 0)))
       matches)))
 
-(defun anerenv/get-monitor-list ()
+(defun anerenv/exwm/get-monitor-list ()
     (mapcar (lambda (x) (match-string (string-match "^[A-Za-z]+-*[0-9]+" x) x))
         (anerenv/re-seq "^[A-Za-z]+-*[0-9]+ connected"
                         (shell-command-to-string "xrandr"))))
 
-(defun anerenv/add-indexes (list)
-  (anerenv/add-indexes-i list 1)
+(defun anerenv/exwm/add-indexes (list)
+  (anerenv/exwm/add-indexes-i list 1)
 )
 
-(defun anerenv/add-indexes-i (list i)
+(defun anerenv/exwm/add-indexes-i (list i)
   (if list
-        (cons i (cons (car list) (anerenv/add-indexes-i (cdr list) (+ i 1))))
+        (cons i (cons (car list) (anerenv/exwm/add-indexes-i (cdr list) (+ i 1))))
         nil))
 
-(defun anerenv/update-exwm-randr-workspace-monitor-plist ()
+(defun anerenv/exwm/update-randr-monitor-plist ()
   (interactive)
     (progn
         (start-process
             "xlayoutdisplay" nil "xlayoutdisplay")
         (setq exwm-randr-workspace-monitor-plist
-                (anerenv/add-indexes (anerenv/get-monitor-list)))
+                (anerenv/exwm/add-indexes (anerenv/exwm/get-monitor-list)))
         (exwm-randr-refresh))
   )
 
-(add-hook 'exwm-randr-screen-change-hook
-            'anerenv/update-exwm-randr-workspace-monitor-plist)
+(add-hook 'anerenv/exwm/load-hook (lambda () (progn
+    (add-hook 'exwm-randr-screen-change-hook
+                'anerenv/exwm/update-randr-monitor-plist)
 
-(define-key anerenv-global-minor-mode-map
-  (kbd "s-x") 'anerenv/update-exwm-randr-workspace-monitor-plist)
+    (define-key anerenv-global-minor-mode-map
+        (kbd "s-x") 'anerenv/exwm/update-randr-monitor-plist))))
 #+end_src
 
 *** Prefix keys
 
 Sending simulated keys to X windows
 #+begin_src emacs-lisp
-(setq exwm-input-prefix-keys
-  '(?\C-x ?\C-u ?\C-h ?\M-x ?\M-& ?\M-: ?\s-d ?\s-m ?\s-r ?\s-s ?\s-q ?\H-l ?\C-w))
+(add-hook 'anerenv/exwm/load-hook (lambda () (progn
+    (setq exwm-input-prefix-keys
+    '(?\C-x ?\C-u ?\C-h ?\M-x ?\M-& ?\M-: ?\s-d
+            ?\s-m ?\s-r ?\s-s ?\s-q ?\H-l ?\C-w)))))
 #+end_src
 
 *** Desktop environment
 
 #+begin_src emacs-lisp
-(use-package desktop-environment)
+(use-package desktop-environment :after exwm)
 #+end_src
 
 *** Dunst
 
 #+begin_src emacs-lisp
-(anerenv/run-service 'dunst "dunst" nil)
+(add-hook 'anerenv/exwm/load-hook (lambda ()
+    (eval-after-load "exwm" (anerenv/run-service 'dunst "dunst" nil))))
 #+end_src
 
 *** Flameshot
 
 #+begin_src emacs-lisp
-(anerenv/run-service 'flameshot "flameshot" '())
+(add-hook 'anerenv/exwm/load-hook (lambda ()
+    (eval-after-load "exwm" (anerenv/run-service 'flameshot "flameshot" '()))))
 #+end_src
 
 *** Spotify
@@ -2804,7 +2794,8 @@ We have to set =smudge-oauth2-client-id= and =smudge-oauth2-client-secret= in a 
 https://gist.github.com/ajyoon/5323b999a01dce8db2d4456da1740fe3
 
 #+begin_src emacs-lisp
-(dolist (k '(XF86AudioLowerVolume
+(add-hook 'anerenv/exwm/load-hook (lambda () (progn
+        (dolist (k '(XF86AudioLowerVolume
              XF86AudioRaiseVolume
              XF86AudioPlay
              XF86AudioStop
@@ -2859,7 +2850,7 @@ https://gist.github.com/ajyoon/5323b999a01dce8db2d4456da1740fe3
     (kbd "<XF86MonBrightnessDown>")
         (lambda ()
             (interactive) (start-process
-                "light" nil "light" "-U" "5")))
+                "light" nil "light" "-U" "5")))))
 #+end_src
 
 In the event =xbacklight= doesn't work, the following command can be run:
@@ -2871,11 +2862,12 @@ xrandr --output eDP1 --brightness 0.5
 *** Input languages
 
 #+begin_src emacs-lisp
-(defun anerenv/enable-heb ()
-  (interactive)
-    (start-process-shell-command "heb" nil
-        "setxkbmap -layout us,il && setxkbmap -option 'grp:alt_shift_toggle'"))
-(anerenv/enable-heb)
+(defun anerenv/exwm/enable-heb ()
+(interactive)
+(start-process-shell-command "heb" nil
+    "setxkbmap -layout us,il && setxkbmap -option 'grp:alt_shift_toggle'"))
+())
+(add-hook 'anerenv/exwm/load-hook 'anerenv/exwm/enable-heb)
 #+end_src
 
 *** Compositor
@@ -2913,21 +2905,13 @@ We create processes for feh to display wallpaper
 ;; (anerenv/display-background-feh "~/images/wallpapers")
 #+end_src
 
-*** Enabling exwm
-#+begin_src emacs-lisp
-(exwm-randr-enable)
-(exwm-enable)
-#+end_src
-
 *** Ending
 
 End the execute only if EXWM block.
 Close parens, then add to command switch.
 
 #+begin_src emacs-lisp
-)) ;Closing off progn for EXWM
-
-(add-to-list 'command-switch-alist '("--start-exwm" . anerenv-load-exwm))
+(add-to-list 'command-switch-alist '("--start-exwm" . anerenv/load-exwm))
 #+end_src
 
 ** Tab bar addons
