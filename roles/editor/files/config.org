@@ -1,4 +1,4 @@
-#+Title: Aner's Emacs Configuration
+#+title: Aner's Emacs Configuration
 
 #+property: header-args :results silent
 #+options: toc:2
@@ -206,7 +206,7 @@ Setting of keybindings based on [[https://stackoverflow.com/questions/49853494/t
 
 #+begin_src emacs-lisp
 ;We'll define a basic keymap and already load window-manip funcs
-(defvar anerenv-global-minor-mode-open-map
+(defvar anerenv/global-minor-mode/open-keymap
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "o") 'anerenv/open-conf-file)
     map)
@@ -216,7 +216,7 @@ Setting of keybindings based on [[https://stackoverflow.com/questions/49853494/t
 At this stage a minor-mode-map is defined with keybindings, and an accompanying minor-mode is added.
 
 #+begin_src emacs-lisp
-(defvar anerenv-global-minor-mode-map
+(defvar anerenv/global-minor-mode/keymap
   (let ((map (make-sparse-keymap)))
 
     ;Window movement and manipulation
@@ -235,16 +235,17 @@ At this stage a minor-mode-map is defined with keybindings, and an accompanying 
     (define-key map (kbd "M-\-") 'split-window-vertically)
     (define-key map (kbd "M-d R") (lambda () (interactive)
                     (set-window-width 85)))
-    (define-key map (kbd "M-o") anerenv-global-minor-mode-open-map)
+    (define-key map (kbd "M-o") anerenv/global-minor-mode/open-keymap)
     map)
-  "anerenv-global-minor-mode keymap.")
+  "anerenv/global-minor-mode keymap.")
 
-(define-minor-mode anerenv-global-minor-mode
+(define-minor-mode anerenv/global-minor-mode
   "A minor mode for anerenv global keymaps."
   :init-value t
-  :lighter "anerenv")
+  :lighter "anerenv"
+  :keymap anerenv/global-minor-mode/keymap)
 
-(anerenv-global-minor-mode 1)
+(anerenv/global-minor-mode 1)
 #+end_src
 
 This keymap will be referenced many times during this document at relevant points.
@@ -272,7 +273,7 @@ Unbinding C-w taken from https://stackoverflow.com/questions/24988406/unbinding-
   (evil-mode 1)
 
   :bind
-  (:map anerenv-global-minor-mode-map
+  (:map anerenv/global-minor-mode/keymap
         ("M-w h" . evil-window-decreace-width)
         ("M-w l" . evil-window-increase-width)
         ("M-w k" . evil-window-decrease-height)
@@ -342,11 +343,11 @@ Using ivy, hydra, counsel.
   :after ivy
 
   :bind
-    (:map anerenv-global-minor-mode-map
+    (:map anerenv/global-minor-mode/keymap
         ("M-i" . counsel-imenu)
         ("M-b" . counsel-switch-buffer)
         ("C-x C-f" . counsel-find-file))
-    (:map anerenv-global-minor-mode-open-map
+    (:map anerenv/global-minor-mode/open-keymap
         ("l" . counsel-linux-app))
 )
 #+end_src
@@ -360,7 +361,7 @@ Using swiper. Replacing evil search with swiper search.
     (setq evil-search-module 'swiper-isearch)
 
     :bind
-    (:map anerenv-global-minor-mode-map
+    (:map anerenv/global-minor-mode/keymap
         ("C-s" . swiper-isearch))
 )
 #+end_src
@@ -388,7 +389,7 @@ Mapping modeline commands to =M-p= prefix. Also adding a shortcut to add project
     (:map projectile-command-map
           ("a" . projectile-add-known-project)
     )
-    (:map anerenv-global-minor-mode-map
+    (:map anerenv/global-minor-mode/keymap
           ("M-p" . projectile-command-map))
 )
 #+end_src
@@ -498,19 +499,19 @@ We also use this section to bind keys.
                         :background "LightYellow3"
                         :inherit 'tab-bar)
 
-    (define-key anerenv-global-minor-mode-map
+    (define-key anerenv/global-minor-mode/keymap
         (kbd "M-<tab>") 'tab-next)
-    (define-key anerenv-global-minor-mode-map
+    (define-key anerenv/global-minor-mode/keymap
         (kbd "M-'") 'tab-previous)
-    (define-key anerenv-global-minor-mode-map
+    (define-key anerenv/global-minor-mode/keymap
         (kbd "M-t r") 'tab-bar-rename-tab)
-    (define-key anerenv-global-minor-mode-map
+    (define-key anerenv/global-minor-mode/keymap
         (kbd "M-t n") 'tab-next)
-    (define-key anerenv-global-minor-mode-map
+    (define-key anerenv/global-minor-mode/keymap
         (kbd "M-t p") 'tab-previous)
-    (define-key anerenv-global-minor-mode-map
+    (define-key anerenv/global-minor-mode/keymap
         (kbd "M-t x") 'tab-bar-close-tab)
-    (define-key anerenv-global-minor-mode-map
+    (define-key anerenv/global-minor-mode/keymap
         (kbd "M-t c") 'anerenv/new-tab-and-rename)
     (setq tab-bar-close-button-show nil
         tab-bar-new-button-show nil
@@ -555,7 +556,7 @@ We also use this section to bind keys.
         tab-bar-format-add-tab
         tab-bar-format-align-right
         anerenv/tab-bar/right-group-func))
-    (define-key anerenv-global-minor-mode-map
+    (define-key anerenv/global-minor-mode/keymap
         (kbd "M-n") 'tab-switch)
     (if (member system-type '(gnu gnu/linux))
         (anerenv/run-timer 'tab-timer 'anerenv/tab-bar/update-func 5))
@@ -783,7 +784,7 @@ We use [[https://www.reddit.com/r/emacs/comments/4mhphb/spacemacs_how_to_limit_t
     (propertize " OPERATE " 'face
                 (list :background anerenv/evil-color-operate)))
 
-(defun simple-mode-line-render (left right)
+(defun anerenv/modeline/modeline-render (left right)
   "Return a string of `window-width' length containing LEFT, and RIGHT
  aligned respectively."
   (let* ((available-width (- (window-width) (length left) 2)))
@@ -793,7 +794,7 @@ We use [[https://www.reddit.com/r/emacs/comments/4mhphb/spacemacs_how_to_limit_t
     (list -80 (propertized-buffer-identification "%12b")))
 
 (setq-default mode-line-format
-    '((:eval (simple-mode-line-render
+    '((:eval (anerenv/modeline/modeline-render
         ;;Left
         (concat
             (propertize (format-mode-line "%b") 'face '((:foreground "maroon")))
@@ -1040,7 +1041,7 @@ aligned left\right accordingly.
     (setq bidi-paragraph-direction 'nil)
 )
 
-(define-key anerenv-global-minor-mode-map
+(define-key anerenv/global-minor-mode/keymap
     (kbd "C-SPC") 'toggle-input-method)
 #+end_src
 
@@ -1094,12 +1095,12 @@ show errors.
   :config
   ;; replace the `completion-at-point' and `complete-symbol' bindings in
   ;; irony-mode's buffers by irony-mode's function
-  (defun my-irony-mode-hook ()
+  (defun anerenv/irony-mode-hook ()
     (define-key irony-mode-map [remap completion-at-point]
       'irony-completion-at-point-async)
     (define-key irony-mode-map [remap complete-symbol]
       'irony-completion-at-point-async))
-  (add-hook 'irony-mode-hook 'my-irony-mode-hook)
+  (add-hook 'irony-mode-hook 'anerenv/irony-mode-hook)
   (add-hook 'irony-mode-hook 'irony-cdb-autosetup-compile-options)
   )
 #+end_src
@@ -1331,7 +1332,7 @@ into tags, and org mode tags do not support dashes, but they do support underlin
       org-agenda-tags-column -80
       org-agenda-start-on-weekday nil)
 
-(define-key anerenv-global-minor-mode-open-map
+(define-key anerenv/global-minor-mode/open-keymap
     (kbd "c") 'counsel-org-capture)
 
 (add-hook 'org-capture-mode-hook 'evil-insert-state)
@@ -1451,7 +1452,7 @@ into tags, and org mode tags do not support dashes, but they do support underlin
 *** Agenda
 
 #+begin_src emacs-lisp
-(define-key anerenv-global-minor-mode-open-map
+(define-key anerenv/global-minor-mode/open-keymap
     (kbd "a") 'org-agenda)
 #+end_src
 
@@ -1525,9 +1526,8 @@ Define languages to use
 This section makes code-indentation correction work inside source blocks.
 Taken from: https://github.com/emacs-evil/evil/issues/1288
 
-
 #+begin_src emacs-lisp
-(defun evil-org-insert-state-in-edit-buffer (fun &rest args)
+(defun anerenv/org/evil-org-insert-state-in-edit-buffer (fun &rest args)
   "Bind `evil-default-state' to `insert' before calling FUN with ARGS."
   (let ((evil-default-state 'insert)
         ;; Force insert state
@@ -1541,7 +1541,7 @@ Taken from: https://github.com/emacs-evil/evil/issues/1288
     (evil-refresh-cursor)))
 
 (advice-add 'org-babel-do-key-sequence-in-edit-buffer
-            :around #'evil-org-insert-state-in-edit-buffer)
+            :around #'anerenv/org/evil-org-insert-state-in-edit-buffer)
 #+end_src
 
 *** Code blocks
@@ -1733,12 +1733,12 @@ https://karthinks.com/software/scaling-latex-previews-in-emacs/
 #+begin_src emacs-lisp
 (setq org-startup-with-inline-images t)
 
-(defun shk-fix-inline-images ()
+(defun anerenv/org/shk-fix-inline-images ()
   (when org-inline-image-overlays
     (org-redisplay-inline-images)))
 
 (with-eval-after-load 'org
-  (add-hook 'org-babel-after-execute-hook 'shk-fix-inline-images))
+  (add-hook 'org-babel-after-execute-hook 'anerenv/org/shk-fix-inline-images))
 #+end_src
 
 *** Snippets
@@ -1750,7 +1750,7 @@ input. This is done to toggle back to the original language once done with the
 function toggle-input-method.
 
 #+begin_src emacs-lisp
-(defun dumb-toggle-input-method ()
+(defun anerenv/org/toggle-input-method ()
     (if current-input-method (toggle-input-method))
 )
 ;Inline
@@ -1774,7 +1774,7 @@ function toggle-input-method.
                                       "ORG_LATEX_INLINE_SNIPPET_OTHER_LANG"
                                       '(eval current-input-method)
                                       nil
-                                      '((unused (dumb-toggle-input-method))
+                                      '((unused (anerenv/org/toggle-input-method))
                                         (yas-after-exit-snippet-hook 'toggle-input-method))
                                       nil
                                       "C-l"
@@ -1801,7 +1801,7 @@ function toggle-input-method.
                                       "ORG_LATEX_OUTLINE_SNIPPET_OTHER_LANG"
                                       '(eval current-input-method)
                                       nil
-                                      '((unused (dumb-toggle-input-method))
+                                      '((unused (anerenv/org/toggle-input-method))
                                         (yas-after-exit-snippet-hook 'toggle-input-method))
                                       nil
                                       "C-S-l"
@@ -1961,9 +1961,7 @@ File to string from https://gnu.support/gnu-emacs/emacs-lisp/gnu-emacs-lisp-how-
   :config
   (define-auto-insert "notebook.org$" "notebook-template.org")
   (define-auto-insert "pres.org$" "presentation-template.org")
-  (define-auto-insert "exc.org$" "exercise-template.org")
-  )
-  )
+  (define-auto-insert "exc.org$" "exercise-template.org"))
 #+end_src
 
 *** Useful to remember
@@ -2140,7 +2138,7 @@ Adding emails can be done with notmuch new
         (kbd "M-k") nil)
 
   :bind
-    (:map anerenv-global-minor-mode-open-map
+    (:map anerenv/global-minor-mode/open-keymap
         ("m" . notmuch))
 )
 #+end_src
@@ -2212,7 +2210,7 @@ MPV from https://www.reddit.com/r/emacs/comments/7usz5q/youtube_subscriptions_us
 https://medium.com/emacs/using-elfeed-to-view-videos-6dfc798e51e6
 
 #+begin_src emacs-lisp
-(defun load-ytsublist-channels ()
+(defun anerenv/elfeed/load-ytsublist-channels ()
     "Loads into elfeed-feeds all channels from ~/.config/ytsubs-channels"
     (if (file-exists-p "~/.config/ytsubs-channels")
         (dolist
@@ -2223,7 +2221,7 @@ https://medium.com/emacs/using-elfeed-to-view-videos-6dfc798e51e6
                 "https://www.youtube.com/feeds/videos.xml?channel_id="
                     yt-id)))))
 
-(defun load-ytsublist-users ()
+(defun anerenv/elfeed/load-ytsublist-users ()
     "Loads into elfeed-feeds all users from ~/.config/ytsubs-users"
     (if (file-exists-p "~/.config/ytsubs-users")
         (dolist
@@ -2236,18 +2234,18 @@ https://medium.com/emacs/using-elfeed-to-view-videos-6dfc798e51e6
 
 (use-package elfeed
     :init
-        (defun elfeed-v-mpv (url)
+        (defun anerenv/elfeed/v-mpv (url)
             "Watch a video from URL in MPV"
             (start-process "mpv" nil "mpv" url))
 
-        (defun elfeed-view-mpv (&optional use-generic-p)
+        (defun anerenv/elfeed/view-mpv (&optional use-generic-p)
         "Youtube-feed link"
         (interactive "P")
         (let ((entries (elfeed-search-selected)))
             (cl-loop for entry in entries
             do (elfeed-untag entry 'unread)
             when (elfeed-entry-link entry)
-            do (elfeed-v-mpv it))
+            do (anerenv/elfeed/v-mpv it))
         (mapc #'elfeed-search-update-entry entries)))
 
         (defun slurp (f)
@@ -2259,10 +2257,10 @@ https://medium.com/emacs/using-elfeed-to-view-videos-6dfc798e51e6
 
         (setq-default elfeed-search-filter "@3-days-ago")
     :config
-        (define-key elfeed-search-mode-map (kbd "C-c v") 'elfeed-view-mpv)
+        (define-key elfeed-search-mode-map (kbd "C-c v") 'anerenv/elfeed/view-mpv)
         (evil-collection-elfeed-setup)
-        (load-ytsublist-channels)
-        (load-ytsublist-users)
+        (anerenv/elfeed/load-ytsublist-channels)
+        (anerenv/elfeed/load-ytsublist-users)
 )
 #+end_src
 
@@ -2271,7 +2269,7 @@ https://medium.com/emacs/using-elfeed-to-view-videos-6dfc798e51e6
 #+begin_src emacs-lisp
 (use-package pass
   :bind
-    (:map anerenv-global-minor-mode-open-map
+    (:map anerenv/global-minor-mode/open-keymap
         ("p" . 'password-store-copy)))
 #+end_src
 
@@ -2337,7 +2335,7 @@ https://medium.com/emacs/using-elfeed-to-view-videos-6dfc798e51e6
 
 #+begin_src emacs-lisp
 (evil-collection-ibuffer-setup)
-(define-key anerenv-global-minor-mode-map
+(define-key anerenv/global-minor-mode/keymap
     (kbd "C-x C-b") 'ibuffer)
 #+end_src
 
@@ -2367,13 +2365,7 @@ https://medium.com/emacs/using-elfeed-to-view-videos-6dfc798e51e6
         dashboard-center-content t
         dashboard-set-init-info nil
         dashboard-set-footer nil
-        dashboard-startup-banner nil)
-  ;; (defun anerenv/stupid-func () (message "Cheese whiz!"))
-  ;; (defun dashboard-insert-custom (list-size)
-  ;;     (insert "Custom text"))
-  ;; (add-to-list 'dashboard-item-generators  '(anerenv/stupid-func . dashboard-insert-custom))
-  ;; (add-to-list 'dashboard-items '(anerenv/stupid-func) t)
-)
+        dashboard-startup-banner nil))
 #+end_src
 
 ** Calendar
@@ -2416,7 +2408,7 @@ Need to autoload dired-x for dired-omit
     :config
         (evil-collection-magit-setup)
     :bind
-        (:map anerenv-global-minor-mode-open-map
+        (:map anerenv/global-minor-mode/open-keymap
             ("g" . 'magit-status))
 )
 #+end_src
@@ -2443,9 +2435,9 @@ For customization see https://github.com/emacs-eaf/emacs-application-framework/w
 ;;       browse-url-browser-function 'eaf-open-browser
 ;;       eaf-browser-download-path "~/downloads")
 ;; (defalias 'browse-web #'eaf-open-browser)
-;; (define-key anerenv-global-minor-mode-open-map
+;; (define-key anerenv/global-minor-mode/open-keymap
 ;;     (kbd "w") 'eaf-open-browser)
-;; (define-key anerenv-global-minor-mode-open-map
+;; (define-key anerenv/global-minor-mode/open-keymap
 ;;     (kbd "W") 'eaf-open-browser-with-history)
 #+end_src
 
@@ -2505,7 +2497,7 @@ Rebinding wanted functionality
   :init
   (elpy-enable))
 
-(define-key anerenv-global-minor-mode-open-map
+(define-key anerenv/global-minor-mode/open-keymap
   (kbd "r p") 'run-python)
 #+end_src
 
@@ -2760,7 +2752,7 @@ We execute the following code only if started with EXWM argument
 #+begin_src emacs-lisp
 (defvar anerenv/exwm/load-hook nil "Load EXWM hook")
 
-(defun anerenv/load-exwm (switch) "Loads EXWM"
+(defun anerenv/exwm/load-exwm (switch) "Loads EXWM"
     (use-package exwm
     :ensure t
     :config
@@ -2845,21 +2837,20 @@ Here are a few examples:
              (start-process-shell-command command nil command)))
         ))))
 
-(defun anerenv/take-screenshot ()
+(defun anerenv/exwm/take-screenshot ()
   (interactive)
   (shell-command "flameshot gui")
 )
 
-(defun anerenv/start-qutebrowser ()
+(defun anerenv/exwm/start-qutebrowser ()
   (interactive)
-  (start-process "qutebrowser" nil "qutebrowser")
-)
+  (start-process "qutebrowser" nil "qutebrowser"))
 
 (add-hook 'anerenv/exwm/load-hook (lambda () (progn
-    (define-key anerenv-global-minor-mode-open-map
-        (kbd "q") 'anerenv/start-qutebrowser)
-    (define-key anerenv-global-minor-mode-map
-        (kbd "<print>") 'anerenv/take-screenshot))))
+    (define-key anerenv/global-minor-mode/open-keymap
+        (kbd "q") 'anerenv/exwm/start-qutebrowser)
+    (define-key anerenv/global-minor-mode/keymap
+        (kbd "<print>") 'anerenv/exwm/take-screenshot))))
 #+end_src
 
 ** RANDR screen settings
@@ -2895,7 +2886,7 @@ Enabling randr. Automatic mapping of randr screens to workspaces.
     (add-hook 'exwm-randr-screen-change-hook
                 'anerenv/exwm/update-randr-monitor-plist)
 
-    (define-key anerenv-global-minor-mode-map
+    (define-key anerenv/global-minor-mode/keymap
         (kbd "s-x") 'anerenv/exwm/update-randr-monitor-plist))))
 #+end_src
 
@@ -2942,7 +2933,7 @@ Then we run smudge. We use this to control
 #+begin_src emacs-lisp
 ;; (use-package smudge
 ;;   :bind
-;;     (:map anerenv-global-minor-mode-open-map
+;;     (:map anerenv/global-minor-mode/open-keymap
 ;;         ("s" . 'smudge-command-map)))
 #+end_src
 
@@ -3055,13 +3046,13 @@ We do this externally to not deal with function definition problems
 We create processes for feh to display wallpaper
 
 #+begin_src emacs-lisp
-(defun anerenv/display-background-feh (path)
+(defun anerenv/exwm/display-background-feh (path)
   "Starts feh to display background from certain path"
   (interactive)
   (anerenv/run-service 'feh "feh"
         (list "--bg-fill" (file-name-as-directory (expand-file-name path))) t))
 
-;; (anerenv/display-background-feh "~/images/wallpapers")
+;; (anerenv/exwm/display-background-feh "~/images/wallpapers")
 #+end_src
 
 ** EXWM Ending
@@ -3069,7 +3060,7 @@ We create processes for feh to display wallpaper
 End the execute only if EXWM block.
 
 #+begin_src emacs-lisp
-(add-to-list 'command-switch-alist '("--start-exwm" . anerenv/load-exwm))
+(add-to-list 'command-switch-alist '("--start-exwm" . anerenv/exwm/load-exwm))
 #+end_src
 
 * Extras
