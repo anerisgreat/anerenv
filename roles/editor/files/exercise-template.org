@@ -1,0 +1,4 @@
+#+title: Exercise
+#+author: Aner Zakobar 203340302
+#+options: date:t title:t toc:nil
+#+latex_class: article
