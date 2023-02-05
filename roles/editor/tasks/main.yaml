@@ -168,6 +168,12 @@
     dest: "{{ emacs_templates_dir }}/presentation-template.org"
     state: link
 
+- name: Link presentation template
+  file:
+    src: "{{ anerenv_home }}/roles/editor/files/exercise-template.org"
+    dest: "{{ emacs_templates_dir }}/exercise-template.org"
+    state: link
+
 - name: Create custom.el if it doesn't exist
   copy:
     content: ""

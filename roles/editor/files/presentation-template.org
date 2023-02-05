@@ -1,4 +1,4 @@
-#+title: Org-Mode Beamer Example
+#+title: Presentation
 #+author: Aner Zakobar
 #+email: aner@zakobar.com
 
