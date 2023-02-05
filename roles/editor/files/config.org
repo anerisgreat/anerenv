@@ -1255,19 +1255,6 @@ Broken for the time being
 )
 #+end_src
 
-*** Stop the blinking on PDF-View-Mode
-
-Taken from [[https://github.com/munen/emacs.d/blob/master/configuration.org][Munen's configuration on GitHub]].
-When using evil-mode and pdf-tools and looking at a zoomed PDF, it will blink, because the cursor blinks.
-This configuration disables this whilst retaining the blinking cursor in other modes.
-Disabled for now
-#+begin_src emacs-lisp
-;(evil-set-initial-state 'pdf-view-mode 'emacs)
-;(add-hook 'pdf-view-mode-hook
-;  (lambda ()
-;    (set (make-local-variable 'evil-emacs-state-cursor) (list nil))))
-#+end_src
-
 ** Graphviz
 
 #+begin_src emacs-lisp
