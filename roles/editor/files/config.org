@@ -1569,11 +1569,8 @@ were used in the appropriate major mode.
 (setq org-latex-listings 'minted
       org-export-babel-evaluate nil
       org-latex-pdf-process
-      (list (concat
-             "latexmk -xelatex -shell-escape -interaction=nonstopmode "
-             "-output-directory=%o -aux-directory="
-             (file-name-as-directory (expand-file-name "~/.cache/latexmk"))
-             " %f")))
+      (list (concat "latexmk -xelatex -shell-escape -interaction=nonstopmode "
+                    "-output-directory=%o %f ; latexmk -c %f")))
 
 (require 'ox-latex)
 (unless (boundp 'org-latex-classes)
@@ -1592,6 +1589,7 @@ Creating classes
 (defvar anerenv/latex-class-common-header
   "[DEFAULT-PACKAGES]
 \\usepackage{polyglossia}
+\\usepackage{tabularx}
 \\usepackage[cache=false]{minted}
 \\usepackage{xcolor}
 \\usepackage{indentfirst}
@@ -2906,6 +2904,12 @@ Sending simulated keys to X windows
 (use-package desktop-environment :after exwm)
 #+end_src
 
+** Bluetooth
+
+#+begin_src emacs-lisp
+(use-package bluetooth :after exwm)
+#+end_src
+
 ** Dunst
 
 #+begin_src emacs-lisp
@@ -2925,16 +2929,17 @@ Sending simulated keys to X windows
 First let's run Spotifyd
 
 #+begin_src emacs-lisp
-;; (anerenv/run-service 'spotifyd "spotifyd" '("--no-daemon") t)
+(add-hook 'anerenv/exwm/load-hook (lambda ()
+    (anerenv/run-service 'spotifyd "spotifyd" '("--no-daemon") t)))
 #+end_src
 
 Then we run smudge. We use this to control
 
 #+begin_src emacs-lisp
-;; (use-package smudge
-;;   :bind
-;;     (:map anerenv/global-minor-mode/open-keymap
-;;         ("s" . 'smudge-command-map)))
+(use-package smudge :after exwm
+  :bind
+    (:map anerenv/global-minor-mode/open-keymap
+        ("s" . 'smudge-command-map)))
 #+end_src
 
 We have to set =smudge-oauth2-client-id= and =smudge-oauth2-client-secret= in a seperate file.
