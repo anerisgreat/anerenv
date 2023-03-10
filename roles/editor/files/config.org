@@ -487,7 +487,7 @@ We also use this section to bind keys.
                         :foreground "DarkSlateGrey"
                         :width 'ultra-expanded
                         :font (anerenv/font-candidate
-                               "Iosevka Term" "Consolas")
+                               "Source Code Pro" "Consolas")
                         :height 90)
 
     (set-face-attribute 'tab-bar-tab nil
@@ -858,7 +858,7 @@ The function =font-candidate= is from https://www.gnu.org/software/emacs/manual/
         (set-face-attribute 'variable-pitch nil :font variable-font)))
 
 (let ((fixed-font (anerenv/font-candidate
-                   "Iosevka" "LiberationMono" "Consolas")))
+                   "Source Code Pro" "LiberationMono" "Consolas")))
     (if fixed-font (progn
         (set-face-attribute 'default nil :font fixed-font)
         (set-face-attribute 'fixed-pitch nil :font fixed-font))))
@@ -1153,12 +1153,10 @@ Using Hideshow
 ** Emojis!
 
 #+begin_src emacs-lisp
-(use-package emojify
-  :hook (after-init . global-emojify-mode)
-  :config (setq use-default-font-for-symbols nil))
+;; (use-package emojify
+;;   :hook (after-init . global-emojify-mode)
+;;   :config (setq use-default-font-for-symbols nil))
 #+end_src
-
-:smile:
 
 ** Pandoc
 
@@ -1187,6 +1185,7 @@ Binding to startup is 'C-c /'
 
     (evil-collection-define-key 'normal 'vterm-mode-map
       (kbd "p") 'vterm-yank)
+    (setq vterm-timer-delay 0.01)
 )
 #+end_src
 
@@ -2108,8 +2107,11 @@ Adding emails can be done with notmuch new
   :config
     (evil-collection-notmuch-setup)
     (add-hook 'notmuch-show-mode 'anerenv/default-variable-pitch)
-    (setq-default send-mail-function 'sendmail-send-it
-          notmuch-search-oldest-first nil)
+    (setq send-mail-function 'sendmail-send-it
+          notmuch-search-oldest-first nil
+          message-cite-style message-cite-style-gmail
+          message-citation-line-function
+            'message-insert-formatted-citation-line)
     (defun anerenv/notmuch-archive () "Archive a message" (interactive)
         (progn
             (evil-collection-notmuch-toggle-tag "arx" "search" 'ignore)
@@ -2361,6 +2363,7 @@ https://medium.com/emacs/using-elfeed-to-view-videos-6dfc798e51e6
                           (bookmarks . 5)
                           (projects . 5))
         dashboard-center-content t
+        dashboard-banner-logo-title nil
         dashboard-set-init-info nil
         dashboard-set-footer nil
         dashboard-startup-banner nil))
@@ -2741,6 +2744,31 @@ Enabling display in tab bar
 (anerenv/pomodoro/enable-tab-display)
 #+end_src
 
+** Dwarf Fortress
+
+Based off:
+https://www.reddit.com/r/emacs/comments/ft84xy/run_shell_command_in_new_vterm/
+
+#+begin_src emacs-lisp
+(defun anerenv/dwarf-fortress/run-in-vterm-kill (process event)
+  "A process sentinel. Kills PROCESS's buffer if it is live."
+  (let ((b (process-buffer process)))
+    (and (buffer-live-p b)
+         (kill-buffer b))))
+
+(defun anerenv/dwarf-fortress/run () "Run DwarfFortress"
+  (interactive)
+  (let* ((existing-buff (get-buffer "*dwarf-fortress*")))
+  (if existing-buff
+    (switch-to-buffer existing-buff)
+    (with-current-buffer (vterm "*dwarf-fortress*")
+        (evil-emacs-state)
+        (set-process-sentinel vterm--process
+                              #'anerenv/dwarf-fortress/run-in-vterm-kill)
+        (vterm-send-string "dwarffortress")
+        (vterm-send-return)))))
+#+end_src
+
 * EXWM
 
 We execute the following code only if started with EXWM argument
@@ -2908,6 +2936,12 @@ Sending simulated keys to X windows
 
 #+begin_src emacs-lisp
 (use-package bluetooth :after exwm)
+#+end_src
+
+** Pulse
+
+#+begin_src emacs-lisp
+(use-package pulseaudio-control :after exwm)
 #+end_src
 
 ** Dunst
