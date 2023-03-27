@@ -2118,23 +2118,32 @@ Adding emails can be done with notmuch new
             (evil-collection-notmuch-toggle-tag "inbox" "search"
                                                 'notmuch-search-next-thread)
             ))
+    (defun anerenv/notmuch-keep () "Mark important message for keeps" (interactive)
+        (progn
+            (evil-collection-notmuch-toggle-tag "keep" "search"
+                                                'notmuch-search-next-thread)))
+
     (defun anerenv/notmuch-delete-gmail () "Delete a message, no inbox"
         (interactive)
         (progn
             (evil-collection-notmuch-toggle-tag "deleted" "search" 'ignore)
             (evil-collection-notmuch-toggle-tag "trash" "search" 'ignore)
-            (evil-collection-notmuch-toggle-tag "inbox" "search" 'notmuch-search-next-thread)
-            ))
+            (evil-collection-notmuch-toggle-tag "inbox" "search"
+                                                'notmuch-search-next-thread)))
+
     (defun anerenv/notmuch-toggle-inbox () "Toggles inbox tag" (interactive)
             (evil-collection-notmuch-toggle-tag "inbox" "search" 'ignore))
+
     (dolist (state '(normal visual))
         (evil-collection-define-key state 'notmuch-search-mode-map
           "d" 'anerenv/notmuch-delete-gmail
           "I" 'anerenv/notmuch-toggle-inbox
           "D" 'evil-collection-notmuch-search-toggle-delete
-          "A" 'anerenv/notmuch-archive))
+          "A" 'anerenv/notmuch-archive
+          "K" 'anerenv/notmuch-keep))
     (evil-collection-define-key 'normal 'notmuch-show-mode-map
         (kbd "M-j") nil
+        (kbd "K") nil
         (kbd "M-k") nil)
 
   :bind
@@ -2505,7 +2514,9 @@ Rebinding wanted functionality
 ** Jupyter
 
 #+begin_src emacs-lisp
-(use-package ein)
+(use-package ein
+  :config
+  (setq ein:output-area-inlined-images t))
 #+end_src
 
 ** OpenSCAD

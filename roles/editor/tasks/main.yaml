@@ -30,24 +30,28 @@
 - name: Install editor packages for Debian
   when: ansible_os_family == "Debian"
   block:
-    - name: Install texlive-full for debian
+    - name: Install packages for debian
       package:
         name:
         - texlive-full
         - fonts-liberation2
+        - apache2-utils
       become: yes
 
 - name: Install editor packages for Arch
   when: ansible_os_family == "Archlinux"
   block:
-    - name: Install texlive-full for arch
+    - name: Install editor packages for arch
       package:
         name:
         - texlive-most
         - texlive-lang
         - ttf-liberation
         - ttc-iosevka
+        - ttf-font-awesome
         - python-pygments
+        - apache
+
       become: yes
 
     - name: Check if tllocalmgr is installed
