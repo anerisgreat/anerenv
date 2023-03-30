@@ -2774,6 +2774,7 @@ https://www.reddit.com/r/emacs/comments/ft84xy/run_shell_command_in_new_vterm/
     (switch-to-buffer existing-buff)
     (with-current-buffer (vterm "*dwarf-fortress*")
         (evil-emacs-state)
+        (text-scale-increase 2)
         (set-process-sentinel vterm--process
                               #'anerenv/dwarf-fortress/run-in-vterm-kill)
         (vterm-send-string "dwarffortress")
