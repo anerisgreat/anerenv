@@ -2777,7 +2777,7 @@ https://www.reddit.com/r/emacs/comments/ft84xy/run_shell_command_in_new_vterm/
         (text-scale-increase 2)
         (set-process-sentinel vterm--process
                               #'anerenv/dwarf-fortress/run-in-vterm-kill)
-        (vterm-send-string "dwarffortress")
+        (vterm-send-string "dwarffortress ; exit")
         (vterm-send-return)))))
 #+end_src
 
