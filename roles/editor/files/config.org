@@ -485,7 +485,6 @@ We also use this section to bind keys.
                         :box t
                         :background "LightYellow3"
                         :foreground "DarkSlateGrey"
-                        :width 'ultra-expanded
                         :font (anerenv/font-candidate
                                "Source Code Pro" "Consolas")
                         :height 90)
@@ -1177,6 +1176,15 @@ Binding to startup is 'C-c /'
 ** VTerm
 
 #+begin_src emacs-lisp
+;; (use-package xterm-color :ensure t)
+;; (use-package eterm-256color :ensure t
+;;   :config
+;;   (add-hook 'term-mode-hook #'eterm-256color-mode)
+;;   (add-hook 'vterm-mode-hook #'eterm-256color-mode)
+;;   )
+#+end_src
+
+#+begin_src emacs-lisp
 (use-package vterm
   :if  (member system-type '(gnu gnu/linux))
   :config
@@ -1185,8 +1193,8 @@ Binding to startup is 'C-c /'
 
     (evil-collection-define-key 'normal 'vterm-mode-map
       (kbd "p") 'vterm-yank)
-    (setq vterm-timer-delay 0.01)
-)
+    (setq vterm-timer-delay 0.01
+          vterm-term-environment-variable "xterm-256color"))
 #+end_src
 
 ** Eshell
@@ -2767,6 +2775,10 @@ https://www.reddit.com/r/emacs/comments/ft84xy/run_shell_command_in_new_vterm/
     (and (buffer-live-p b)
          (kill-buffer b))))
 
+(defvar anerenv/dwarf-fortress/font
+  (anerenv/font-candidate "DF Random832 16x16" "Source Code Pro" "Consolas")
+  "Font to use for DF")
+
 (defun anerenv/dwarf-fortress/run () "Run DwarfFortress"
   (interactive)
   (let* ((existing-buff (get-buffer "*dwarf-fortress*")))
@@ -2774,10 +2786,14 @@ https://www.reddit.com/r/emacs/comments/ft84xy/run_shell_command_in_new_vterm/
     (switch-to-buffer existing-buff)
     (with-current-buffer (vterm "*dwarf-fortress*")
         (evil-emacs-state)
-        (text-scale-increase 2)
+        (setq buffer-face-mode-face (list :family anerenv/dwarf-fortress/font
+                                          :height 1.2))
+        (setq-local mode-line-format
+            (propertize "Dwarf Fortress" 'face '((:foreground "maroon"))))
+        (buffer-face-mode)
         (set-process-sentinel vterm--process
                               #'anerenv/dwarf-fortress/run-in-vterm-kill)
-        (vterm-send-string "dwarffortress ; exit")
+        (vterm-send-string "export COLORTERM=tmux ; dwarffortress ; exit")
         (vterm-send-return)))))
 #+end_src
 

@@ -76,6 +76,9 @@
     - name: Install stockfish from YAY
       command: yay -S icaclient --nocleanmenu --nodiffmenu --noeditmenu --noupgrademenu --noconfirm
 
+    - name: Install df fonts from YAY
+      command: yay -S dwarffortress-terminal-fonts --nocleanmenu --nodiffmenu --noeditmenu --noupgrademenu --noconfirm
+
 - name: Create downloads directory
   file:
     path: "{{ download_dir }}"
