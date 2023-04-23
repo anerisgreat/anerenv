@@ -2775,26 +2775,15 @@ https://www.reddit.com/r/emacs/comments/ft84xy/run_shell_command_in_new_vterm/
     (and (buffer-live-p b)
          (kill-buffer b))))
 
-(defvar anerenv/dwarf-fortress/font
-  (anerenv/font-candidate "DF Random832 16x16" "Source Code Pro" "Consolas")
-  "Font to use for DF")
+(defun anerenv/dwarf-fortress/finalize () "Finalize DF buffer"
+        (exwm-floating-unset-floating))
 
 (defun anerenv/dwarf-fortress/run () "Run DwarfFortress"
   (interactive)
-  (let* ((existing-buff (get-buffer "*dwarf-fortress*")))
+  (let* ((existing-buff (get-buffer "dwarf-fortress")))
   (if existing-buff
     (switch-to-buffer existing-buff)
-    (with-current-buffer (vterm "*dwarf-fortress*")
-        (evil-emacs-state)
-        (setq buffer-face-mode-face (list :family anerenv/dwarf-fortress/font
-                                          :height 1.2))
-        (setq-local mode-line-format
-            (propertize "Dwarf Fortress" 'face '((:foreground "maroon"))))
-        (buffer-face-mode)
-        (set-process-sentinel vterm--process
-                              #'anerenv/dwarf-fortress/run-in-vterm-kill)
-        (vterm-send-string "export COLORTERM=tmux ; dwarffortress ; exit")
-        (vterm-send-return)))))
+    (start-process "dwarffortress" "dwarffortress" "dwarffortress"))))
 #+end_src
 
 * EXWM
@@ -2907,6 +2896,38 @@ Here are a few examples:
         (kbd "<print>") 'anerenv/exwm/take-screenshot))))
 #+end_src
 
+** Better modeline
+
+#+begin_src emacs-lisp
+(defvar anerenv/exwm/modeline-hash-table (make-hash-table)
+  "Table to store relative face change cookies in")
+
+(defface anerenv/exwm/modeline-remap-style
+  (list (list t (list :background  anerenv/evil-color-insert)))
+  "Make the backgrounds pop to green")
+
+(defun anerenv/exwm/input-mode-modeline () "Changes modeline based on input mode"
+       (let ((currbuff (current-buffer)))
+            (if (eq exwm--input-mode 'char-mode)
+                ;;line
+                (let ((remap-cookie (gethash currbuff
+                        anerenv/exwm/modeline-hash-table)))
+                    (if remap-cookie
+                        (progn
+                            (face-remap-remove-relative remap-cookie)
+                            (remhash currbuff
+                                     anerenv/exwm/modeline-hash-table))))
+                ;;char
+                (puthash
+                    currbuff
+                    (face-remap-add-relative 'mode-line
+                                             'anerenv/exwm/modeline-remap-style)
+                    anerenv/exwm/modeline-hash-table)
+       )))
+(add-hook 'exwm-input-input-mode-change-hook 'anerenv/exwm/input-mode-modeline)
+;; (set-face-attribute 'mode-line nil :box nil :background "AliceBlue")
+;; (set-face-attribute 'mode-line-inactive nil :box nil :background "LightYellow3")
+#+end_src
 ** RANDR screen settings
 
 Enabling randr. Automatic mapping of randr screens to workspaces.
