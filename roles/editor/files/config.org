@@ -1082,6 +1082,9 @@ Quick keybindings to comment out regions.
 Must work on this. While it does work, can get slow and for weird projects can
 show errors.
 
+Namespace indent disabling based on:
+https://stackoverflow.com/questions/13825188/suppress-c-namespace-indentation-in-emacs
+
 #+begin_src emacs-lisp
 ;; == irony-mode ==
 (use-package irony
@@ -1101,6 +1104,14 @@ show errors.
       'irony-completion-at-point-async))
   (add-hook 'irony-mode-hook 'anerenv/irony-mode-hook)
   (add-hook 'irony-mode-hook 'irony-cdb-autosetup-compile-options)
+
+  (defconst anerenv/cc-style
+    '("gnu"
+        (c-offsets-alist . ((innamespace . [0])))
+        (c-basic-offset . 4)))
+
+  (c-add-style "anerenv/cc-style" anerenv/cc-style)
+  (add-hook 'irony-mode-hook (lambda () (c-set-style "anerenv/cc-style")))
   )
 #+end_src
 
