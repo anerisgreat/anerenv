@@ -24,6 +24,9 @@
       - aria2
       - openscad
       - lmms
+      - glfw-x11
+      - glm
+      - glut
   become: yes
 
 - name: Clone eaf
