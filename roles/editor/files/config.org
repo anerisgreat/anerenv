@@ -2530,6 +2530,10 @@ Rebinding wanted functionality
   (kbd "r p") 'run-python)
 #+end_src
 
+** Rust
+#+begin_src emacs-lisp
+(use-package rust-mode)
+#+end_src
 ** Jupyter
 
 #+begin_src emacs-lisp
