@@ -2534,12 +2534,15 @@ Rebinding wanted functionality
 #+begin_src emacs-lisp
 (use-package rust-mode)
 #+end_src
-** Jupyter
+** Jupyter (ein)
 
 #+begin_src emacs-lisp
 (use-package ein
   :config
-  (setq ein:output-area-inlined-images t))
+    (setq ein:output-area-inlined-images t)
+    (add-hook 'ein:notebook-mode-hook (lambda () (progn
+        ;; (elpy-mode -1)
+        (define-key ein:notebook-mode-map (kbd "C-c C-k") nil)))))
 #+end_src
 
 ** OpenSCAD
