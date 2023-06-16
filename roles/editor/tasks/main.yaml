@@ -51,7 +51,7 @@
         - ttf-font-awesome
         - python-pygments
         - apache
-
+        - catch2
       become: yes
 
     - name: Check if tllocalmgr is installed
