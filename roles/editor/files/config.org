@@ -2522,9 +2522,9 @@ Rebinding wanted functionality
 
 (use-package elpy
   :ensure t
-  :defer t
-  :init
-  (elpy-enable))
+  :defer t)
+  ;; :init
+  ;; (elpy-enable))
 
 (define-key anerenv/global-minor-mode/open-keymap
   (kbd "r p") 'run-python)
@@ -3030,20 +3030,22 @@ Sending simulated keys to X windows
 First let's run Spotifyd
 
 #+begin_src emacs-lisp
-(add-hook 'anerenv/exwm/load-hook (lambda ()
-    (anerenv/run-service 'spotifyd "spotifyd" '("--no-daemon") t)))
+;; (add-hook 'anerenv/exwm/load-hook (lambda ()
+;;     (anerenv/run-service 'spotifyd "spotifyd" '("--no-daemon") t)))
 #+end_src
 
 Then we run smudge. We use this to control
 
 #+begin_src emacs-lisp
-(use-package smudge :after exwm
-  :bind
-    (:map anerenv/global-minor-mode/open-keymap
-        ("s" . 'smudge-command-map)))
+;; (use-package smudge :after exwm
+;;   :bind
+;;     (:map anerenv/global-minor-mode/open-keymap
+;;         ("s" . 'smudge-command-map)))
 #+end_src
 
 We have to set =smudge-oauth2-client-id= and =smudge-oauth2-client-secret= in a seperate file.
+
+We have disabled this for now since errors.
 
 ** Media keys
 
@@ -3159,6 +3161,56 @@ We create processes for feh to display wallpaper
         (list "--bg-fill" (file-name-as-directory (expand-file-name path))) t))
 
 ;; (anerenv/exwm/display-background-feh "~/images/wallpapers")
+#+end_src
+
+** Dedicated processes
+
+We'd want to be able to quickly map processes (Spotify, etc.) to
+keybindings, and have dedicated buffers for them (so they don't reopen).
+
+We first define variables to be used later, and a function that checks, for each
+new process, should it be displayed in a new buffer/tab.
+
+#+begin_src emacs-lisp
+(defvar anerenv/exwm/startproc-regex-buffname-list nil
+  "Match between buffer and tab.")
+(defun anerenv/exwm/startproc-check-for-buff-entry ()
+  "On new buffer, check if requested to display differently"
+  (let ((entry (cdr (car (seq-filter
+                     (lambda (e) (string-match (car e) (buffer-name)))
+                    anerenv/exwm/startproc-regex-buffname-list
+                     )))))
+    (if entry
+        (let ((rn (nth 0 entry)) (tn (nth 1 entry)) (buff (current-buffer)))
+            ;; Too much complication for renaming
+            ;; (if requested-name (rename-buffer requested-name))
+            (progn
+                (if tn (tab-bar-switch-to-tab tn))
+                (switch-to-buffer buff)
+                )))))
+
+(add-hook 'exwm-manage-finish-hook 'anerenv/exwm/startproc-check-for-buff-entry)
+#+end_src
+
+#+begin_src emacs-lisp
+(defun anerenv/exwm/start-proc-dedicated
+    (name tab-name procregex proc &rest args)
+    (let ((buff (car (seq-filter (lambda (b
+)
+            (string-match procregex (buffer-name b)))
+                    (buffer-list)))))
+        (if buff
+            ;; Found buffer, display
+            (progn
+                (if tab-name (tab-bar-switch-to-tab tab-name))
+                (switch-to-buffer buff)
+                )
+            ;;No known buffer, add entry to alist
+            (let ((new-entry `(,procregex ,tab-name ,name))) (progn
+                (add-to-list 'anerenv/exwm/startproc-regex-buffname-list
+                             new-entry)
+                (apply 'start-process name nil proc
+                        args))))))
 #+end_src
 
 ** EXWM Ending

@@ -24,9 +24,9 @@
       - aria2
       - openscad
       - lmms
-      - glfw-x11
-      - glm
-      - glut
+      # - glf
+      # - glm
+      # - glut
   become: yes
 
 - name: Clone eaf
@@ -97,6 +97,11 @@
     path: "{{ qutebrowser_dir }}/userscripts"
     state: directory
 
+- name: Create directory for qutebrowser greasemonkey
+  file:
+    path: "{{ qutebrowser_dir }}/greasemonkey"
+    state: directory
+
 - name: Link qutebrowser config
   file:
     src: "{{ anerenv_home }}/roles/station/files/qutebrowser-config.py"
@@ -107,6 +112,13 @@
   file:
     src: "{{ anerenv_home }}/roles/station/files/yt-subs.sh"
     dest: "{{ qutebrowser_dir }}/userscripts/yt-subs.sh"
+    mode: a+x
+    state: link
+
+- name: Link qutebrowser whatsapp fix script
+  file:
+    src: "{{ anerenv_home }}/roles/station/files/whatsapp.user.js"
+    dest: "{{ qutebrowser_dir }}/greasemonkey/whatsapp.user.js"
     mode: a+x
     state: link
 
