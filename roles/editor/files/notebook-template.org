@@ -1,4 +1,3 @@
 # -*- mode: org; org-confirm-babel-evaluate: nil; eval: (org-babel-lob-ingest (concat anerenv/template-dir "base-notebook.org")); -*-
+#+property: header-args:python :noweb yes :session *notebook* :results none
 #+title: Notebook
-#+property: header-args:python :session *notebook* :noweb yes
-

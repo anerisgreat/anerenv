@@ -1,14 +1,19 @@
-#+Title: Base Notebook
-#+property: header-args:python :noweb yes :exports none :results none
+* Definitions
+:PROPERTIES:
+:header-args:python: :noweb yes :exports none :results none :noweb-ref notebook/base
+:END:
 
-Define imports
+** Generics
 
-#+name: notebook/imports
+*** Imports
+
+Defining imports
+
 #+begin_src python
 import numpy as np
 import scipy
 import sympy
-from sympy import symbols
+from sympy import symbols, latex
 import matplotlib.pyplot as plt
 import seaborn as sns
 from os.path import join as pathjoin
@@ -18,9 +23,10 @@ from pathlib import Path
 import pandas as pd
 #+end_src
 
+*** Path helpers
+
 Path helpers
 
-#+name: notebook/pathhelper
 #+begin_src python
 IMAGES_DIR = 'images'
 RESULTS_DIR = 'results'
@@ -45,16 +51,21 @@ notebook_get_fname_results = lambda fname: \
     notebook_get_fname(fname, basedir=RESULTS_DIR)
 #+end_src
 
-Assigning variables if don't exist
+*** Variable assignment
+Ability to assign variables if they don't exist.
 
-#+name: notebook/var-assign
 #+begin_src python
 def assign_if_doesnt_exist(varname, varfunc):
     if not varname in globals() or globals()[varname] is None:
         globals()[varname] = varfunc()
 #+end_src
 
-#+name: notebook/sns-helpers
+** Library related
+
+*** SNS
+
+This function helps make a png out of a sns figure. Returns the filename.
+
 #+begin_src python
 def sns_to_png(sns_figure, fname):
     fig = sns_figure.get_figure()
@@ -64,11 +75,12 @@ def sns_to_png(sns_figure, fname):
     return full_fname
 #+end_src
 
-#+name: notebook/all
-#+begin_src python
-<<notebook/imports>>
-<<notebook/pathhelper>>
-<<notebook/sns-helpers>>
-<<notebook/var-assign>>
-#+end_src
+* Import all
+:PROPERTIES:
+:header-args:python: :noweb yes :exports none :results none :noweb-ref notebook/notbase
+:END:
 
+#+name: notebook/all
+#+begin_src python :noweb yes
+<<notebook/base>>
+#+end_src
