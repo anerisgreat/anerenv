@@ -1,7 +1,22 @@
+#+Title: Notebook Base
+
+This document includes imports to be used across all my Python notebooks.
+The code here is read with =org-babel-lob-ingest=, to import them into the
+variable =org-babel-library-of-babel=.
+
+The first header contains all the source blocks to be imported. A property at the top
+sets them all to the same =noweb-ref=, so that they will all be considred part of the same block.
+
+Since the command =org-babel-lob-ingest= does not import =noweb-refs=, but only blocks,
+we import all blocks in the first heading into a block in the second heading.
+Headings separate them so the =noweb-ref= doesn't try to import a block into itself.
+
 * Definitions
 :PROPERTIES:
 :header-args:python: :noweb yes :exports none :results none :noweb-ref notebook/base
 :END:
+
+This heading includes all the source blocks.
 
 ** Generics
 
@@ -25,18 +40,34 @@ import pandas as pd
 
 *** Path helpers
 
-Path helpers
+Path helpers. Useful to create directories.
 
 #+begin_src python
 IMAGES_DIR = 'images'
 RESULTS_DIR = 'results'
 
 def notebook_makesubdir(pname):
+    """
+    Makes a subdirectory to be used by the notebook, along with parents,
+    and returns the filename.
+
+    :param pname: the directory to create, including sudirectories.
+
+    :returns: the name of the subdirectory.
+    """
     subdirname = pathjoin('./', pname)
     Path(subdirname).mkdir(parents=True, exist_ok = True)
     return subdirname
 
 def notebook_get_fname(fname, basedir = None):
+    """
+    Get full filename of file, and create necessary subdir.
+
+    :param fname: name of file to create, with subdirectory.
+    :param basedir: base directory. Leave as None for parent directory.
+
+    :returns: full name of file.
+    """
     fullname = pathjoin(
         basedir if basedir else './',
         fname)
@@ -44,18 +75,28 @@ def notebook_get_fname(fname, basedir = None):
     notebook_makesubdir(dirname)
     return fullname
 
+#Quick function, gets name of image, returns full image file name.
 notebook_get_fname_images = lambda fname: \
     notebook_get_fname(fname, basedir=IMAGES_DIR)
 
+#Quick function, gets name of result, returns full result file name.
 notebook_get_fname_results = lambda fname: \
     notebook_get_fname(fname, basedir=RESULTS_DIR)
 #+end_src
 
 *** Variable assignment
-Ability to assign variables if they don't exist.
+
+Ability to assign variables if they don't exist. This way, running a command (like data loading)
+multiple times won't take so long.
 
 #+begin_src python
 def assign_if_doesnt_exist(varname, varfunc):
+    """
+    If variable does not exist, instantiate it with value from function.
+
+    :param varname: variable name to assign value to.
+    :param varfunc: function to generate value if variable is undefined.
+    """
     if not varname in globals() or globals()[varname] is None:
         globals()[varname] = varfunc()
 #+end_src
@@ -68,6 +109,14 @@ This function helps make a png out of a sns figure. Returns the filename.
 
 #+begin_src python
 def sns_to_png(sns_figure, fname):
+    """
+    Function to create a PNG from an SNS figure.
+
+    :param sns_figure: figure of sns plot.
+    :param fname: name of image we wish to create.
+
+    :returns: full name of image file generated.
+    """
     fig = sns_figure.get_figure()
     full_fname = notebook_get_fname_images(fname)
     fig.savefig(full_fname)
@@ -79,6 +128,9 @@ def sns_to_png(sns_figure, fname):
 :PROPERTIES:
 :header-args:python: :noweb yes :exports none :results none :noweb-ref notebook/notbase
 :END:
+
+This heading includes only this one block, in order to import all blocks from the
+previous heading more easily.
 
 #+name: notebook/all
 #+begin_src python :noweb yes
