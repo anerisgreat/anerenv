@@ -2762,16 +2762,16 @@ Enabling display in tab bar
           (let ((currtime (current-time)))
           (if anerenv/pomodoro/current-task
                 (if anerenv/pomodoro/is-paused
-                    (concat "P " (format "%2d" (ffloor
-                        anerenv/pomodoro/current-work-time)))
+                    (concat "P " (format-time-string "%M"
+                            anerenv/pomodoro/current-work-time))
                     (concat "✎ " (format-time-string "%M"
                           (time-subtract
                            anerenv/pomodoro/current-work-end-time currtime))))
             (if anerenv/pomodoro/current-rest-end-time
                 (concat "⏾ " (format-time-string "%M" (time-subtract
-                                anerenv/pomodoro/current-rest-end-time currtime
-)))
-                  "✖  0")))))
+                                anerenv/pomodoro/current-rest-end-time
+                                currtime)))
+                "✖  0")))))
 
 (defun anerenv/pomodoro/enable-tab-display ()
   "Enables clock display in tab bar"
