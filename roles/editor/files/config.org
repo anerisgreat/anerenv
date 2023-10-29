@@ -2534,6 +2534,12 @@ Rebinding wanted functionality
 #+begin_src emacs-lisp
 (use-package rust-mode)
 #+end_src
+** PHP
+
+#+begin_src emacs-lisp
+(use-package php-mode)
+#+end_src
+
 ** Jupyter (ein)
 
 #+begin_src emacs-lisp
