@@ -554,7 +554,8 @@ We also use this section to bind keys.
         tab-bar-separator
         tab-bar-format-add-tab
         tab-bar-format-align-right
-        anerenv/tab-bar/right-group-func))
+        anerenv/tab-bar/right-group-func)
+        tab-bar-auto-width nil)
     (define-key anerenv/global-minor-mode/keymap
         (kbd "M-n") 'tab-switch)
     (if (member system-type '(gnu gnu/linux))
