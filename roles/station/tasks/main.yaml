@@ -24,6 +24,8 @@
       - aria2
       - openscad
       - lmms
+      - docker
+      - docker-buildx
       # - glf
       # - glm
       # - glut
