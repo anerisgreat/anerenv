@@ -2819,6 +2819,17 @@ https://www.reddit.com/r/emacs/comments/ft84xy/run_shell_command_in_new_vterm/
   :commands (kubernetes-overview))
 #+end_src
 
+** Boomkark
+
+#+begin_src emacs-lisp
+(use-package bookmark
+    :straight
+        (:type built-in)
+    :config
+    (evil-collection-bookmark-setup)
+)
+#+end_src
+
 * EXWM
 
 We execute the following code only if started with EXWM argument
